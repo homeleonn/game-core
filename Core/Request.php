@@ -12,7 +12,7 @@ class Request
     public function __construct()
     {
         $this->server = $_SERVER;
-        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->method = $_SERVER['REQUEST_METHOD'] ?? '/';
         $this->parseUrl();
     }
 
