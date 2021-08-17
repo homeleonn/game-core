@@ -1,17 +1,17 @@
 <?php
 
 
-namespace App\Core\Services;
+namespace Core\Services;
 
-use App\Core\App;
-use App\Core\Request;
+use Core\App;
+use Core\Request;
 
 
 class RequestServiceProvider extends AbstractServiceProvider
 {
 	public function register()
 	{
-		$this->app->set(Request::class, function() {
+		$this->app->set('request', function() {
 			return new Request();
 		});
 	}

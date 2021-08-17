@@ -1,11 +1,11 @@
 <?php
 
 
-namespace App\Core\Services;
+namespace Core\Services;
 
-use App\Core\Router;
-use App\Core\Request;
-use App\Core\Response;
+use Core\Router;
+use Core\Request;
+use Core\Response;
 
 class RouterServiceProvider extends AbstractServiceProvider
 {
@@ -16,10 +16,10 @@ class RouterServiceProvider extends AbstractServiceProvider
 
 	public function register()
 	{
-		$this->app->set(Router::class, function($app) {
+		$this->app->set('router', function($app) {
 			return new Router(
-				$app->make(Request::class),
-				$app->make(Response::class)
+				$app->make('request'),
+				$app->make('response')
 			);
 		});
 	}

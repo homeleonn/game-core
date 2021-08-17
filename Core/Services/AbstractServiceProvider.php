@@ -1,9 +1,9 @@
 <?php
 
 
-namespace App\Core\Services;
+namespace Core\Services;
 
-use App\Core\App;
+use Core\App;
 
 
 abstract class AbstractServiceProvider

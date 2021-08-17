@@ -1,7 +1,8 @@
 <?php
 
 return [
-    App\Core\Services\RouterServiceProvider::class,
-    App\Core\Services\ResponseServiceProvider::class,
-    App\Core\Services\RequestServiceProvider::class,
+    Core\Services\RouterServiceProvider::class,
+    Core\Services\ResponseServiceProvider::class,
+    Core\Services\RequestServiceProvider::class,
+    Core\Services\AuthServiceProvider::class,
 ];

@@ -1,17 +1,17 @@
 <?php
 
 
-namespace App\Core\Services;
+namespace Core\Services;
 
 
-use App\Core\Response;
+use Core\Response;
 
 class ResponseServiceProvider extends AbstractServiceProvider
 {
 
 	public function register()
 	{
-		$this->app->set(Response::class, function() {
+		$this->app->set('response', function() {
 			return new Response();
 		});
 	}

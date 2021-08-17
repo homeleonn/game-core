@@ -1,21 +1,19 @@
 <?php
 
 
-namespace App\Core;
+namespace Core;
 
+use Core\Facades\Facade;
+use Closure;
 
 class App
 {
-    public Router $router;
-    public Request $request;
-    public Response $response;
-
     private array $container = [];
 
     public function __construct()
     {
     	$this->loadServices();
-        $this->router = $this->make(Router::class);
+		Facade::setFacadeApplication($this);
     }
 
     private function loadServices()
@@ -34,11 +32,13 @@ class App
 
 	public function make($name)
 	{
+        if ($name == 'app') return $this;
+        
 		if (!isset($this->container[$name])) {
-			exit("Service `$name` not found");
+			exit("Service '$name' not found");
 		}
 
-		if (!($this->container[$name] instanceof $name)) {
+		if (!is_object($this->container[$name]) || $this->container[$name] instanceof Closure) {
 			$this->container[$name] = $this->container[$name]($this);
 		}
 
@@ -47,6 +47,9 @@ class App
 
     public function run()
     {
-        echo $this->make(Router::class)->resolve();
+        $response = $this->make('router')->resolve();
+        
+        echo $response instanceof \Core\Response ? $response->getContent() : $response;
+        // echo $this->make('router')->resolve()->getContent();
     }
 }
