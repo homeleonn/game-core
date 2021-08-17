@@ -1,23 +1,20 @@
 <?php
 
 require '../vendor/autoload.php';
-require '../../functions.php';
+require '../functions.php';
 
-use App\Core\App;
+use Core\Session\Init as SessionInit;
 
+new SessionInit($redis);
 
-$app = new App();
+use Core\App;
 
-$app->router->get('/', function() {
-   return 'Hello world';
-});
+try {
+	$app = new App();
+} catch (Exception $e) {
+	// dd($e->getMessage());
+}
 
-$app->router->get('/contact', function() {
-    return 'Contact page';
-});
-
-$app->router->post('/post', function() {
-    return 'Hello world from post request';
-});
+require routes('web.php');
 
 $app->run();
