@@ -12,6 +12,9 @@ Route::group(['middleware' => [AuthMiddleware::class]], function() {
 
 Route::group(['middleware' => 'guest'], function() {
 	Route::get('', [HomeController::class, 'entry'])->name('entry');
+	// Route::get('', function() {
+	// 	dd(\DB::getAll('Select * from users'));
+	// });
 	Route::post('login', [HomeController::class, 'login'])->name('login');
 });
 

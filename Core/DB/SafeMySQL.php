@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Core\DB;
 
 /**
  * @author col.shrapnel@gmail.com
@@ -143,7 +143,7 @@ class SafeMySQL
 	 */
 	public function fetch($result,$mode=MYSQLI_ASSOC)
 	{
-		return mysqli_fetch_array($result, $mode);
+		return mysqli_fetch_object($result);
 	}
 
 	/**

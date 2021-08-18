@@ -8,8 +8,13 @@ class RoomRepository
 
 	public $roomsFds;
 	private $roomsAvailable = [
-		1 => [6],
+		1 => [2, 3, 4, 5, 6, 7],
+		2 => [1],
+		3 => [1],
+		4 => [1],
+		5 => [1],
 		6 => [1],
+		7 => [1],
 	];
 
 	public function __construct(Application $app)

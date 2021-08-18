@@ -6,6 +6,8 @@ use Redis;
 
 class User 
 {
+	const TRANSITION_TIMEOUT = 0;
+
 	private $redis;
 	private $fd;
 	private $SID;
@@ -54,7 +56,7 @@ class User
 	public function setRoom(int $room): self
 	{
 		$this->room = $room;
-		$this->transitionTimeout = time() + 10;
+		$this->transitionTimeout = time() + self::TRANSITION_TIMEOUT;
 
 		return $this;
 	}

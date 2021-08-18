@@ -22,6 +22,8 @@ $aliases = [
 	'Route' => \Core\Facades\Router::class,
 	'Response' => \Core\Facades\Response::class,
 	'Auth' => \Core\Facades\Auth::class,
+	'Config' => \Core\Facades\Config::class,
+	'DB' => \Core\Facades\DB::class,
 ];
 
 

@@ -3,11 +3,14 @@
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../functions.php';
 
+use Core\ServerApp;
 use Core\Socket\Server;
 use App\Application;
 
+$serverApp = new ServerApp();
+
 $server = new Server('192.168.0.101', '8080');
-$app 	= new Application($server, $redis);
+$app 	= new Application($server, $redis, $serverApp);
 
 $server->on('start', 	[$app, 'start']);
 $server->on('open', 	[$app, 'open']);

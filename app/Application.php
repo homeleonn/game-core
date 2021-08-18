@@ -2,9 +2,11 @@
 
 namespace App;
 
+use Core\ServerApp;
 use Core\Socket\Server;
 use Core\Socket\Request;
 use Core\Socket\Frame;
+use Core\Facades\DB;
 use Redis;
 
 class Application {
@@ -15,17 +17,23 @@ class Application {
 
 	private $server;
 	private $redis;
+	private $serverApp;
 	public $userRepo;
 	public $roomRepo;
-	public $locations;
+	public $locations = [];
+	public $locationsAccess = [];
 
-	public function __construct(Server $server, Redis $redis)
+	public function __construct(Server $server, Redis $redis, ServerApp $serverApp)
 	{
 		$this->server 	= $server;
 		$this->redis 	= $redis;
+		// $this->serverApp = $serverApp;
+		// print_r(\DB::getAll('Select * from users'));
 		$this->userRepo = new UserRepository($redis, $this);
 		$this->roomRepo = new RoomRepository($this);
-		$this->locations = json_decode(file_get_contents(__DIR__.'/../resources/location.json'), true);
+		$this->loadLocations();
+		print_r($this->locations);
+		// $this->locations = json_decode(file_get_contents(__DIR__.'/../resources/location.json'), true);
 	}
 
 	public function start(Server $server)
@@ -96,6 +104,40 @@ class Application {
 		if ($location = $this->locations[$user->getRoom()] ?? null) {
 			$this->send($user->getFd(), ['location' => $location]);
 		}
+	}
+
+	private function loadLocations()
+	{
+		$locationsBuff = DB::getAll('Select * from locations');
+		$locationsAccess = DB::getAll('Select * from locations_access');
+
+		// collect array access locations by id
+		foreach ($locationsAccess as $access) {
+			if (!isset($this->locationsAccess[$access->loc_id])) $this->locationsAccess[$access->loc_id] = [];
+			$this->locationsAccess[$access->loc_id][] = $access->access_loc_id;
+		}
+
+		// locations by id
+		foreach ($locationsBuff as $location) {
+			$this->locations[$location->id] = $location;
+			$location->locations_coords = json_decode($location->locations_coords);
+		}
+
+		// Bind closest locations and sort them by id
+		foreach ($this->locations as $id => $location) {
+			// $this->locations[$id]->closest_locations = $this->locationsAccess[$id];
+
+			foreach ($this->locationsAccess[$id] as $locationId) {
+				if (!isset($this->locations[$id]->closest_locations[$this->locations[$locationId]->type])) {
+					$this->locations[$id]->closest_locations[$this->locations[$locationId]->type] = [];
+				}
+
+				$this->locations[$id]->closest_locations[$this->locations[$locationId]->type][$this->locations[$locationId]->id] = $this->locations[$locationId]->name;
+			}
+			
+		}
+
+		// print_r();
 	}
 
 	public function removeFromApp($fd, $user = null)

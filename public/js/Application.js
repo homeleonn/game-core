@@ -29,7 +29,7 @@ class Application {
 
 		let data = JSON.parse(response.data);
 		
-		// console.log(data);
+		console.log(data);
 
 		//['error', 'exit', 'chroom']
 		let action = Object.keys(data)[0], callback;

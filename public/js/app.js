@@ -265,6 +265,7 @@ function LSsetIfNotExists(key, value, forceSet = false) {
 
 // Common
 (() => {
+	setTimeout(() => send({'debug': true}), 1000);
 	// let $messages = $('#messages');
 	// let i = 20;
 
@@ -351,7 +352,8 @@ function transition(locationId = null) {
 				}
 			}, 300);
 
-			walk(10, 10);
+			walk(0, 0);
+			// walk(10, 10);
 			// $roomButtons.removeAttr('disabled');
 			// _(this).attr('disabled', true);
 			// $roomIdTextInput.text(toRoom);
@@ -365,8 +367,9 @@ function transition(locationId = null) {
 		$location.children('.map')
 			.on('load', () => {load = true;$loader.removeClass('icon-spin3');})
 			.attr('src', 'img/locations/' + response.image);
-		drawSelectLocations(response.select);
-		drawLocationsBorders($svg, response.locations);
+		drawSelectLocations(response.closest_locations);
+		drawLocationsBorders($svg, response.locations_coords);
+		// console.log(response);
 	}
 }
 
@@ -381,9 +384,10 @@ function drawLocationsBorders($svg, locations) {
 }
 
 function drawSelectLocations(select) {
+	console.log(select);
 	$('.location-block').hide();
 	for (block in select) {
-		let $block = $(`.location-block.${block}`);
+		let $block = $(`.location-block.${block}s`);
 		let $list = $block.children('.list');
 		$list.html('');
 		for (locId in select[block]) {

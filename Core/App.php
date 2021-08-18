@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Core;
 
 use Core\Facades\Facade;
@@ -8,7 +7,7 @@ use Closure;
 
 class App
 {
-    private array $container = [];
+    protected array $container = [];
 
     public function __construct()
     {
@@ -16,9 +15,9 @@ class App
 		Facade::setFacadeApplication($this);
     }
 
-    private function loadServices()
+    protected function loadServices()
     {
-        $services = require '../config/services.php';
+        $services = require ROOT . '/config/services.php';
 
         foreach ($services as $service) {
 			(new $service($this))->register();
