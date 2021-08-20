@@ -6,6 +6,8 @@ use Redis;
 
 class User 
 {
+	const CAN_TRANSITION_YES = 1;
+	const CAN_TRANSITION_NO = 0;
 	const TRANSITION_TIMEOUT = 0;
 
 	private $redis;
@@ -63,10 +65,16 @@ class User
 
 	public function chroom(int $to, $app)
 	{
-		if (!$this->canTransition($app) || 
-			!$app->roomRepo->chroom($this, $to)) return;
+		if ($this->canTransition()) {
+			return $app->send($this->fd, ['transition_timeout' => null]);
+		}
+
+		if (!$app->roomRepo->chroom($this, $to)) {
+			return;
+		}
+		
 		$this->setRoom($to)->save(); // Need save user ?
-		$app->send($this->fd, ['chroom' => 1]);
+		$app->send($this->fd, ['chroom' => static::CAN_TRANSITION_YES]);
 		$app->send($this->fd, ['room_users' => $app->userRepo->getAllByRoom($to)]);
 		$app->getLocation($this);
 	}
@@ -81,17 +89,10 @@ class User
 		]), self::$ttl);
 	}
 
-	public function canTransition($app)
+	public function canTransition()
 	{
-		if ($this->transitionTimeout >= time()) {
-			$app->send($this->fd, ['transition_timeout' => null]);
-			return false;
-		}
-		
-		return true;
+		return $this->transitionTimeout >= time();
 	}
-
-
 
 	public function __toString()
 	{

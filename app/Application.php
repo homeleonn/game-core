@@ -108,6 +108,10 @@ class Application {
 		$locationsBuff = DB::getAll('Select * from locations');
 		$locationsAccess = DB::getAll('Select * from locations_access');
 
+		// $locationsBuff = \App\Client\Models\Location::all();
+		// $locationsAccess = \App\Client\Models\LocationAccess::all();
+
+
 		// collect array access locations by id
 		foreach ($locationsAccess as $access) {
 			if (!isset($this->locationsAccess[$access->loc_id])) $this->locationsAccess[$access->loc_id] = [];

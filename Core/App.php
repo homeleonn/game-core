@@ -8,20 +8,40 @@ use Closure;
 class App
 {
     protected array $container = [];
+    public array $config;
 
     public function __construct()
     {
-    	$this->loadServices();
+    	$this->loadConfig();
+    	$servicesInstances = $this->loadServices();
 		Facade::setFacadeApplication($this);
+		$this->bootServices($servicesInstances);
     }
 
     protected function loadServices()
     {
         $services = require ROOT . '/config/services.php';
+        $servicesInstances = [];
 
         foreach ($services as $service) {
-			(new $service($this))->register();
+        	$serviceInstance = new $service($this);
+        	$serviceInstance->register();
+        	$servicesInstances[] = $serviceInstance;
         }
+
+        return $servicesInstances;
+    }
+
+    protected function bootServices($services)
+    {
+    	foreach ($services as $service) {
+    		$service->boot();
+    	}
+    }
+
+    protected function loadConfig()
+    {
+		$this->config = require ROOT . '/.env.php';
     }
 
 	public function set($name, $value = null)

@@ -14,7 +14,7 @@ class ConfigServiceProvider extends AbstractServiceProvider
 	public function register()
 	{
 		$this->app->set('config', function($app) {
-			return new Config(require ROOT . '/.env.php');
+			return new Config($app->config);
 		});
 	}
 }

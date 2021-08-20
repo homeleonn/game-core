@@ -3,6 +3,7 @@
 namespace Core;
 
 use Core\Facades\DB;
+use App\Client\Models\User;
 
 class Auth
 {
@@ -19,6 +20,9 @@ class Auth
 		if (!isset($data[$this->auth]) || !isset($data['password'])) return false;
 		// $users = json_decode(file_get_contents(resources('db.txt')));
 		[$user] = DB::getAll('Select id, password, login, location, transition_time_left from users where email = ?s', $data[$this->auth]);
+		// $user = User::where('email', $data[$this->auth])->select('id', 'password', 'login', 'location', 'transition_time_left')->first();
+
+		// dd($user);
 
 		// dd($user, password_verify($data['password'], $user->password));
 		if (!$user || !password_verify($data['password'], $user->password)) return false;
