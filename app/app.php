@@ -9,7 +9,7 @@ use App\Application;
 
 $serverApp = new ServerApp();
 
-$server = new Server('192.168.0.101', '8080');
+$server = new Server(Config::get('host'), Config::get('port'));
 $app 	= new Application($server, $redis, $serverApp);
 
 $server->on('start', 	[$app, 'start']);

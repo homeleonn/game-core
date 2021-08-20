@@ -1,4 +1,4 @@
-let server = new WSocket(`ws://192.168.0.101:8080`);
+let server = new WSocket(`ws://${host}:${port}`);
 let app = new Application(server);	
 user = new User(app, user);
 

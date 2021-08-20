@@ -106,6 +106,9 @@
 			room: <?=s('room') ?: "''"?>,
 			transitionTimeout: <?=s('transitionTimeout') ?: "''"?>,
 		};
+
+		const host = '<?=Config::get('host')?>';
+		const port = '<?=Config::get('port')?>';
 	</script>
 	<script src="js/app.js"></script>
 </body>

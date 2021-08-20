@@ -27,13 +27,10 @@ class Application {
 	{
 		$this->server 	= $server;
 		$this->redis 	= $redis;
-		// $this->serverApp = $serverApp;
-		// print_r(\DB::getAll('Select * from users'));
 		$this->userRepo = new UserRepository($redis, $this);
 		$this->roomRepo = new RoomRepository($this);
 		$this->loadLocations();
-		print_r($this->locations);
-		// $this->locations = json_decode(file_get_contents(__DIR__.'/../resources/location.json'), true);
+		// print_r($this->locations);
 	}
 
 	public function start(Server $server)
