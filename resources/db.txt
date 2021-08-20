@@ -1,0 +1,1 @@
+{"Tester@game.test":{"id":2,"email":"Tester@gmail.com","login":"Tester","password":"321","room":1,"transitionTimeout":1615343601}}

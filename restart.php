@@ -23,7 +23,7 @@ start($checkDir);
 // var_dump($argv, str_replace(__DIR__ . '/', '', $argv[1]));
 function start($dir) {
 	// system('php ' . $dir . 'app/app.php &');
-	system('php ' . $dir . 'app/app.php > log.log &');
+	system('php ' . $dir . 'app/app.php > storage/logs/log.log &');
 	// echo $argv[1];
 	// var_dump($argv, __DIR__);
 }
