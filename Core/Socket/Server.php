@@ -3,6 +3,7 @@
 namespace Core\Socket;
 
 use Closure;
+use Core\Socket\DosProtection;
 
 error_reporting(E_ALL); //Выводим все ошибки и предупреждения
 set_time_limit(0);		//Время выполнения скрипта не ограничено
@@ -18,11 +19,13 @@ class Server
 	private $fdCounter = 0; // Счетчик всех соединений
 	private $events = ['start', 'open', 'close', 'message'];
 	private $eventsHandlers = [];
+	private $dosProtection;
 
-	public function __construct($ip = "127.0.0.1", $port = '8080')
+	public function __construct($ip = "127.0.0.1", $port = '8080', DosProtection $dosProtection)
 	{
 		$this->ip 	= $ip;
 		$this->port = $port;
+		$this->dosProtection = $dosProtection;
 	}
 
 	public function on(string $event, callable $callback)
@@ -63,9 +66,14 @@ class Server
 
 	private function open($fd)
 	{
+		$request = new Request($fd, $this);
+
+		if (!$this->dosProtection->isValid($request->client['ip'])) {
+			return;
+		}
+
 		$this->fdCounter++;
 		$this->fds[(int)$fd] = $fd;
-		$request = new Request($fd, $this);
 		$this->applyEventHandler('open', [$request]);
 	}
 

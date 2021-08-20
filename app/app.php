@@ -5,12 +5,15 @@ require __DIR__ . '/../functions.php';
 
 use Core\ServerApp;
 use Core\Socket\Server;
+use Core\Socket\DosProtection;
 use App\Application;
+use App\Server\Chat\Chat;
 
 $serverApp = new ServerApp();
-
-$server = new Server(Config::get('host'), Config::get('port'));
-$app 	= new Application($server, $redis, $serverApp);
+$dosProtection = new DosProtection(10);
+$server = new Server(Config::get('host'), Config::get('port'), $dosProtection);
+// $app 	= new Application($server, $redis, $serverApp);
+$app 	= new Chat($server, $redis, $serverApp);
 
 $server->on('start', 	[$app, 'start']);
 $server->on('open', 	[$app, 'open']);

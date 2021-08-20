@@ -4,7 +4,7 @@ namespace Core\Socket;
 
 class Request 
 {
-	public $server = [];
+	public $client = [];
 	public $fd;
 
 	public function __construct($fd, $server)
@@ -17,26 +17,30 @@ class Request
 	private function parseRequest($fd, $server)
 	{
 		$line = fgets($fd);
-		[$this->server['request_method'], $this->server['request_uri']] = strpos($line, ' ') !== false ? explode(' ', $line) : ['GET', $line];
+		// d($line);
+		[$this->client['request_method'], $this->client['request_uri']] = strpos($line, ' ') !== false ? explode(' ', $line) : ['GET', $line];
 		
 		while ($line = rtrim(fgets($fd))) {
+			// d($line);
 			if (preg_match('/^(\S+):\s+(.*)$/', $line, $matches)) {
-				$this->server[$matches[1]] = $matches[2];
+				$this->client[$matches[1]] = $matches[2];
 			} else {
 				break;
 			}
 		}
+
+			// d(stream_socket_get_name($fd, true));
 		
-		[$this->server['ip'], $this->server['port']] = explode(':', stream_socket_get_name($fd, true));
+		[$this->client['ip'], $this->client['port']] = explode(':', stream_socket_get_name($fd, true));
 		
-		if (!isset($this->server['Sec-WebSocket-Key'])) {
+		if (!isset($this->client['Sec-WebSocket-Key'])) {
 			return false;
 		}
 	}
 
 	private function handshake($fd)
 	{
-		$upgradeKey = base64_encode(sha1($this->server['Sec-WebSocket-Key'] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
+		$upgradeKey = base64_encode(sha1($this->client['Sec-WebSocket-Key'] . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
 		$upgradeHeaders = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n" .
 				"Upgrade: websocket\r\n" .
 				"connection: Upgrade\r\n" .

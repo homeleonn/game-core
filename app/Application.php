@@ -150,7 +150,7 @@ class Application {
 
 	public function parseToken(Server $server, Request $request)
 	{
-		$token  = trim($request->server['request_uri'], '/');
+		$token  = trim($request->client['request_uri'], '/');
 
 		if (!$userSID = $this->redis->get('socket:' . $token)) {
 			echo "Invalid token\n";
