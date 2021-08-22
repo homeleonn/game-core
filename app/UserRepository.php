@@ -2,23 +2,25 @@
 
 namespace App;
 
+use DB;
+
 class UserRepository
 {
-	private $redis;
+	private $store;
 	private $app;
 	public $users;
-	public $usersIds;
+	public $userIds;
 
-	public function __construct($redis, $app)
+	public function __construct($app)
 	{
-		$this->redis = $redis;
 		$this->app 	 = $app;
+		$this->store = $app->store;
 	}
 
 	public function add(int $fd, $SID, $user)
 	{
-		$this->users[$fd] 	 = new User($this->redis, $fd, $SID, $user);
-		$this->usersIds[$user['id']] = $fd;
+		$this->users[$fd] 	 = new User($this->store, $fd, $SID, $user);
+		$this->userIds[$user['id']] = $fd;
 
 		return $this->users[$fd];
 	}
@@ -36,8 +38,8 @@ class UserRepository
 	public function findById(int $id)
 	{
 		// По айди юзер может быть, но по айди соединения нет
-		if (isset($this->usersIds[$id]) && isset($this->users[$this->usersIds[$id]])) {
-			return $this->users[$this->usersIds[$id]];
+		if (isset($this->userIds[$id]) && isset($this->users[$this->userIds[$id]])) {
+			return $this->users[$this->userIds[$id]];
 		}
 	}
 
@@ -55,19 +57,14 @@ class UserRepository
 		unset($this->users[$user->getFd()]);
 	}
 
-	public function init(string $userSID)
+	public function init(string $userId)
 	{
-		if ($user = $this->getUser($userSID)) {
-			return $user;
-		}
-
+		return $this->getUser($userId);
 	}
 
-	private function getUser($userSID)
+	private function getUser($userId)
 	{
-		$user = $this->redis->get('SID:' . $userSID);
-		
-		return $user ? unserialize($user) : false;
+		return DB::getRow('SELECT id, login, location, transition_time_left FROM users WHERE id = ?i', $userId);
 	}
 
 	public function getAll()
@@ -95,7 +92,7 @@ class UserRepository
 
 	public function getIds()
 	{
-		return $this->usersIds;
+		return $this->userIds;
 	}
 
 	public function getSIDs()

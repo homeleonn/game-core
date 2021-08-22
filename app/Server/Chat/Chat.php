@@ -79,7 +79,7 @@ class Chat {
 		// }
 
 		// dd($user);
-		$userLocation = DB::getOne('Select location from users where id = ?i', $user['id'])?->location;
+		$userLocation = DB::getOne('Select location from users where id = ?i', $user['id']);
 		// dd($userLocation);
 		if (!isset($this->channels[$userLocation])) $this->channels[$userLocation] = [];
 		$this->channels[$userLocation][] = $user['fd'];
@@ -87,7 +87,7 @@ class Chat {
 
 	private function getUserLocationId($userId)
 	{
-		return DB::getOne('Select location from users where id = ?i', $userId)?->location;
+		return DB::getOne('Select location from users where id = ?i', $userId);
 	}
 
 	public function send(int $fd, $message)

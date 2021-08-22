@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Server\Loaders\LocationsLoader;
+
 class RoomRepository
 {
 	private $app;
@@ -17,9 +19,13 @@ class RoomRepository
 		7 => [1],
 	];
 
+	public array $rooms = [];
+	public array $roomsAccess = [];
+
 	public function __construct(Application $app)
 	{
 		$this->app = $app;
+		[$this->rooms, $this->roomsAccess] = (new LocationsLoader)->load();
 	}
 
 	public function add($user, $to = null)

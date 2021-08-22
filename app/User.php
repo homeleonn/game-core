@@ -2,7 +2,7 @@
 
 namespace App;
 
-use Redis;
+use App\Server\Contracts\StoreContract;
 
 class User 
 {
@@ -10,7 +10,7 @@ class User
 	const CAN_TRANSITION_NO = 0;
 	const TRANSITION_TIMEOUT = 0;
 
-	private $redis;
+	private $store;
 	private $fd;
 	private $SID;
 	public $id;
@@ -19,9 +19,9 @@ class User
 	private $transitionTimeout;
 	private static $ttl = 1800;
 
-	public function __construct(Redis $redis, int $fd, string $SID, array $user)
+	public function __construct(StoreContract $store, int $fd, string $SID, array $user)
 	{
-		$this->redis 	= $redis;
+		$this->store 	= $store;
 		$this->fd 		= $fd;
 		$this->SID 		= $SID;
 		$this->id 		= $user['id'];
@@ -81,7 +81,7 @@ class User
 
 	public function save()
 	{
-		$this->redis->set('SID:' . $this->SID, serialize([
+		$this->store->set('SID:' . $this->SID, serialize([
 			'id' 	=> $this->id,
 			'name' 	=> $this->name,
 			'room' 	=> $this->room,
