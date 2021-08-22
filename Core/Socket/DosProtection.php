@@ -4,7 +4,6 @@ namespace Core\Socket;
 
 class DosProtection
 {
-
 	private $ips = [];
 	private $limit; // limit connections per minute by ip
 
@@ -15,7 +14,6 @@ class DosProtection
 
 	public function isValid($ip)
 	{
-		// d($this->ips[$ip]);
 		if (!isset($this->ips[$ip])) {
 			$this->ips[$ip] = [
 				'count' => 1,

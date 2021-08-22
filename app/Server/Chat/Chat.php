@@ -67,21 +67,27 @@ class Chat {
 		}
 	}
 
-	private function subscribe($user, $room)
+	private function subscribe($user, $room = false)
 	{
-		$canSubscribeThisChannel = DB::getOne('Select id from users where id = ?i and location = ?i', $user['id'], $room);
+		// $canSubscribeThisChannel = DB::getOne('Select id from users where id = ?i and location = ?i', $user['id'], $room);
 
 
-		if ($canSubscribeThisChannel) {
-			$usersById[$user['id']]['channel'] == $room;
-			$usersByFd[$user['fd']]['channel'] == $room;
-			$this->channels[$room][] = $user['fd'];
-		}
+		// if ($canSubscribeThisChannel) {
+		// 	$usersById[$user['id']]['channel'] == $room;
+		// 	$usersByFd[$user['fd']]['channel'] == $room;
+		// 	$this->channels[$room][] = $user['fd'];
+		// }
+
+		// dd($user);
+		$userLocation = DB::getOne('Select location from users where id = ?i', $user['id'])?->location;
+		// dd($userLocation);
+		if (!isset($this->channels[$userLocation])) $this->channels[$userLocation] = [];
+		$this->channels[$userLocation][] = $user['fd'];
 	}
 
-	private function getUserLocationsId($userId)
+	private function getUserLocationId($userId)
 	{
-		return DB::getOne('Select location from users where id = ?i', $userId);
+		return DB::getOne('Select location from users where id = ?i', $userId)?->location;
 	}
 
 	public function send(int $fd, $message)
@@ -96,30 +102,19 @@ class Chat {
 
 	public function addToApp($fd, $userId)
 	{
-		// if (!$user = $this->userRepo->init($userId)) return;
-		$this->usersByFd[$fd] = [
-			'id' => (int)$userId,
-			'fd' => (int)$fd
-		];
-
-		$this->usersById[$userId] = [
-			'id' => (int)$userId,
-			'fd' => (int)$fd
-		];
-		
 		$this->checkDuplicateConnection($userId);
 
-		// users online by room
-		// $this->send($fd, ['room_users' => array_values($this->userRepo->getAllByRoom($user->getRoom()))]);
+		$this->usersByFd[$fd] = $this->usersById[$userId] = [
+			'id' => $userId,
+			'fd' => $fd
+		];
+
+		$this->subscribe($this->usersByFd[$fd]);
 	}
 
 	public function removeFromApp($fd, $user = null)
 	{
-		// if ($user || $user = $this->userRepo->findByFdAndRemove($fd)) {
-		// 	$this->roomRepo->remove($user);
-		// }
-
-		$user = $this->usersByFd[$fd];
+		$user = $this->usersByFd[$fd] ?? $user;
 		unset($this->usersByFd[$fd]);
 		unset($this->usersById[$user['id']]);
 	}
@@ -136,7 +131,7 @@ class Chat {
 
 		$this->redis->del('socket:' . $token);
 
-		return $userId;
+		return (int)$userId;
 	}
 
 	public function checkDuplicateConnection($userId)
@@ -144,26 +139,17 @@ class Chat {
 		if (!$user = $this->findUserById($userId)) return;
 		
 		$this->disconnectPreviousDuplicateWindow($user['fd']);
-		// $this->userRepo->remove($user);
 		$this->removeFromApp(null, $user);
 	}
 
 	private function findUserByFd($userFd)
 	{
-		if (isset($this->usersByFd[$userFd])) {
-			return $this->usersByFd[$userFd];
-		}
-
-		return false;
+		return $this->usersByFd[$userFd] ?? false;
 	}
 
 	private function findUserById($userId)
 	{
-		if (isset($this->usersById[$userId])) {
-			return $this->usersById[$userId];
-		}
-
-		return false;
+		return $this->usersById[$userId] ?? false;
 	}
 
 	public function disconnectPreviousDuplicateWindow($fd)
@@ -180,7 +166,7 @@ class Chat {
 
 	private function messageToRoom($user, $text)
 	{
-		if ($channel = $this->getUserLocationsId($user['id'])) {
+		if ($channel = $this->getUserLocationId($user['id'])) {
 			$this->sendToRoom($channel, [
 				'message' => [
 					'from' => $user['id'],
@@ -194,13 +180,14 @@ class Chat {
 	public function sendToRoom($roomId, $message)
 	{
 		if (!$roomUsersFds = $this->channels[$roomId]) return;
+		// dd($this->channels, $roomUsersFds);
 
 		if (is_array($message)) {
 			$message = json_encode($message);
 		}
 
 		foreach ($roomUsersFds as $fd => $dummy) {
-			$this->server->push($fd, $message);
+			$this->server->push($dummy, $message);
 		}
 	}
 }

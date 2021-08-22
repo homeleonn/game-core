@@ -40,7 +40,6 @@ class HomeController
     public function login()
     {
         $request = \App::make('request');
-        // dd($request->only(['email', 'password']));
 
         if (Auth::attempt($request->only(['email', 'password']))) {
             return redirect()->route('main');

@@ -16,6 +16,7 @@ class App
     	$servicesInstances = $this->loadServices();
 		Facade::setFacadeApplication($this);
 		$this->bootServices($servicesInstances);
+        // dd(\DB::getOne('Select location from users where id = 1'));
     }
 
     protected function loadServices()

@@ -21,10 +21,14 @@ class Server
 	private $eventsHandlers = [];
 	private $dosProtection;
 
-	public function __construct($ip = "127.0.0.1", $port = '8080', DosProtection $dosProtection)
+	public function __construct($ip = "127.0.0.1", $port = '8080')
 	{
 		$this->ip 	= $ip;
 		$this->port = $port;
+	}
+
+	public function setDosProtection(DosProtection $dosProtection)
+	{
 		$this->dosProtection = $dosProtection;
 	}
 
@@ -68,7 +72,7 @@ class Server
 	{
 		$request = new Request($fd, $this);
 
-		if (!$this->dosProtection->isValid($request->client['ip'])) {
+		if (!$this->dosProtection?->isValid($request->client['ip'])) {
 			return;
 		}
 

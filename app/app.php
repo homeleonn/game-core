@@ -10,8 +10,9 @@ use App\Application;
 use App\Server\Chat\Chat;
 
 $serverApp = new ServerApp();
-$dosProtection = new DosProtection(10);
-$server = new Server(Config::get('host'), Config::get('port'), $dosProtection);
+$dosProtection = new DosProtection(5);
+$server = new Server(Config::get('host'), Config::get('port'));
+$server->setDosProtection($dosProtection);
 // $app 	= new Application($server, $redis, $serverApp);
 $app 	= new Chat($server, $redis, $serverApp);
 
