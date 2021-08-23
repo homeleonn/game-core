@@ -265,7 +265,6 @@ function LSsetIfNotExists(key, value, forceSet = false) {
 
 // Common
 (() => {
-	setTimeout(() => send({'debug': true}), 1000);
 	// let $messages = $('#messages');
 	// let i = 20;
 

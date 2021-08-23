@@ -2,7 +2,7 @@
 
 namespace App;
 
-use Redis;
+use App\Server\Contracts\StoreContract;
 
 class User 
 {
@@ -10,83 +10,47 @@ class User
 	const CAN_TRANSITION_NO = 0;
 	const TRANSITION_TIMEOUT = 0;
 
-	private $redis;
-	private $fd;
-	private $SID;
-	public $id;
-	public $name;
-	private $room;
-	private $transitionTimeout;
-	private static $ttl = 1800;
+	private StoreContract$store;
+	private int $fd;
+	private array $attr = [];
+	private static int $ttl = 1800;
 
-	public function __construct(Redis $redis, int $fd, string $SID, array $user)
+	public function __construct(StoreContract $store, int $fd, array $user)
 	{
-		$this->redis 	= $redis;
+		$this->store 	= $store;
 		$this->fd 		= $fd;
-		$this->SID 		= $SID;
-		$this->id 		= $user['id'];
-		$this->name 	= $user['name'];
-		$this->room 	= $user['room'];
-		$this->transitionTimeout 	= $user['transitionTimeout'];
+		$this->attr 	= $user;
+		$this->attr->fd = $fd;
 	}
 
-	public function getId(): int
+	public function setLoc(int $loc): self
 	{
-		return $this->id;
-	}
-
-	public function getFd(): int
-	{
-		return $this->fd;
-	}
-
-	public function getName()
-	{
-		return $this->name;
-	}
-
-	public function getSID()
-	{
-		return $this->SID;
-	}
-
-	public function getRoom(): int
-	{
-		return $this->room;
-	}
-
-	public function setRoom(int $room): self
-	{
-		$this->room = $room;
+		$this->loc = $loc;
 		$this->transitionTimeout = time() + self::TRANSITION_TIMEOUT;
 
 		return $this;
 	}
 
-	public function chroom(int $to, $app)
+	public function chloc(int $to, $app)
 	{
 		if ($this->canTransition()) {
 			return $app->send($this->fd, ['transition_timeout' => null]);
 		}
 
-		if (!$app->roomRepo->chroom($this, $to)) {
+		if (!$app->locRepo->chloc($this, $to)) {
 			return;
 		}
 		
-		$this->setRoom($to)->save(); // Need save user ?
-		$app->send($this->fd, ['chroom' => static::CAN_TRANSITION_YES]);
-		$app->send($this->fd, ['room_users' => $app->userRepo->getAllByRoom($to)]);
-		$app->getLocation($this);
+		$this->setLoc($to)->save(); // Need save user ?
+		$app->send($this->fd, ['chloc' => static::CAN_TRANSITION_YES]);
+		$app->send($this->fd, ['loc_users' => $app->userRepo->getAllByLoc($to)]);
+		$app->getLoc($this);
 	}
 
 	public function save()
 	{
-		$this->redis->set('SID:' . $this->SID, serialize([
-			'id' 	=> $this->id,
-			'name' 	=> $this->name,
-			'room' 	=> $this->room,
-			'transitionTimeout' 	=> $this->transitionTimeout,
-		]), self::$ttl);
+
+		DB::query("UPDATE users SET loc = ".$this->get('loc')." WHERE id = ?i", $this->get('id'));
 	}
 
 	public function canTransition()
@@ -106,6 +70,18 @@ class User
 
 	public function asString()
 	{
-		return "fd:{$this->fd} SID:{$this->SID} id:{$this->id} name:{$this->name} room:{$this->room}";
+		return "fd:{$this->fd} id:{$this->id} name:{$this->name} loc:{$this->loc}";
+	}
+
+	public function __call($method, $args)
+	{
+		if (preg_match('/^get(.+)/', $method, $matches)) {
+			return $this->attr->{strtolower($matches[1])} ?? null;
+		}
+	}
+
+	private function get($key)
+	{
+		return $this->attr->$key;
 	}
 }

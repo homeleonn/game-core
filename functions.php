@@ -134,11 +134,13 @@ function prepareUri($uri) {
 }
 
 
-function generateToken() {
+function generateToken($userId) {
     global $redis;
 
+    // dd(get_defined_vars());
+
     $token = generateRandomString();
-    $redis->set('socket:' . $token, $_COOKIE['PHPSESSID'], 10);
+    $redis->set('socket:' . $token, $userId, 10);
 
     return $token;
 }

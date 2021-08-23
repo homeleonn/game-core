@@ -3,9 +3,10 @@
 namespace App;
 
 use Core\ServerApp;
-use Core\Socket\Server as WebSocketServer;
+use Core\Socket\Server;
 use Core\Socket\Request;
 use Core\Socket\Frame;
+use Core\Facades\DB;
 use App\Server\Contracts\StoreContract;
 
 class Application {
@@ -14,36 +15,40 @@ class Application {
 
 	private $eventManager; // Event manager connection
 
-	private WebSocketServer $server;
-	public StoreContract $store;
-	private ServerApp $serverApp;
-	public UserRepository $userRepo;
-	public LocRepository $locRepo;
+	private $server;
+	private $store;
+	private $serverApp;
+	public $userRepo;
+	public $locRepo;
+	public $locs = [];
+	public $locsAccess = [];
 
-	public function __construct(WebSocketServer $server, StoreContract $store, ServerApp $serverApp)
+	public function __construct(Server $server, StoreContract $store, ServerApp $serverApp)
 	{
 		$this->server 	= $server;
 		$this->store 	= $store;
-		$this->userRepo = new UserRepository($this);
-		$this->locRepo  = new LocRepository($this);
+		$this->userRepo = new UserRepository($store, $this);
+		$this->locRepo = new LocRepository($this);
+		$this->loadLocs();
+		// print_r($this->locs);
 	}
 
-	public function start(WebSocketServer $server)
+	public function start(Server $server)
 	{
 		cli_set_process_title('FightWorld daemon - php');
 		echo "App start on {$server->getIp()}:{$server->getPort()}. PID: ", getmypid(), "\n";
 	}
 
-	public function open(WebSocketServer $server, Request $request)
+	public function open(Server $server, Request $request)
 	{
-		if (!$userId = $this->parseToken($server, $request)) return;
+		if (!$userSID = $this->parseToken($server, $request)) return;
 
-		$this->addToApp($request->fd, $userId);
+		$this->addToApp($request->fd, $userSID);
 	}
 
-	public function message(WebSocketServer $server, Frame $frame) 
+	public function message(Server $server, Frame $frame) 
 	{
-		// if ($this->isAppManagersMessage($frame)) return;
+		if ($this->isAppManagersMessage($frame)) return;
 		if (!$user = $this->userRepo->findByFd($frame->fd)) return;
 
 		var_dump(date('H:i:s ') . $frame->data . $user);
@@ -68,25 +73,20 @@ class Application {
 
 	public function send(int $fd, $message)
 	{
-		$this->server->push(
-			$fd, 
-			is_array($message) ? json_encode($message) : $message
-		);
+		$this->server->push($fd, is_array($message) ? json_encode($message) : $message);
 	}
 
-	public function close(WebSocketServer $server, int $fd)
+	public function close(Server $server, int $fd)
 	{
 		$this->removeFromApp($fd);
 	}
 
-	public function addToApp($fd, $userId)
+	public function addToApp($fd, $userSID)
 	{
-		if (!$user = $this->userRepo->init($userId)) return;
-
-		// dd($user);
+		if (!$user = $this->userRepo->init($userSID)) return;
 		
-		$this->checkDuplicateConnection($userId);
-		$user = $this->userRepo->add($fd, $user);
+		$this->checkDuplicateConnection($user['id']);
+		$user = $this->userRepo->add($fd, $userSID, $user);
 		$this->locRepo->add($user);
 
 		// users online by loc
@@ -103,6 +103,44 @@ class Application {
 		}
 	}
 
+	private function loadLocs()
+	{
+		$locsBuff = DB::getAll('Select * from locs');
+		$locsAccess = DB::getAll('Select * from locs_access');
+
+		// $locsBuff = \App\Client\Models\Location::all();
+		// $locsAccess = \App\Client\Models\LocationAccess::all();
+
+
+		// collect array access locs by id
+		foreach ($locsAccess as $access) {
+			if (!isset($this->locsAccess[$access->loc_id])) $this->locsAccess[$access->loc_id] = [];
+			$this->locsAccess[$access->loc_id][] = $access->access_loc_id;
+		}
+
+		// locs by id
+		foreach ($locsBuff as $loc) {
+			$this->locs[$loc->id] = $loc;
+			$loc->locs_coords = json_decode($loc->locs_coords);
+		}
+
+		// Bind closest locs and sort them by id
+		foreach ($this->locs as $id => $loc) {
+			// $this->locs[$id]->closest_locs = $this->locsAccess[$id];
+
+			foreach ($this->locsAccess[$id] as $locId) {
+				if (!isset($this->locs[$id]->closest_locs[$this->locs[$locId]->type])) {
+					$this->locs[$id]->closest_locs[$this->locs[$locId]->type] = [];
+				}
+
+				$this->locs[$id]->closest_locs[$this->locs[$locId]->type][$this->locs[$locId]->id] = $this->locs[$locId]->name;
+			}
+			
+		}
+
+		// print_r();
+	}
+
 	public function removeFromApp($fd, $user = null)
 	{
 		if ($user || $user = $this->userRepo->findByFdAndRemove($fd)) {
@@ -110,11 +148,11 @@ class Application {
 		}
 	}
 
-	public function parseToken(WebSocketServer $server, Request $request)
+	public function parseToken(Server $server, Request $request)
 	{
 		$token  = trim($request->client['request_uri'], '/');
 
-		if (!$userId = $this->store->get('socket:' . $token)) {
+		if (!$userSID = $this->store->get('socket:' . $token)) {
 			echo "Invalid token\n";
 			$server->close(null, $request->fd);
 			return false;
@@ -122,7 +160,7 @@ class Application {
 
 		$this->store->del('socket:' . $token);
 
-		return $userId;
+		return $userSID;
 	}
 
 	public function checkDuplicateConnection($userId)

@@ -15,14 +15,15 @@ class HomeController
 
     public function main()
     {
-        // dd(s('room') ?? '');
+        // dd(s('loc') ?? '');
         return view('main');
     }
 
     public function wsToken()
     {
+        // dd(s());
         usleep(500000);
-        echo generateToken();
+        echo generateToken(s('id'));
     }
 
     public function entry()
@@ -39,7 +40,6 @@ class HomeController
     public function login()
     {
         $request = \App::make('request');
-        // dd($request->only(['email', 'password']));
 
         if (Auth::attempt($request->only(['email', 'password']))) {
             return redirect()->route('main');

@@ -202,7 +202,7 @@ class SafeMySQL
 		if ($res = $this->rawQuery($query))
 		{
 			$row = $this->fetch($res);
-			if (is_array($row)) {
+			if (is_array($row) || is_object($row)) {
 				return reset($row);
 			}
 			$this->free($res);

@@ -15,6 +15,7 @@ class Application {
 	}
 
 	message(response) {
+		cl(response.data);
 		switch (response.data) {
 		case DUPLICATE:
 			if (this.isReconnect) {
@@ -45,6 +46,10 @@ class Application {
 
 	open() {
 		// cl(arguments);
+
+		// setTimeout(() => send({debug: true}), 1000);
+		this.send({debug: true});
+		// cl(1, this.send)
 	}
 
 	error() {
