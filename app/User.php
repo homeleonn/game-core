@@ -23,9 +23,9 @@ class User
 		$this->attr->fd = $fd;
 	}
 
-	public function setRoom(int $location): self
+	public function setLoc(int $loc): self
 	{
-		$this->location = $location;
+		$this->loc = $loc;
 		$this->transitionTimeout = time() + self::TRANSITION_TIMEOUT;
 
 		return $this;
@@ -37,20 +37,20 @@ class User
 			return $app->send($this->fd, ['transition_timeout' => null]);
 		}
 
-		if (!$app->roomRepo->chloc($this, $to)) {
+		if (!$app->locRepo->chloc($this, $to)) {
 			return;
 		}
 		
-		$this->setRoom($to)->save(); // Need save user ?
+		$this->setLoc($to)->save(); // Need save user ?
 		$app->send($this->fd, ['chloc' => static::CAN_TRANSITION_YES]);
-		$app->send($this->fd, ['room_users' => $app->userRepo->getAllByRoom($to)]);
-		$app->getLocation($this);
+		$app->send($this->fd, ['loc_users' => $app->userRepo->getAllByLoc($to)]);
+		$app->getLoc($this);
 	}
 
 	public function save()
 	{
 
-		DB::query("UPDATE users SET location = ".$this->get('location')." WHERE id = ?i", $this->get('id'));
+		DB::query("UPDATE users SET loc = ".$this->get('loc')." WHERE id = ?i", $this->get('id'));
 	}
 
 	public function canTransition()
@@ -70,7 +70,7 @@ class User
 
 	public function asString()
 	{
-		return "fd:{$this->fd} id:{$this->id} name:{$this->name} room:{$this->room}";
+		return "fd:{$this->fd} id:{$this->id} name:{$this->name} loc:{$this->loc}";
 	}
 
 	public function __call($method, $args)

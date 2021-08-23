@@ -17,9 +17,9 @@ class UserRepository
 		$this->store = $app->store;
 	}
 
-	public function add(int $fd, $SID, $user)
+	public function add(int $fd, $user)
 	{
-		$this->users[$fd] 	 = new User($this->store, $fd, $SID, $user);
+		$this->users[$fd] 	 = new User($this->store, $fd, $user);
 		$this->userIds[$user->id] = $fd;
 
 		return $this->users[$fd];
@@ -64,7 +64,7 @@ class UserRepository
 
 	private function getUser($userId)
 	{
-		return DB::getRow('SELECT id, login, location, transition_time_left FROM users WHERE id = ?i', $userId);
+		return DB::getRow('SELECT id, login, loc, transition_time_left FROM users WHERE id = ?i', $userId);
 	}
 
 	public function getAll()
@@ -72,11 +72,11 @@ class UserRepository
 		return $this->users;
 	}
 
-	public function getAllByRoom($room)
+	public function getAllByLoc($loc)
 	{
 		$users = [];
 		
-		foreach ($this->app->roomRepo->getRoom($room) as $fd => $dummy) {
+		foreach ($this->app->locRepo->getLoc($loc) as $fd => $dummy) {
 			if ($this->has($fd)) {
 				$users[] = $this->users[$fd];
 			}

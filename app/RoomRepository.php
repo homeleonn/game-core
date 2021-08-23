@@ -4,12 +4,12 @@ namespace App;
 
 use App\Server\Loaders\LocationsLoader;
 
-class RoomRepository
+class LocRepository
 {
 	private $app;
 
-	public $roomsFds;
-	private $roomsAvailable = [
+	public $locsFds;
+	private $locsAvailable = [
 		1 => [2, 3, 4, 5, 6, 7],
 		2 => [1],
 		3 => [1],
@@ -19,35 +19,35 @@ class RoomRepository
 		7 => [1],
 	];
 
-	public array $rooms = [];
-	public array $roomsAccess = [];
+	public array $locs = [];
+	public array $locsAccess = [];
 
 	public function __construct(Application $app)
 	{
 		$this->app = $app;
-		[$this->rooms, $this->roomsAccess] = (new LocationsLoader)->load();
+		[$this->locs, $this->locsAccess] = (new LocationsLoader)->load();
 	}
 
 	public function add($user, $to = null)
 	{
-		$toRoom 	= $to ?: $user->getRoom();
+		$toLoc 	= $to ?: $user->getLoc();
 		$fd 		= $user->getFd();
 		$userId		= $user->getId();
 
-		$this->app->sendToRoom($toRoom, ['room_add' => $user]);
-		$this->roomsFds[$toRoom][$fd] = null;
+		$this->app->sendToLoc($toLoc, ['loc_add' => $user]);
+		$this->locsFds[$toLoc][$fd] = null;
 	}
 
 	public function remove(User $user)
 	{
-		$fromRoom 	= $user->getRoom();
+		$fromLoc 	= $user->getLoc();
 		$fd 		= $user->getFd();
 		$userId		= $user->getId();
 
-		if (isset($this->roomsFds[$fromRoom]) && array_key_exists($fd, $this->roomsFds[$fromRoom])) {
-			unset($this->roomsFds[$fromRoom][$fd]);
+		if (isset($this->locsFds[$fromLoc]) && array_key_exists($fd, $this->locsFds[$fromLoc])) {
+			unset($this->locsFds[$fromLoc][$fd]);
 
-			$this->app->sendToRoom($fromRoom, ['room_leave' => ['id' => $user->getId()]]);
+			$this->app->sendToLoc($fromLoc, ['loc_leave' => ['id' => $user->getId()]]);
 
 			return true;
 		}
@@ -55,18 +55,18 @@ class RoomRepository
 		return false;
 	}
 
-	public function getRoom(int $roomId)
+	public function getLoc(int $locId)
 	{
-		return $this->roomsFds[$roomId] ?? [];
+		return $this->locsFds[$locId] ?? [];
 	}
 
-	public function chroom(User $user, int $to)
+	public function chloc(User $user, int $to)
 	{
-		$from 		= $user->getRoom();
+		$from 		= $user->getLoc();
 		$fd 		= $user->getFd();
 
-		if (!$this->checkChangeRoom($from, $to)) {
-			$this->app->send($fd, ['chroom' => 0]);
+		if (!$this->checkChangeLoc($from, $to)) {
+			$this->app->send($fd, ['chloc' => 0]);
 			return false;
 		}
 
@@ -77,11 +77,11 @@ class RoomRepository
 		return true;
 	}
 
-	public function checkChangeRoom(int $from, int $to)
+	public function checkChangeLoc(int $from, int $to)
 	{
-		if (isset($this->roomsAvailable[$from]) && 
-			isset($this->roomsAvailable[$to]) && 
-			array_search($to, $this->roomsAvailable[$from]) !== false) 
+		if (isset($this->locsAvailable[$from]) && 
+			isset($this->locsAvailable[$to]) && 
+			array_search($to, $this->locsAvailable[$from]) !== false) 
 		{
 			return true;
 		}

@@ -18,14 +18,14 @@ class Application {
 	public StoreContract $store;
 	private ServerApp $serverApp;
 	public UserRepository $userRepo;
-	public RoomRepository $roomRepo;
+	public LocRepository $locRepo;
 
 	public function __construct(WebSocketServer $server, StoreContract $store, ServerApp $serverApp)
 	{
 		$this->server 	= $server;
 		$this->store 	= $store;
 		$this->userRepo = new UserRepository($this);
-		$this->roomRepo = new RoomRepository($this);
+		$this->locRepo  = new LocRepository($this);
 	}
 
 	public function start(WebSocketServer $server)
@@ -57,11 +57,11 @@ class Application {
 		break;
 
 		case 'message':
-			$this->messageToRoom($user, $data[$type]);
+			$this->messageToLoc($user, $data[$type]);
 		break;
 
-		case 'chroom':
-			$user->chroom((int)$data[$type], $this);
+		case 'chloc':
+			$user->chloc((int)$data[$type], $this);
 		break;
 		}
 	}
@@ -87,26 +87,26 @@ class Application {
 		
 		$this->checkDuplicateConnection($userId);
 		$user = $this->userRepo->add($fd, $user);
-		$this->roomRepo->add($user);
+		$this->locRepo->add($user);
 
-		// users online by room
-		$this->send($fd, ['room_users' => array_values($this->userRepo->getAllByRoom($user->getRoom()))]);
+		// users online by loc
+		$this->send($fd, ['loc_users' => array_values($this->userRepo->getAllByLoc($user->getLoc()))]);
 
-		$this->getRoom($user);
+		$this->getLoc($user);
 	}
 
-	// current room data
-	public function getRoom($user)
+	// current loc data
+	public function getLoc($user)
 	{
-		if ($room = $this->rooms[$user->getRoom()] ?? null) {
-			$this->send($user->getFd(), ['room' => $room]);
+		if ($loc = $this->locs[$user->getLoc()] ?? null) {
+			$this->send($user->getFd(), ['loc' => $loc]);
 		}
 	}
 
 	public function removeFromApp($fd, $user = null)
 	{
 		if ($user || $user = $this->userRepo->findByFdAndRemove($fd)) {
-			$this->roomRepo->remove($user);
+			$this->locRepo->remove($user);
 		}
 	}
 
@@ -154,9 +154,9 @@ class Application {
 		}
 	}
 
-	private function messageToRoom($user, $text)
+	private function messageToLoc($user, $text)
 	{
-		$this->sendToRoom($user->getRoom(), [
+		$this->sendToLoc($user->getLoc(), [
 			'message' => [
 				'from' => $user->getName(),
 				'to' => null,
@@ -165,15 +165,15 @@ class Application {
 		]);
 	}
 
-	public function sendToRoom($roomId, $message)
+	public function sendToLoc($locId, $message)
 	{
-		if (!$roomUsersFds = $this->roomRepo->getRoom($roomId)) return;
+		if (!$locUsersFds = $this->locRepo->getLoc($locId)) return;
 
 		if (is_array($message)) {
 			$message = json_encode($message);
 		}
 
-		foreach ($roomUsersFds as $fd => $dummy) {
+		foreach ($locUsersFds as $fd => $dummy) {
 			$this->server->push($fd, $message);
 		}
 	}

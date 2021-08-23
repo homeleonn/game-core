@@ -19,18 +19,18 @@ class Application {
 	private $store;
 	private $serverApp;
 	public $userRepo;
-	public $roomRepo;
-	public $locations = [];
-	public $locationsAccess = [];
+	public $locRepo;
+	public $locs = [];
+	public $locsAccess = [];
 
 	public function __construct(Server $server, StoreContract $store, ServerApp $serverApp)
 	{
 		$this->server 	= $server;
 		$this->store 	= $store;
 		$this->userRepo = new UserRepository($store, $this);
-		$this->roomRepo = new RoomRepository($this);
-		$this->loadLocations();
-		// print_r($this->locations);
+		$this->locRepo = new LocRepository($this);
+		$this->loadLocs();
+		// print_r($this->locs);
 	}
 
 	public function start(Server $server)
@@ -62,11 +62,11 @@ class Application {
 		break;
 
 		case 'message':
-			$this->messageToRoom($user, $data[$type]);
+			$this->messageToLoc($user, $data[$type]);
 		break;
 
-		case 'chroom':
-			$user->chroom((int)$data[$type], $this);
+		case 'chloc':
+			$user->chloc((int)$data[$type], $this);
 		break;
 		}
 	}
@@ -87,53 +87,53 @@ class Application {
 		
 		$this->checkDuplicateConnection($user['id']);
 		$user = $this->userRepo->add($fd, $userSID, $user);
-		$this->roomRepo->add($user);
+		$this->locRepo->add($user);
 
-		// users online by room
-		$this->send($fd, ['room_users' => array_values($this->userRepo->getAllByRoom($user->getRoom()))]);
+		// users online by loc
+		$this->send($fd, ['loc_users' => array_values($this->userRepo->getAllByLoc($user->getLoc()))]);
 
-		$this->getLocation($user);
+		$this->getLoc($user);
 	}
 
-	// current location data
-	public function getLocation($user)
+	// current loc data
+	public function getLoc($user)
 	{
-		if ($location = $this->locations[$user->getRoom()] ?? null) {
-			$this->send($user->getFd(), ['location' => $location]);
+		if ($loc = $this->locs[$user->getLoc()] ?? null) {
+			$this->send($user->getFd(), ['loc' => $loc]);
 		}
 	}
 
-	private function loadLocations()
+	private function loadLocs()
 	{
-		$locationsBuff = DB::getAll('Select * from locations');
-		$locationsAccess = DB::getAll('Select * from locations_access');
+		$locsBuff = DB::getAll('Select * from locs');
+		$locsAccess = DB::getAll('Select * from locs_access');
 
-		// $locationsBuff = \App\Client\Models\Location::all();
-		// $locationsAccess = \App\Client\Models\LocationAccess::all();
+		// $locsBuff = \App\Client\Models\Location::all();
+		// $locsAccess = \App\Client\Models\LocationAccess::all();
 
 
-		// collect array access locations by id
-		foreach ($locationsAccess as $access) {
-			if (!isset($this->locationsAccess[$access->loc_id])) $this->locationsAccess[$access->loc_id] = [];
-			$this->locationsAccess[$access->loc_id][] = $access->access_loc_id;
+		// collect array access locs by id
+		foreach ($locsAccess as $access) {
+			if (!isset($this->locsAccess[$access->loc_id])) $this->locsAccess[$access->loc_id] = [];
+			$this->locsAccess[$access->loc_id][] = $access->access_loc_id;
 		}
 
-		// locations by id
-		foreach ($locationsBuff as $location) {
-			$this->locations[$location->id] = $location;
-			$location->locations_coords = json_decode($location->locations_coords);
+		// locs by id
+		foreach ($locsBuff as $loc) {
+			$this->locs[$loc->id] = $loc;
+			$loc->locs_coords = json_decode($loc->locs_coords);
 		}
 
-		// Bind closest locations and sort them by id
-		foreach ($this->locations as $id => $location) {
-			// $this->locations[$id]->closest_locations = $this->locationsAccess[$id];
+		// Bind closest locs and sort them by id
+		foreach ($this->locs as $id => $loc) {
+			// $this->locs[$id]->closest_locs = $this->locsAccess[$id];
 
-			foreach ($this->locationsAccess[$id] as $locationId) {
-				if (!isset($this->locations[$id]->closest_locations[$this->locations[$locationId]->type])) {
-					$this->locations[$id]->closest_locations[$this->locations[$locationId]->type] = [];
+			foreach ($this->locsAccess[$id] as $locId) {
+				if (!isset($this->locs[$id]->closest_locs[$this->locs[$locId]->type])) {
+					$this->locs[$id]->closest_locs[$this->locs[$locId]->type] = [];
 				}
 
-				$this->locations[$id]->closest_locations[$this->locations[$locationId]->type][$this->locations[$locationId]->id] = $this->locations[$locationId]->name;
+				$this->locs[$id]->closest_locs[$this->locs[$locId]->type][$this->locs[$locId]->id] = $this->locs[$locId]->name;
 			}
 			
 		}
@@ -144,7 +144,7 @@ class Application {
 	public function removeFromApp($fd, $user = null)
 	{
 		if ($user || $user = $this->userRepo->findByFdAndRemove($fd)) {
-			$this->roomRepo->remove($user);
+			$this->locRepo->remove($user);
 		}
 	}
 
@@ -192,9 +192,9 @@ class Application {
 		}
 	}
 
-	private function messageToRoom($user, $text)
+	private function messageToLoc($user, $text)
 	{
-		$this->sendToRoom($user->getRoom(), [
+		$this->sendToLoc($user->getLoc(), [
 			'message' => [
 				'from' => $user->getName(),
 				'to' => null,
@@ -203,15 +203,15 @@ class Application {
 		]);
 	}
 
-	public function sendToRoom($roomId, $message)
+	public function sendToLoc($locId, $message)
 	{
-		if (!$roomUsersFds = $this->roomRepo->getRoom($roomId)) return;
+		if (!$locUsersFds = $this->locRepo->getLoc($locId)) return;
 
 		if (is_array($message)) {
 			$message = json_encode($message);
 		}
 
-		foreach ($roomUsersFds as $fd => $dummy) {
+		foreach ($locUsersFds as $fd => $dummy) {
 			$this->server->push($fd, $message);
 		}
 	}

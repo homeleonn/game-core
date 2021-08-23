@@ -2,7 +2,7 @@
 
 namespace App;
 
-class Room
+class Loc
 {
 	
 }

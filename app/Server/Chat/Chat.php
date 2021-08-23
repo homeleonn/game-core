@@ -57,37 +57,37 @@ class Chat {
 
 		case 'message':
 			$message = $data[$type];
-			$this->messageToRoom($user, $message);
+			$this->messageToLoc($user, $message);
 		break;
 
 		case 'subscribe':
-			$room = $data[$type];
-			$this->subscribe($user, $room);
+			$loc = $data[$type];
+			$this->subscribe($user, $loc);
 		break;
 		}
 	}
 
-	private function subscribe($user, $room = false)
+	private function subscribe($user, $loc = false)
 	{
-		// $canSubscribeThisChannel = DB::getOne('Select id from users where id = ?i and location = ?i', $user['id'], $room);
+		// $canSubscribeThisChannel = DB::getOne('Select id from users where id = ?i and loc = ?i', $user['id'], $loc);
 
 
 		// if ($canSubscribeThisChannel) {
-		// 	$usersById[$user['id']]['channel'] == $room;
-		// 	$usersByFd[$user['fd']]['channel'] == $room;
-		// 	$this->channels[$room][] = $user['fd'];
+		// 	$usersById[$user['id']]['channel'] == $loc;
+		// 	$usersByFd[$user['fd']]['channel'] == $loc;
+		// 	$this->channels[$loc][] = $user['fd'];
 		// }
 
 		// dd($user);
-		$userLocation = DB::getOne('Select location from users where id = ?i', $user['id']);
-		// dd($userLocation);
-		if (!isset($this->channels[$userLocation])) $this->channels[$userLocation] = [];
-		$this->channels[$userLocation][] = $user['fd'];
+		$userLoc = DB::getOne('Select loc from users where id = ?i', $user['id']);
+		// dd($userLoc);
+		if (!isset($this->channels[$userLoc])) $this->channels[$userLoc] = [];
+		$this->channels[$userLoc][] = $user['fd'];
 	}
 
-	private function getUserLocationId($userId)
+	private function getUserLocId($userId)
 	{
-		return DB::getOne('Select location from users where id = ?i', $userId);
+		return DB::getOne('Select loc from users where id = ?i', $userId);
 	}
 
 	public function send(int $fd, $message)
@@ -164,10 +164,10 @@ class Chat {
 		$this->send($userFd, ['exit' => false]);
 	}
 
-	private function messageToRoom($user, $text)
+	private function messageToLoc($user, $text)
 	{
-		if ($channel = $this->getUserLocationId($user['id'])) {
-			$this->sendToRoom($channel, [
+		if ($channel = $this->getUserLocId($user['id'])) {
+			$this->sendToLoc($channel, [
 				'message' => [
 					'from' => $user['id'],
 					'to' => null,
@@ -177,16 +177,16 @@ class Chat {
 		}
 	}
 
-	public function sendToRoom($roomId, $message)
+	public function sendToLoc($locId, $message)
 	{
-		if (!$roomUsersFds = $this->channels[$roomId]) return;
-		// dd($this->channels, $roomUsersFds);
+		if (!$locUsersFds = $this->channels[$locId]) return;
+		// dd($this->channels, $locUsersFds);
 
 		if (is_array($message)) {
 			$message = json_encode($message);
 		}
 
-		foreach ($roomUsersFds as $fd => $dummy) {
+		foreach ($locUsersFds as $fd => $dummy) {
 			$this->server->push($dummy, $message);
 		}
 	}

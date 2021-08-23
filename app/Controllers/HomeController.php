@@ -15,7 +15,7 @@ class HomeController
 
     public function main()
     {
-        // dd(s('room') ?? '');
+        // dd(s('loc') ?? '');
         return view('main');
     }
 
