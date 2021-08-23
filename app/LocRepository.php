@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\Server\Loaders\LocationsLoader;
+use App\Server\Loaders\LocLoader;
 
 class LocRepository
 {
