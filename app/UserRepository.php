@@ -20,7 +20,7 @@ class UserRepository
 	public function add(int $fd, $SID, $user)
 	{
 		$this->users[$fd] 	 = new User($this->store, $fd, $SID, $user);
-		$this->userIds[$user['id']] = $fd;
+		$this->userIds[$user->id] = $fd;
 
 		return $this->users[$fd];
 	}

@@ -48,7 +48,7 @@ class LocationsLoader
 	// Bind closest locations and sort them by id
 	public function setClosestLocations($locations, $locationsAccess)
 	{
-		foreach ($this->locations as $id => $location) {
+		foreach ($locations as $id => $location) {
 			foreach ($locationsAccess[$id] as $locationId) {
 				if (!isset($locations[$id]->closest_locations[$locations[$locationId]->type])) {
 					$locations[$id]->closest_locations[$locations[$locationId]->type] = [];
@@ -57,5 +57,7 @@ class LocationsLoader
 				$locations[$id]->closest_locations[$locations[$locationId]->type][$locations[$locationId]->id] = $locations[$locationId]->name;
 			}
 		}
+
+		return $locations;
 	}
 }

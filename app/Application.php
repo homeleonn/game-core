@@ -15,7 +15,7 @@ class Application {
 	private $eventManager; // Event manager connection
 
 	private WebSocketServer $server;
-	private StoreContract $store;
+	public StoreContract $store;
 	private ServerApp $serverApp;
 	public UserRepository $userRepo;
 	public RoomRepository $roomRepo;
@@ -43,7 +43,7 @@ class Application {
 
 	public function message(WebSocketServer $server, Frame $frame) 
 	{
-		if ($this->isAppManagersMessage($frame)) return;
+		// if ($this->isAppManagersMessage($frame)) return;
 		if (!$user = $this->userRepo->findByFd($frame->fd)) return;
 
 		var_dump(date('H:i:s ') . $frame->data . $user);
@@ -68,7 +68,10 @@ class Application {
 
 	public function send(int $fd, $message)
 	{
-		$this->server->push($fd, is_array($message) ? json_encode($message) : $message);
+		$this->server->push(
+			$fd, 
+			is_array($message) ? json_encode($message) : $message
+		);
 	}
 
 	public function close(WebSocketServer $server, int $fd)
@@ -79,6 +82,8 @@ class Application {
 	public function addToApp($fd, $userId)
 	{
 		if (!$user = $this->userRepo->init($userId)) return;
+
+		// dd($user);
 		
 		$this->checkDuplicateConnection($userId);
 		$user = $this->userRepo->add($fd, $user);
