@@ -363,7 +363,6 @@ function transition(locationId = null) {
 	app.loc = function(response) {
 		$location.children('.name').text(response.name);
 		app.$locName.text(response.name);
-		cl(response.image);
 		$location.children('.map')
 			.on('load', () => {load = true;$loader.removeClass('icon-spin3');})
 			.attr('src', response.image == null ? 'img/other/no-image.png' : 'img/locations/' + response.image);
@@ -384,7 +383,6 @@ function drawLocationsBorders($svg, locations) {
 }
 
 function drawSelectLocations(select) {
-	console.log(select);
 	$('.location-block').hide();
 	for (block in select) {
 		let $block = $(`.location-block.${block}s`);

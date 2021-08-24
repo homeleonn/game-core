@@ -15,7 +15,7 @@ class Application {
 	}
 
 	message(response) {
-		cl(response.data);
+		// cl(response.data);
 		switch (response.data) {
 		case DUPLICATE:
 			if (this.isReconnect) {
@@ -30,7 +30,7 @@ class Application {
 
 		let data = JSON.parse(response.data);
 		
-		console.log(data);
+		// console.log(data);
 
 		//['error', 'exit', 'chloc']
 		let action = Object.keys(data)[0], callback;
@@ -45,10 +45,10 @@ class Application {
 	}
 
 	open() {
-		cl(arguments);
+		// cl(arguments);
 
 		// setTimeout(() => send({debug: true}), 1000);
-		this.send({debug: true});
+		// this.send({debug: true});
 		// cl(1, this.send)
 	}
 
@@ -91,6 +91,7 @@ class Application {
 
     me(user) {
     	window.user = new User(this, user);
+    	_('.info .login').text(`${user.login}[${user.level}]`);
     }
 
     setLocUsersCount(count) {

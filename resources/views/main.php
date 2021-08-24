@@ -15,7 +15,7 @@
 			<div class="info">
 				<div class="align"><img src="img/aligns/99.gif"></div>
 				<div class="clan"><img src="img/clans/developers.png"></div>
-				<div class="login"><?=s('name')?>[0]</div>
+				<div class="login"></div>
 			</div>	
 			<div class="hp-wrapper">
 				<div class="hp-back">
