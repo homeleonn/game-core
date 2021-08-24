@@ -1,6 +1,6 @@
 let server = new WSocket(`ws://${host}:${port}`);
 let app = new Application(server);	
-user = new User(app, user);
+// user = new User(app, user);
 
 connectToWSServer();
 function connectToWSServer() {
@@ -9,8 +9,8 @@ function connectToWSServer() {
 
 let $message 		= _('.message');
 let $messages 		= _('#messages');
-let $roomIdTextInput= _('#current-room');
-let $roomButtons 	= _(`fieldset button`);
+let $locIdTextInput = _('#current-loc');
+let $locButtons 	= _(`fieldset button`);
 let $debug 			= _(`#debug`);
 let $reconnect 		= _(`#reconnect`);
 
@@ -232,18 +232,18 @@ function LSsetIfNotExists(key, value, forceSet = false) {
 
 // Chat context menu
 (() => {
-	$('#messages, #room-users').on('contextmenu', '.name', contextMenu());
+	$('#messages, #loc-users').on('contextmenu', '.login', contextMenu());
 
 	function contextMenu() {
 		$('body').append(`<div class="context-menu">
-			<div class="name">.</div>
+			<div class="login">.</div>
 			<div class="info">Инфо</div>
 			<div class="prv-msg">Приват</div>
 			<div class="trade">Торговать</div>
 		</div>`);
 
 		let $contextMenu = $('.context-menu');
-		let $name = $contextMenu.find('.name');
+		let $login = $contextMenu.find('.login');
 
 		function removeClickListener() {
 			$contextMenu.hide();
@@ -279,11 +279,11 @@ function LSsetIfNotExists(key, value, forceSet = false) {
 	// }
 
 
-	// let $room = $('#room-users');
+	// let $loc = $('#loc-users');
 	// i = 20;
 
 	// while (i--) {
-	// 	$room.append(`<div class="user">
+	// 	$loc.append(`<div class="user">
 	// 		<div>
 	// 			<img src="img/chat/prv_but.png" class="prv-msg" title="Отправить приватное сообщение">
 	// 		</div>
@@ -342,8 +342,8 @@ function transition(locationId = null) {
 	if (firstStep) {
 		firstStep = false;
 	} else {
-		user.chroom(locationId, response => {
-			if (response !== user.CHROOM_ALLOWED) return;
+		user.chloc(locationId, response => {
+			if (response !== user.CHLOC_ALLOWED) return;
 
 			setTimeout(() => {
 				if (!load) {
@@ -353,21 +353,22 @@ function transition(locationId = null) {
 
 			walk(0, 0);
 			// walk(10, 10);
-			// $roomButtons.removeAttr('disabled');
+			// $locButtons.removeAttr('disabled');
 			// _(this).attr('disabled', true);
-			// $roomIdTextInput.text(toRoom);
+			// $locIdTextInput.text(toLoc);
 		});
 	}
 	
 
-	app.location = function(response) {
+	app.loc = function(response) {
 		$location.children('.name').text(response.name);
-		app.$roomName.text(response.name);
+		app.$locName.text(response.name);
+		cl(response.image);
 		$location.children('.map')
 			.on('load', () => {load = true;$loader.removeClass('icon-spin3');})
-			.attr('src', 'img/locations/' + response.image);
-		drawSelectLocations(response.closest_locations);
-		drawLocationsBorders($svg, response.locations_coords);
+			.attr('src', response.image == null ? 'img/other/no-image.png' : 'img/locations/' + response.image);
+		drawSelectLocations(response.closest_locs);
+		drawLocationsBorders($svg, response.loc_coords);
 		// console.log(response);
 	}
 }

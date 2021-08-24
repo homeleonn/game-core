@@ -13,10 +13,10 @@ class WSocket
 
 	connectViaToken() {
 		$.get('/wsToken', res => {
-			this.token = '/' + res;
 	 		if (res == 'error') {
 	 			throw new Error('Session error');
 	 		} else {
+				this.token = '/' + res;
 	 			this.connect();
 	 		}
 	 	});

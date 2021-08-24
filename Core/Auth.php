@@ -19,7 +19,7 @@ class Auth
 	{
 		if (!isset($data[$this->auth]) || !isset($data['password'])) return false;
 		// $users = json_decode(file_get_contents(resources('db.txt')));
-		[$user] = DB::getAll('Select id, password, login, location, transition_time_left from users where email = ?s', $data[$this->auth]);
+		$user = DB::getRow('SELECT id, password FROM users WHERE email = ?s', $data[$this->auth]);
 		// $user = User::where('email', $data[$this->auth])->select('id', 'password', 'login', 'location', 'transition_time_left')->first();
 
 		// dd($user);
@@ -28,9 +28,9 @@ class Auth
 		if (!$user || !password_verify($data['password'], $user->password)) return false;
 
 		s('id', $user->id);
-		s('name', $user->login);
-		s('room', $user->location);
-		s('transitionTimeout', $user->transition_time_left);
+		// s('name', $user->login);
+		// s('room', $user->location);
+		// s('transitionTimeout', $user->transition_time_left);
 
 		return true;
 	}

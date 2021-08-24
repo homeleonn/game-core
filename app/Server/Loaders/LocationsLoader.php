@@ -3,23 +3,23 @@
 namespace App\Server\Loaders;
 
 use DB;
-use Core\Common;
+use Core\Helpers\Common;
 
 class LocationsLoader
 {
 	public function load()
 	{
-		$locs 			= DB::getAll('Select * from locations');
-		// $locsAccess 	= DB::getAll('Select * from locations_access');
+		$locs = DB::getAll('Select * from locations');
+		
+		$locs = Common::itemsOnKeys($locs, ['id'], function($loc) {
+			array_map(function($key) use ($loc) {
+				$loc->{$key} = json_decode($loc->{$key});
+			}, ['loc_coords', 'loc_access']);
+		});
 
-		// $locs 			= $this->setLocsById($locs);
-		$locsById 			= Common::itemsOnKeys($locs, ['id']);
-		// $locsAccess 	= $this->setLocsAccess($locsAccess);
-		$locsAccess 	= $this->setLocsAccess1($locs);
+		$this->setClosestLocs1($locs);
 
-		// $locs 			= $this->setClosestLocs($locs, $locsAccess);
-
-		return [$locsById, $locsAccess];
+		return $locs;
 		
 	}
 
@@ -36,16 +36,27 @@ class LocationsLoader
 	}
 	
 	// collect array access locs by id
-	public function setLocsAccess($rawLocsAccess)
+	public function setClosestLocs1($locs)
 	{
-		$locsAccess = [];
+		foreach ($locs as $loc) {
+			foreach ($loc->loc_access as $locId) {
+				if (!isset($loc->closest_locs[$locs[$locId]->type])) {
+					// $loc->closest_locs = [];
+					$loc->closest_locs[$locs[$locId]->type] = [];
+				}
 
-		foreach ($rawLocsAccess as $access) {
-			if (!isset($locsAccess[$access->loc_id])) $locsAccess[$access->loc_id] = [];
-			$locsAccess[$access->loc_id][] = $access->access_loc_id;
+				$loc->closest_locs[$locs[$locId]->type][$locId] = $locs[$locId]->name;
+			}
 		}
+		
+		// $locsAccess = [];
 
-		return $locsAccess;
+		// foreach ($rawLocsAccess as $access) {
+		// 	if (!isset($locsAccess[$access->loc_id])) $locsAccess[$access->loc_id] = [];
+		// 	$locsAccess[$access->loc_id][] = $access->access_loc_id;
+		// }
+
+		// return $locsAccess;
 	}
 
 	// collect array access locs by id

@@ -4,10 +4,10 @@ class Application {
 	constructor(server) {
 		this.server = server;
 		this.$messages = _('#messages');
-		this.$room = _('#room-users');
-		this.$roomName = _('#location-caption > .name');
-		this.$roomUsersCount = _('#location-caption > .count');
-		this.roomUsersCount = 0;
+		this.$loc = _('#loc-users');
+		this.$locName = _('#location-caption > .name');
+		this.$locUsersCount = _('#location-caption > .count');
+		this.locUsersCount = 0;
 		this.init = false;
 		this.isReconnect = false;
 		this.callbacks = [];
@@ -32,7 +32,7 @@ class Application {
 		
 		console.log(data);
 
-		//['error', 'exit', 'chroom']
+		//['error', 'exit', 'chloc']
 		let action = Object.keys(data)[0], callback;
 		if (action != 'message') {
 			callback = this.callbacks[action] || this[action];
@@ -45,7 +45,7 @@ class Application {
 	}
 
 	open() {
-		// cl(arguments);
+		cl(arguments);
 
 		// setTimeout(() => send({debug: true}), 1000);
 		this.send({debug: true});
@@ -68,41 +68,45 @@ class Application {
     	this.server.send(data);
     }
 
-    chroom(toRoom, callback = null) {
-    	if (callback) this.callbacks['chroom'] = callback;
-    	this.send({chroom: toRoom});
+    chloc(toLoc, callback = null) {
+    	if (callback) this.callbacks['chloc'] = callback;
+    	this.send({chloc: toLoc});
     }
 
-    room_add(user) {
+    loc_add(user) {
     	this.userAdd(user)
-    	this.setRoomUsersCount(++this.roomUsersCount);
+    	this.setLocUsersCount(++this.locUsersCount);
     }
 
-    room_leave(user) {
+    loc_leave(user) {
     	_(`#user-${user.id}`).remove();
-    	this.setRoomUsersCount(--this.roomUsersCount);
+    	this.setLocUsersCount(--this.locUsersCount);
     }
 
-    room_users(users) {
-    	this.setRoomUsersCount(this.roomUsersCount = users.length);
-    	this.$room.html('');
+    loc_users(users) {
+    	this.setLocUsersCount(this.locUsersCount = users.length);
+    	this.$loc.html('');
     	users.forEach(this.userAdd.bind(this));
     }
 
-    setRoomUsersCount(count) {
-    	this.$roomUsersCount.text(count);
+    me(user) {
+    	window.user = new User(this, user);
+    }
+
+    setLocUsersCount(count) {
+    	this.$locUsersCount.text(count);
     }
 
     userAdd(user) {
-    	this.$room.append( `<div class="user" id="user-${user.id}">
+    	this.$loc.append( `<div class="user" id="user-${user.id}">
 			<div>
 				<img src="img/chat/prv_but.png" class="prv-msg" title="Отправить приватное сообщение">
 			</div>
 			<div>
 				<img src="img/clans/grandparents.png" class="clan" title="Прародители">
 			</div>
-			<div class="name-wrapper">
-				<span class="name">${user.name}</span>
+			<div class="login-wrapper">
+				<span class="login">${user.login}</span>
 				<span class="level">[0]</span>
 			</div>
 			<div>

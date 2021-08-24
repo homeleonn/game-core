@@ -73,13 +73,13 @@
 		<div id="chat">
 			<div class="flex">
 				<div id="messages"></div>
-				<div id="chat-room">
+				<div id="chat-loc">
 					<div id="location-caption">
 						<span class="name">...</span>
 						(<span class="count">...</span>)
 						<!-- <span class="update icon-spin3" title="Обновить"></span> -->
 					</div>
-					<div id="room-users"></div>
+					<div id="loc-users"></div>
 				</div>
 			</div>
 			<div id="bottom-panel">
@@ -101,12 +101,6 @@
 	<script src="js/Application.js"></script>
 	<script src="js/User.js"></script>
 	<script>
-		let user = {
-			name: '<?=s('name')?>',
-			room: <?=s('room') ?: "''"?>,
-			transitionTimeout: <?=s('transitionTimeout') ?: "''"?>,
-		};
-
 		const host = '<?=Config::get('host')?>';
 		const port = '<?=Config::get('port')?>';
 	</script>

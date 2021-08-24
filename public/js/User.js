@@ -1,14 +1,16 @@
 class User {
-	constructor(app, name, room) {
+	constructor(app, user) {
 		this.app = app;
-		this.name = user.name;
-		this.room = user.room;
-		this.transitionTimeout = user.transitionTimeout;
-		this.CHROOM_ALLOWED = 1;
-		this.CHROOM_DENIED = 0;
+		this.id = user.id;
+		this.login = user.login;
+		this.level = user.level;
+		this.loc = user.loc;
+		this.trans_timeout = user.trans_timeout;
+		this.CHLOC_ALLOWED = 1;
+		this.CHLOC_DENIED = 0;
 	}
 
-	chroom(toRoom, callback = null) {
-    	this.app.chroom(toRoom, callback);
+	chloc(toLoc, callback = null) {
+    	this.app.chloc(toLoc, callback);
     }
 }

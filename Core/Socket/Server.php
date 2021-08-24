@@ -92,7 +92,7 @@ class Server
 
 	public function push($fd, $message)
 	{
-		if (!$this->fds[$fd]) {
+		if (!isset($this->fds[$fd])) {
 			// var_dump(debug_backtrace());
 			echo "Connection null", __LINE__, "\n";return;
 

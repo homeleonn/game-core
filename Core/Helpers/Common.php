@@ -1,8 +1,12 @@
 <?php
 
+namespace Core\Helpers;
+
+use Closure;
+
 class Common
 {
-	public function itemsOnKeys($items, $keys){
+	public static function itemsOnKeys($items, $keys, Closure $cb = null){
 		if(!is_array($items)){
 			throw new \Exception('Argument $items not array');
 		}
@@ -12,11 +16,11 @@ class Common
 		$itemsOnKey = [];
 		foreach($items as $item){
 			foreach($keys as $k => $key){
-				// dd($item, $key);
 				if(!isset($item->{$key})){
 					throw new \Exception('Key \'' . $key . '\' is not exists');
 				}
-				$itemsOnKey[$item->{$key}][] = $item;
+				if ($cb) $cb($item);
+				$itemsOnKey[$item->{$key}] = $item;
 			}
 		}
 		if(empty($itemsOnKey)) return false;

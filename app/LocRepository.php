@@ -2,47 +2,32 @@
 
 namespace App;
 
-use App\Server\Loaders\LocLoader;
+use App\Server\Loaders\LocationsLoader;
 
 class LocRepository
 {
-	private $app;
-
-	public $locsFds;
-	private $locsAvailable = [
-		1 => [2, 3, 4, 5, 6, 7],
-		2 => [1],
-		3 => [1],
-		4 => [1],
-		5 => [1],
-		6 => [1],
-		7 => [1],
-	];
-
+	private Application $app;
+	public array $locsFds;
 	public array $locs = [];
-	public array $locsAccess = [];
 
 	public function __construct(Application $app)
 	{
 		$this->app = $app;
-		[$this->locs, $this->locsAccess] = (new LocationsLoader)->load();
+		$this->locs = (new LocationsLoader)->load();
 	}
 
-	public function add($user, $to = null)
+	public function addUser($user, $to = null)
 	{
-		$toLoc 	= $to ?: $user->getLoc();
-		$fd 		= $user->getFd();
-		$userId		= $user->getId();
+		[$toLoc, $fd, $userId] = $this->getUserData($user);
+		$to = $to ?? $toLoc;
 
-		$this->app->sendToLoc($toLoc, ['loc_add' => $user]);
-		$this->locsFds[$toLoc][$fd] = null;
+		$this->app->sendToLoc($to, ['loc_add' => $user->show()]);
+		$this->locsFds[$to][$fd] = null;
 	}
 
-	public function remove(User $user)
+	public function removeUser(User $user)
 	{
-		$fromLoc 	= $user->getLoc();
-		$fd 		= $user->getFd();
-		$userId		= $user->getId();
+		[$fromLoc, $fd, $userId] = $this->getUserData($user);//d($this->getUserData($user));
 
 		if (isset($this->locsFds[$fromLoc]) && array_key_exists($fd, $this->locsFds[$fromLoc])) {
 			unset($this->locsFds[$fromLoc][$fd]);
@@ -55,9 +40,22 @@ class LocRepository
 		return false;
 	}
 
+	public function getUserData($user)
+	{
+		return [$user->getLoc(), $user->getFd(), $user->getId()];
+	}
+
 	public function getLoc(int $locId)
 	{
 		return $this->locsFds[$locId] ?? [];
+	}
+
+	// current loc data
+	public function sendLoc($user)
+	{
+		if ($loc = $this->locs[$user->getLoc()] ?? null) {
+			$this->app->send($user->getFd(), ['loc' => $loc]);
+		}
 	}
 
 	public function chloc(User $user, int $to)
@@ -70,8 +68,8 @@ class LocRepository
 			return false;
 		}
 
-		if ($this->remove($user)) {
-			$this->add($user, $to);
+		if ($this->removeUser($user)) {
+			$this->addUser($user, $to);
 		}
 
 		return true;
@@ -79,9 +77,9 @@ class LocRepository
 
 	public function checkChangeLoc(int $from, int $to)
 	{
-		if (isset($this->locsAvailable[$from]) && 
-			isset($this->locsAvailable[$to]) && 
-			array_search($to, $this->locsAvailable[$from]) !== false) 
+		if (isset($this->locs[$from]) && 
+			isset($this->locs[$to]) && 
+			array_search($to, $this->locs[$from]->loc_access) !== false) 
 		{
 			return true;
 		}

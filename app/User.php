@@ -10,12 +10,11 @@ class User
 	const CAN_TRANSITION_NO = 0;
 	const TRANSITION_TIMEOUT = 0;
 
-	private StoreContract$store;
+	private StoreContract $store;
 	private int $fd;
-	private array $attr = [];
-	private static int $ttl = 1800;
+	private object $attr;
 
-	public function __construct(StoreContract $store, int $fd, array $user)
+	public function __construct(StoreContract $store, int $fd, object $user)
 	{
 		$this->store 	= $store;
 		$this->fd 		= $fd;
@@ -26,7 +25,7 @@ class User
 	public function setLoc(int $loc): self
 	{
 		$this->loc = $loc;
-		$this->transitionTimeout = time() + self::TRANSITION_TIMEOUT;
+		$this->trans_timeout = time() + self::TRANSITION_TIMEOUT;
 
 		return $this;
 	}
@@ -41,21 +40,20 @@ class User
 			return;
 		}
 		
-		$this->setLoc($to)->save(); // Need save user ?
+		$this->setLoc($to)->save(); // Need to save user ?
 		$app->send($this->fd, ['chloc' => static::CAN_TRANSITION_YES]);
 		$app->send($this->fd, ['loc_users' => $app->userRepo->getAllByLoc($to)]);
-		$app->getLoc($this);
+		$app->locRepo->sendLoc($this);
 	}
 
 	public function save()
 	{
-
-		DB::query("UPDATE users SET loc = ".$this->get('loc')." WHERE id = ?i", $this->get('id'));
+		// DB::query("UPDATE users SET loc = ".$this->get('loc')." WHERE id = ?i", $this->get('id'));
 	}
 
 	public function canTransition()
 	{
-		return $this->transitionTimeout >= time();
+		return $this->trans_timeout >= time();
 	}
 
 	public function __toString()
@@ -73,15 +71,29 @@ class User
 		return "fd:{$this->fd} id:{$this->id} name:{$this->name} loc:{$this->loc}";
 	}
 
+	public function show()
+	{
+		return (object)[
+			'id' 	=> $this->getId(),
+			'login' => $this->getLogin(),
+			'level' => $this->getLevel(),
+		];
+	}
+
 	public function __call($method, $args)
 	{
 		if (preg_match('/^get(.+)/', $method, $matches)) {
-			return $this->attr->{strtolower($matches[1])} ?? null;
+			return $this->attr->{lcfirst($matches[1])} ?? null;
 		}
 	}
 
-	private function get($key)
+	public function __get($key)
 	{
-		return $this->attr->$key;
+		return $this->attr->$key ?? null;
+	}
+
+	public function __set($key, $value)
+	{
+		$this->attr->{$key} = $value;
 	}
 }

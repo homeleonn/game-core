@@ -16,11 +16,10 @@ class Application {
 
 	private WebSocketServer $server;
 	public StoreContract $store;
-	private ServerApp $serverApp;
 	public UserRepository $userRepo;
 	public LocRepository $locRepo;
 
-	public function __construct(WebSocketServer $server, StoreContract $store, ServerApp $serverApp)
+	public function __construct(WebSocketServer $server, StoreContract $store)
 	{
 		$this->server 	= $server;
 		$this->store 	= $store;
@@ -81,63 +80,19 @@ class Application {
 
 	public function addToApp($fd, $userId)
 	{
-		if (!$user = $this->userRepo->init($userId)) return;
+		if (!$user = $this->userRepo->init($fd, $userId)) return;
 
-		// dd($user);
-		
-		$this->checkDuplicateConnection($userId);
-		$user = $this->userRepo->add($fd, $user);
-		$this->locRepo->add($user);
-
-		// users online by loc
-		$this->send($fd, ['loc_users' => array_values($this->userRepo->getAllByLoc($user->getLoc()))]);
-
-		$this->getLoc($user);
-	}
-
-	// current loc data
-	public function getLoc($user)
-	{
-		if ($loc = $this->locs[$user->getLoc()] ?? null) {
-			$this->send($user->getFd(), ['loc' => $loc]);
-		}
+		$this->userRepo->sendDataOfInitUser($user);
+		$this->userRepo->sendLocUsers($user);
+		$this->locRepo->sendLoc($user);
 	}
 
 	public function removeFromApp($fd, $user = null)
 	{
-		if ($user || $user = $this->userRepo->findByFdAndRemove($fd)) {
-			$this->locRepo->remove($user);
+		if ($user || $user = $this->userRepo->findByFd($fd)) {
+			$this->userRepo->remove($user);
+			$this->locRepo->removeUser($user);
 		}
-	}
-
-	public function parseToken(WebSocketServer $server, Request $request)
-	{
-		$token  = trim($request->client['request_uri'], '/');
-
-		if (!$userId = $this->store->get('socket:' . $token)) {
-			echo "Invalid token\n";
-			$server->close(null, $request->fd);
-			return false;
-		}
-
-		$this->store->del('socket:' . $token);
-
-		return $userId;
-	}
-
-	public function checkDuplicateConnection($userId)
-	{
-		if (!$user = $this->userRepo->findById($userId)) return;
-		
-		$this->disconnectPreviousDuplicateWindow($user->getFd());
-		$this->userRepo->remove($user);
-		$this->removeFromApp(null, $user);
-	}
-
-	public function disconnectPreviousDuplicateWindow($fdId)
-	{
-		$this->send($fdId, Application::DUPLICATE);
-		$this->server->close(null, $fdId);
 	}
 
 	public function disconnectUndefinedUser($userFd)
@@ -158,7 +113,7 @@ class Application {
 	{
 		$this->sendToLoc($user->getLoc(), [
 			'message' => [
-				'from' => $user->getName(),
+				'from' => $user->getLogin(),
 				'to' => null,
 				'text' => $text
 			]
@@ -176,5 +131,20 @@ class Application {
 		foreach ($locUsersFds as $fd => $dummy) {
 			$this->server->push($fd, $message);
 		}
+	}
+
+	public function parseToken(WebSocketServer $server, Request $request)
+	{
+		$token  = trim($request->client['request_uri'], '/');
+
+		if (!$userId = $this->store->get('socket:' . $token)) {
+			echo "Invalid token\n";
+			$server->close(null, $request->fd);
+			return false;
+		}
+
+		$this->store->del('socket:' . $token);
+
+		return $userId;
 	}
 }
