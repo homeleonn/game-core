@@ -1,5 +1,5 @@
 <?php
-
+header("Access-Control-Allow-Origin: *");
 require '../vendor/autoload.php';
 require '../functions.php';
 
@@ -59,7 +59,7 @@ require '../functions.php';
 
 // exit;
 
-
+// echo json_encode(['a' => 1]);exit;
 
 use Core\Session\Init as SessionInit;
 

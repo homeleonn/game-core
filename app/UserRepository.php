@@ -63,7 +63,7 @@ class UserRepository
 
 	private function getUser($userId)
 	{
-		return DB::getRow('SELECT id, login, level, loc, trans_timeout FROM users WHERE id = ?i', $userId);
+		return DB::getRow('SELECT id, login, level, curhp, maxhp, loc, trans_timeout FROM users WHERE id = ?i', $userId);
 	}
 
 	public function getAll()
@@ -106,6 +106,8 @@ class UserRepository
 			'id' 				=> $user->id,
 			'login' 			=> $user->login,
 			'level' 			=> $user->level,
+			'curhp' 			=> $user->curhp,
+			'maxhp' 			=> $user->maxhp,
 			'loc' 				=> $user->loc,
 			'trans_timeout' 	=> $user->trans_timeout,
 		]]);

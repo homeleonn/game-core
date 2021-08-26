@@ -22,8 +22,11 @@ class HomeController
     public function wsToken()
     {
         // dd(s());
+        // echo 1;
         usleep(500000);
-        echo generateToken(s('id'));
+        // echo generateToken(s('id'));
+        echo generateToken(1);
+        // echo json_encode(['token' => generateToken(s('id'))]);
     }
 
     public function entry()

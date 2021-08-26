@@ -23,6 +23,12 @@ class DosProtection
 			return true;
 		}
 
-		return ++$this->ips[$ip]['count'] < $this->limit;
+		$this->ips[$ip]['count']++;
+
+		if ($this->ips[$ip]['count'] >= $this->limit) {
+			echo "DoS protection detected({$ip}): {$this->ips[$ip]['count']}\n";
+		}
+
+		return $this->ips[$ip]['count'] < $this->limit;
 	}
 }

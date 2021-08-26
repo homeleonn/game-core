@@ -12,7 +12,7 @@ use App\Server\Contracts\StoreContract;
 use App\Server\Store\RedisStore as Store;
 
 $serverApp = new App();
-$dosProtection = new DosProtection(5);
+$dosProtection = new DosProtection(50);
 $server = new Server(Config::get('host'), Config::get('port'));
 $server->setDosProtection($dosProtection);
 $store = new Store($redis);

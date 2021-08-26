@@ -35,6 +35,7 @@ class Application {
 
 	public function open(WebSocketServer $server, Request $request)
 	{
+		// d($request);
 		if (!$userId = $this->parseToken($server, $request)) return;
 
 		$this->addToApp($request->fd, $userId);
