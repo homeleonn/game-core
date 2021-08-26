@@ -14,7 +14,7 @@ class Application {
 
 	private $eventManager; // Event manager connection
 
-	private WebSocketServer $server;
+	public WebSocketServer $server;
 	public StoreContract $store;
 	public UserRepository $userRepo;
 	public LocRepository $locRepo;
@@ -35,7 +35,6 @@ class Application {
 
 	public function open(WebSocketServer $server, Request $request)
 	{
-		// d($request);
 		if (!$userId = $this->parseToken($server, $request)) return;
 
 		$this->addToApp($request->fd, $userId);
@@ -83,8 +82,7 @@ class Application {
 	{
 		if (!$user = $this->userRepo->init($fd, $userId)) return;
 
-		$this->userRepo->sendDataOfInitUser($user);
-		$this->userRepo->sendLocUsers($user);
+		$this->userRepo->sendUser($user);
 		$this->locRepo->sendLoc($user);
 	}
 

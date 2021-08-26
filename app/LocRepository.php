@@ -9,11 +9,12 @@ class LocRepository
 	private Application $app;
 	public array $locsFds;
 	public array $locs = [];
+	public array $closestLocs = [];
 
 	public function __construct(Application $app)
 	{
 		$this->app = $app;
-		$this->locs = (new LocationsLoader)->load();
+		[$this->locs, $this->closestLocs] = (new LocationsLoader)->load();
 	}
 
 	public function addUser($user, $to = null)
@@ -21,7 +22,7 @@ class LocRepository
 		[$toLoc, $fd, $userId] = $this->getUserData($user);
 		$to = $to ?? $toLoc;
 
-		$this->app->sendToLoc($to, ['loc_add' => $user->show()]);
+		$this->app->sendToLoc($to, ['addLocUser' => $user->show()]);
 		$this->locsFds[$to][$fd] = null;
 	}
 
@@ -32,7 +33,7 @@ class LocRepository
 		if (isset($this->locsFds[$fromLoc]) && array_key_exists($fd, $this->locsFds[$fromLoc])) {
 			unset($this->locsFds[$fromLoc][$fd]);
 
-			$this->app->sendToLoc($fromLoc, ['loc_leave' => ['id' => $user->getId()]]);
+			$this->app->sendToLoc($fromLoc, ['leaveLocUser' => ['id' => $user->getId()]]);
 
 			return true;
 		}
@@ -54,7 +55,11 @@ class LocRepository
 	public function sendLoc($user)
 	{
 		if ($loc = $this->locs[$user->getLoc()] ?? null) {
-			$this->app->send($user->getFd(), ['loc' => $loc]);
+			$this->app->send($user->getFd(), ['loc' => (object)[
+				'loc' 			=> $loc, 
+				'closestLocs' 	=> $this->closestLocs[$loc->id],
+				'locUsers'		=> $this->app->userRepo->getLocUsers($user)
+			]]);
 		}
 	}
 

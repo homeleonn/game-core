@@ -100,7 +100,12 @@ class UserRepository
 		$this->app->send($user->fd, ['loc_users' => array_values($this->getAllByLoc($user->getLoc()))]);
 	}
 
-	public function sendDataOfInitUser($user)
+	public function getLocUsers($user)
+	{
+		return array_values($this->getAllByLoc($user->getLoc()));
+	}
+
+	public function sendUser($user)
 	{
 		$this->app->send($user->getFd(), ['me' => (object)[
 			'id' 				=> $user->id,

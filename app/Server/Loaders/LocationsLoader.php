@@ -9,7 +9,7 @@ class LocationsLoader
 {
 	public function load()
 	{
-		$locs = DB::getAll('Select * from locations');
+		$locs = DB::getAll('Select id, name, type, image, loc_coords, loc_access from locations');
 		
 		$locs = Common::itemsOnKeys($locs, ['id'], function($loc) {
 			array_map(function($key) use ($loc) {
@@ -17,10 +17,9 @@ class LocationsLoader
 			}, ['loc_coords', 'loc_access']);
 		});
 
-		$this->setClosestLocs1($locs);
+		$closestLocs = $this->setClosestLocs1($locs);
 
-		return $locs;
-		
+		return [$locs, $closestLocs];
 	}
 
 	public function setLocsById($rawLocs)
@@ -38,16 +37,24 @@ class LocationsLoader
 	// collect array access locs by id
 	public function setClosestLocs1($locs)
 	{
+		$closestLocs = [];
+
 		foreach ($locs as $loc) {
+			$closestLocs[$loc->id] = [];
+			
 			foreach ($loc->loc_access as $locId) {
-				if (!isset($loc->closest_locs[$locs[$locId]->type])) {
-					// $loc->closest_locs = [];
-					$loc->closest_locs[$locs[$locId]->type] = [];
+				if (!isset($closestLocs[$loc->id][$locs[$locId]->type])) {
+					$closestLocs[$loc->id][$locs[$locId]->type] = [];
 				}
 
-				$loc->closest_locs[$locs[$locId]->type][$locId] = $locs[$locId]->name;
+				$closestLocs[$loc->id][$locs[$locId]->type][$locId] = $locs[$locId]->name;
 			}
+
+			// unset($loc->loc_access);
 		}
+
+
+		return $closestLocs;
 		
 		// $locsAccess = [];
 
