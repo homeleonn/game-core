@@ -18,6 +18,7 @@ class Application {
 	public StoreContract $store;
 	public UserRepository $userRepo;
 	public LocRepository $locRepo;
+	public ItemRepository $itemRepo;
 
 	public function __construct(WebSocketServer $server, StoreContract $store)
 	{
@@ -25,6 +26,7 @@ class Application {
 		$this->store 	= $store;
 		$this->userRepo = new UserRepository($this);
 		$this->locRepo  = new LocRepository($this);
+		$this->itemRepo  = new ItemRepository($this);
 	}
 
 	public function start(WebSocketServer $server)
@@ -61,6 +63,10 @@ class Application {
 
 		case 'chloc':
 			$user->chloc((int)$data[$type], $this);
+		break;
+
+		case 'getBackPack':
+			$user->getBackPack($this);
 		break;
 		}
 	}

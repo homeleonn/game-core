@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Server\Contracts\StoreContract;
+use DB;
 
 class User 
 {
@@ -44,6 +45,21 @@ class User
 		$app->send($this->fd, ['chloc' => static::CAN_TRANSITION_YES]);
 		$app->send($this->fd, ['loc_users' => $app->userRepo->getAllByLoc($to)]);
 		$app->locRepo->sendLoc($this);
+	}
+
+	public function getBackPack($app)
+	{
+		$userItems = DB::getAll("Select * from items where owner_id = {$this->id}");
+
+		if (!$userItems) return;
+
+		foreach ($userItems as &$item) {
+			$item = (object)array_merge((array)$app->itemRepo->getItemById($item->item_id), (array)$item);
+		}
+
+		$app->send($this->getFd(), 
+			['backpack' => $userItems]
+		);
 	}
 
 	public function save()
