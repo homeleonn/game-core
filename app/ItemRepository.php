@@ -20,6 +20,7 @@ class ItemRepository
 				switch ($item->item_type) {
 					case 'gift': $img = 'gifts'; break;
 					case 'fish': $img = 'fishing'; break;
+					case 'trash': $img = 'other'; break;
 					
 					default: $img = 'items';
 				}
