@@ -26,7 +26,7 @@ class Application {
 		$this->store 	= $store;
 		$this->userRepo = new UserRepository($this);
 		$this->locRepo  = new LocRepository($this);
-		$this->itemRepo  = new ItemRepository($this);
+		$this->itemRepo = new ItemRepository($this);
 	}
 
 	public function start(WebSocketServer $server)

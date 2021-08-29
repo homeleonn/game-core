@@ -15,7 +15,17 @@ class ItemRepository
 		$this->app = $app;
 		$this->items = Common::itemsOnKeys(
 			DB::getAll('Select * from allitems'),
-			['item_id']
+			['item_id'],
+			function(&$item) {
+				switch ($item->item_type) {
+					case 'gift': $img = 'gifts'; break;
+					case 'fish': $img = 'fishing'; break;
+					
+					default: $img = 'items';
+				}
+
+				$item->image = "/img/{$img}/{$item->image}";
+			}
 		);
 	}
 

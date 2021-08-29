@@ -41,10 +41,11 @@ class User
 			return;
 		}
 		
-		$this->setLoc($to)->save(); // Need to save user ?
+		$this->setLoc($to);
 		$app->send($this->fd, ['chloc' => static::CAN_TRANSITION_YES]);
 		$app->send($this->fd, ['loc_users' => $app->userRepo->getAllByLoc($to)]);
 		$app->locRepo->sendLoc($this);
+		$this->save(); // Need to save user ?
 	}
 
 	public function getBackPack($app)
@@ -64,7 +65,7 @@ class User
 
 	public function save()
 	{
-		// DB::query("UPDATE users SET loc = ".$this->get('loc')." WHERE id = ?i", $this->get('id'));
+		// DB::query("UPDATE users SET loc = ".$this->loc." WHERE id = ?i", $this->id);
 	}
 
 	public function canTransition()
@@ -84,7 +85,7 @@ class User
 
 	public function asString()
 	{
-		return "fd:{$this->fd} id:{$this->id} name:{$this->name} loc:{$this->loc}";
+		return "fd:{$this->fd} id:{$this->id} name:{$this->login} loc:{$this->loc}";
 	}
 
 	public function show()
