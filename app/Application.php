@@ -68,6 +68,14 @@ class Application {
 		case 'getBackPack':
 			$user->getBackPack($this);
 		break;
+
+		case 'removeItem':
+			$user->itemAction($this, 'removeItem', $data[$type]);
+		break;
+
+		case 'wearItem':
+			$user->itemAction($this, 'wearItem', $data[$type]);
+		break;
 		}
 	}
 

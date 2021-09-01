@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Server\Contracts\StoreContract;
+use Core\Helpers\Common;
 use DB;
 
 class User 
@@ -10,6 +11,9 @@ class User
 	const CAN_TRANSITION_YES = 1;
 	const CAN_TRANSITION_NO = 0;
 	const TRANSITION_TIMEOUT = 0;
+
+	const ITEM_REMOVE_YES = 1;
+	const ITEM_REMOVE_NO = 0;
 
 	private StoreContract $store;
 	private int $fd;
@@ -50,17 +54,66 @@ class User
 
 	public function getBackPack($app)
 	{
-		$userItems = DB::getAll("Select * from items where owner_id = {$this->id}");
+		// $userItems = DB::getAll("Select * from items where owner_id = {$this->id}");
 
-		if (!$userItems) return;
+		$this->packItems = Common::itemsOnKeys(
+			DB::getAll("Select * from items where owner_id = {$this->id}"),
+			['id'],
+			function(&$item) use ($app) {
+				$item = (object)array_merge((array)$app->itemRepo->getItemById($item->item_id), (array)$item);
+			}
+		);
 
-		foreach ($userItems as &$item) {
-			$item = (object)array_merge((array)$app->itemRepo->getItemById($item->item_id), (array)$item);
-		}
+		if (!$this->packItems) return;
+
+		// foreach ($this->attr->packItems as &$item) {
+		// 	$item = (object)array_merge((array)$app->itemRepo->getItemById($item->item_id), (array)$item);
+		// }
+
 
 		$app->send($this->getFd(), 
-			['backpack' => $userItems]
+			['backpack' => $this->packItems]
 		);
+	}
+
+	private function removeItem($app, $itemId)
+	{
+		$app->send($this->fd, 
+			['itemActionRemove' => 1]
+		);
+
+		if ($remove) {
+			unset($this->packItems[$itemId]);
+			DB::query('DELETE from items where id = ?i', $itemId);
+		}
+	}
+
+	private function wearItem($app, $itemId)
+	{
+		$app->send($this->fd, 
+			['itemActionWear' => 1]
+		);
+
+		// if ($remove) {
+			DB::query("UPDATE items SET loc = 'WEARING' where id = ?i", $itemId);
+		// }
+	}
+
+	public function itemAction($app, $action, $itemId)
+	{
+		if (!$this->canAction($action) || $this->fight || !$this->itemExists($itemId)) return;
+
+		$this->{$action}($app, $itemId);
+	}
+
+	private function canAction($action)
+	{
+		return method_exists($this, $action);
+	}
+
+	private function itemExists($itemId)
+	{
+		return isset($this->packItems[$itemId]);
 	}
 
 	public function save()
@@ -111,6 +164,7 @@ class User
 
 	public function __set($key, $value)
 	{
+		// d($key, $value);
 		$this->attr->{$key} = $value;
 	}
 }
