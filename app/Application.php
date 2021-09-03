@@ -32,6 +32,7 @@ class Application {
 	public function start(WebSocketServer $server)
 	{
 		cli_set_process_title('FightWorld daemon - php');
+		system('echo "\033]0;"FightWorld"\007"');
 		echo "App start on {$server->getIp()}:{$server->getPort()}. PID: ", getmypid(), "\n";
 	}
 
@@ -44,7 +45,7 @@ class Application {
 
 	public function message(WebSocketServer $server, Frame $frame) 
 	{
-		// if ($this->isAppManagersMessage($frame)) return;
+		if ($this->isAppManagersMessage($frame)) return;
 		if (!$user = $this->userRepo->findByFd($frame->fd)) return;
 
 		var_dump(date('H:i:s ') . $frame->data . $user);
