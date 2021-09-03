@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use Core\Facades\Request;
 use Core\Facades\Auth;
+use Core\Facades\Config;
 
 
 class HomeController
@@ -23,7 +24,7 @@ class HomeController
     {
         // dd(s());
         // echo 1;
-        usleep(500000);
+        if (Config::get('env') == 'prod') usleep(500000);
         // echo generateToken(s('id'));
         echo generateToken(1);
         // echo json_encode(['token' => generateToken(s('id'))]);
