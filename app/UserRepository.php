@@ -63,7 +63,8 @@ class UserRepository
 
 	private function getUser($userId)
 	{
-		return DB::getRow('SELECT id, login, level, curhp, maxhp, loc, trans_timeout FROM users WHERE id = ?i', $userId);
+		return DB::getRow('SELECT id, login, level, power, critical, evasion, stamina, last_restore, sex, clan, gold, exp, win, defeat, draw, request, fight, image, title, color, curhp, maxhp, loc, trans_time, trans_timeout FROM users WHERE id = ?i', $userId);
+		// return DB::getRow('SELECT * FROM users WHERE id = ?i', $userId);
 	}
 
 	public function getAll()
@@ -97,7 +98,7 @@ class UserRepository
 	public function sendLocUsers($user)
 	{
 		// users online by location
-		$this->app->send($user->fd, ['loc_users' => array_values($this->getAllByLoc($user->getLoc()))]);
+		$this->app->send($user->getFd(), ['loc_users' => array_values($this->getAllByLoc($user->getLoc()))]);
 	}
 
 	public function getLocUsers($user)
@@ -107,15 +108,17 @@ class UserRepository
 
 	public function sendUser($user)
 	{
-		$this->app->send($user->getFd(), ['me' => (object)[
-			'id' 				=> $user->id,
-			'login' 			=> $user->login,
-			'level' 			=> $user->level,
-			'curhp' 			=> $user->curhp,
-			'maxhp' 			=> $user->maxhp,
-			'loc' 				=> $user->loc,
-			'trans_timeout' 	=> $user->trans_timeout,
-		]]);
+		// $this->app->send($user->getFd(), ['me' => (object)[
+		// 	'id' 				=> $user->id,
+		// 	'login' 			=> $user->login,
+		// 	'level' 			=> $user->level,
+		// 	'curhp' 			=> $user->curhp,
+		// 	'maxhp' 			=> $user->maxhp,
+		// 	'loc' 				=> $user->loc,
+		// 	'trans_timeout' 	=> $user->trans_timeout,
+		// ]]);
+		// d( $user->getAll());
+		$this->app->send($user->getFd(), ['me' => $user->getAll()]);
 	}
 
 

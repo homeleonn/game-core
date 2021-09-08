@@ -24,7 +24,7 @@ class User
 		$this->store 	= $store;
 		$this->fd 		= $fd;
 		$this->attr 	= $user;
-		$this->attr->fd = $fd;
+		// $this->attr->fd = $fd;
 	}
 
 	public function setLoc(int $loc): self
@@ -126,21 +126,6 @@ class User
 		return $this->trans_timeout >= time();
 	}
 
-	public function __toString()
-	{
-		return $this->asString();
-	}
-
-	public function __debugInfo()
-	{
-		return [$this->asString()];
-	}
-
-	public function asString()
-	{
-		return "fd:{$this->fd} id:{$this->id} name:{$this->login} loc:{$this->loc}";
-	}
-
 	public function show()
 	{
 		return (object)[
@@ -148,6 +133,16 @@ class User
 			'login' => $this->getLogin(),
 			'level' => $this->getLevel(),
 		];
+	}
+
+	public function getAll()
+	{
+		return $this->attr;
+	}
+
+	public function getFd()
+	{
+		return $this->fd;
 	}
 
 	public function __call($method, $args)
@@ -166,5 +161,20 @@ class User
 	{
 		// d($key, $value);
 		$this->attr->{$key} = $value;
+	}
+
+	public function __toString()
+	{
+		return $this->asString();
+	}
+
+	public function asString()
+	{
+		return "fd:{$this->fd} id:{$this->id} name:{$this->login} loc:{$this->loc}";
+	}
+
+	public function __debugInfo()
+	{
+		return [$this->asString()];
 	}
 }
