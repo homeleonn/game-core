@@ -1,9 +1,10 @@
 <?php
 
-namespace App;
+namespace App\Repositories;
 
 use DB;
 use Core\Helpers\Common;
+use App\Application;
 
 class ItemRepository
 {

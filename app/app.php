@@ -17,6 +17,7 @@ $server = new Server(Config::get('host'), Config::get('port'));
 $server->setDosProtection($dosProtection);
 $store = new Store($redis);
 $app 	= new Application($server, $store, $serverApp);
+// $app 	= Application::getInstance($server, $store, $serverApp);
 
 $server->on('start', 	[$app, 'start']);
 $server->on('open', 	[$app, 'open']);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\Server\Contracts\StoreContract;
 use Core\Helpers\Common;

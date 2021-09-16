@@ -1,20 +1,26 @@
 <?php
 
-namespace App;
+namespace App\Repositories;
 
-use App\Server\Loaders\LocationsLoader;
+use App\Server\Loaders\{LocationsLoader, NpcLoader};
+use App\Models\{Loc, User};
+use App\Application;
 
-class LocRepository
+class LocRepository extends BaseRepository
 {
-	private Application $app;
+	protected Application $app;
 	public array $locsFds;
 	public array $locs = [];
 	public array $closestLocs = [];
+	public array $npc = [];
+	public array $locMonsters = [];
 
 	public function __construct(Application $app)
 	{
-		$this->app = $app;
+		parent::__construct($app);
 		[$this->locs, $this->closestLocs] = (new LocationsLoader)->load();
+		$this->npc = (new NpcLoader)->load();
+		$this->spawnNpc();
 	}
 
 	public function addUser($user, $to = null)
@@ -88,5 +94,23 @@ class LocRepository
 		{
 			return true;
 		}
+	}
+
+	private function spawnNpc()
+	{
+		$spawnlist = \DB::getAll('SELECT id, npc_id, loc_id, respawn_delay FROM spawnlist');
+		foreach ($spawnlist as $npc) {
+			if (!isset($this->locMonsters[$npc->loc_id])) {
+				 $this->locMonsters[$npc->loc_id] = [];
+			}
+
+			$this->locMonsters[$npc->loc_id][] = $this->npc[$npc->npc_id];
+		}
+		
+	}
+
+	public function getMonsters($user)
+	{
+		$this->app->send($user->getFd(), ['locMonsters' => $this->locMonsters[$user->loc] ?? []]);
 	}
 }

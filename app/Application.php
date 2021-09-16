@@ -7,12 +7,16 @@ use Core\Socket\Server as WebSocketServer;
 use Core\Socket\Request;
 use Core\Socket\Frame;
 use App\Server\Contracts\StoreContract;
+use App\Repositories\UserRepository;
+use App\Repositories\LocRepository;
+use App\Repositories\ItemRepository;
 
 class Application {
 	public const DISCONNECT = '0';
 	public const DUPLICATE 	= '1';
 
 	private $eventManager; // Event manager connection
+	private static $instance;
 
 	public WebSocketServer $server;
 	public StoreContract $store;
@@ -23,10 +27,19 @@ class Application {
 	public function __construct(WebSocketServer $server, StoreContract $store)
 	{
 		$this->server 	= $server;
-		$this->store 	= $store;
+		$this->store 		= $store;
 		$this->userRepo = new UserRepository($this);
 		$this->locRepo  = new LocRepository($this);
 		$this->itemRepo = new ItemRepository($this);
+	}
+
+	public static function getInstance(WebSocketServer $server, StoreContract $store)
+	{
+		if (!static::$instance) {
+			static::$instance = new static($server, $store);
+		}
+
+		return static::$instance;
 	}
 
 	public function start(WebSocketServer $server)
@@ -76,6 +89,10 @@ class Application {
 
 		case 'wearItem':
 			$user->itemAction($this, 'wearItem', $data[$type]);
+		break;
+
+		case 'getMonsters':
+			$this->locRepo->getMonsters($user);
 		break;
 		}
 	}

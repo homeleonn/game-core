@@ -4,6 +4,7 @@ namespace App\Server\Loaders;
 
 use DB;
 use Core\Helpers\Common;
+use App\Application;
 
 class LocationsLoader
 {
@@ -21,18 +22,6 @@ class LocationsLoader
 
 		return [$locs, $closestLocs];
 	}
-
-	public function setLocsById($rawLocs)
-	{
-		$locs = [];
-
-		foreach ($rawLocs as $loc) {
-			$loc->locs_coords = json_decode($loc->locs_coords);
-			$locs[$loc->id] = $loc;
-		}
-
-		return $locs;
-	}
 	
 	// collect array access locs by id
 	public function setClosestLocs1($locs)
@@ -49,49 +38,9 @@ class LocationsLoader
 
 				$closestLocs[$loc->id][$locs[$locId]->type][$locId] = $locs[$locId]->name;
 			}
-
-			// unset($loc->loc_access);
 		}
-
 
 		return $closestLocs;
-		
-		// $locsAccess = [];
-
-		// foreach ($rawLocsAccess as $access) {
-		// 	if (!isset($locsAccess[$access->loc_id])) $locsAccess[$access->loc_id] = [];
-		// 	$locsAccess[$access->loc_id][] = $access->access_loc_id;
-		// }
-
-		// return $locsAccess;
 	}
 
-	// collect array access locs by id
-	public function setLocsAccess1($rawLocsAccess)
-	{
-		$locsAccess = [];
-
-		foreach ($rawLocsAccess as $access) {
-			if (!isset($locsAccess[$access->loc_id])) $locsAccess[$access->loc_id] = [];
-			$locsAccess[$access->loc_id][] = $access->access_loc_id;
-		}
-
-		return $locsAccess;
-	}
-
-	// Bind closest locs and sort them by id
-	public function setClosestLocs($locs, $locsAccess)
-	{
-		foreach ($locs as $id => $loc) {
-			foreach ($locsAccess[$id] as $locId) {
-				if (!isset($locs[$id]->closest_locs[$locs[$locId]->type])) {
-					$locs[$id]->closest_locs[$locs[$locId]->type] = [];
-				}
-
-				$locs[$id]->closest_locs[$locs[$locId]->type][$locs[$locId]->id] = $locs[$locId]->name;
-			}
-		}
-
-		return $locs;
-	}
 }
