@@ -25,6 +25,12 @@ class User
 		$this->fd 		= $fd;
 		$this->attr 	= $user;
 		// $this->attr->fd = $fd;
+
+		
+		$this->min_damage = floor($this->power / 2);
+		$this->max_damage = $this->power + ceil($this->power / 2);
+		$this->extra_min_damage = 0;
+		$this->extra_max_damage = 0;
 	}
 
 	public function setLoc(int $loc): self
