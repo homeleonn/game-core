@@ -106,11 +106,20 @@ class LocRepository extends BaseRepository
 
 			$this->locMonsters[$npc->loc_id][] = $this->npc[$npc->npc_id];
 		}
-		
 	}
 
 	public function getMonsters($user)
 	{
 		$this->app->send($user->getFd(), ['locMonsters' => $this->locMonsters[$user->loc] ?? []]);
+	}
+
+	public function getNpcById($npcId)
+	{
+		
+	}
+
+	public function getEnemy($user, $enemyId)
+	{
+		$this->app->send($user->getFd(), ['_enemy' => $this->npc[$enemyId]]);
 	}
 }

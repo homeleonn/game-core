@@ -17,7 +17,7 @@ class User
 
 	private StoreContract $store;
 	private int $fd;
-	private object $attr;
+	public object $attr;
 
 	public function __construct(StoreContract $store, int $fd, object $user)
 	{
@@ -33,6 +33,11 @@ class User
 		$this->extra_max_damage = 0;
 	}
 
+	public function isAdmin()
+	{
+		return $this->access_level == 1;
+	}
+
 	public function setLoc(int $loc): self
 	{
 		$this->loc = $loc;
@@ -43,7 +48,7 @@ class User
 
 	public function chloc(int $to, $app)
 	{
-		if ($this->canTransition()) {
+		if (!$this->canTransition()) {
 			return $app->send($this->fd, ['transition_timeout' => null]);
 		}
 
@@ -129,7 +134,7 @@ class User
 
 	public function canTransition()
 	{
-		return $this->trans_timeout >= time();
+		return $this->trans_timeout <= time();
 	}
 
 	public function show()

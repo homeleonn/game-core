@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use DB;
 use App\Models\User;
+use App\Application;
 
 class UserRepository
 {

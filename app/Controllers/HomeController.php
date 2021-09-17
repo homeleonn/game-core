@@ -32,6 +32,13 @@ class HomeController
 
     public function entry()
     {
+        $a = (object)[
+            'level' => 10,
+            'power' => 7,
+            'critical' => 8,
+        ];
+        // dd(implode(',', (array)$a));
+        foreach ($a as $b){d($b);} exit;
         return view('entry');
     }
 

@@ -65,18 +65,39 @@ class Application {
 
 		$data = json_decode($frame->data, true);
 		$type = array_keys($data)[0];
+		$payload = $data[$type];
 
 		switch ($type) {
 		case 'debug':
 			$this->send($frame->fd, ['debug' => ['server' => $this]]);
 		break;
 
-		case 'message':
-			$this->messageToLoc($user, $data[$type]);
+		case 'admin_user':
+			// if (!$user->isAdmin()) return;
+			// $toUser = $payload->userId;
+			// $this->send($frame->fd, ['debug' => ['server' => $this]]);
+			// $queryString = '';
+			// foreach ($payload->props as $prop => $value) {
+			// 	$queryString .= "{$prop}={$value},"
+			// }
+			// $queryString = substr($queryString, 0, -1);
+			// \DB::query("UPDATE users SET {$queryString} where id = {$payload->userId}");
+
+
+			if (!$user = $this->userRepo->findById($payload['userId'])) return;
+			foreach ($payload['props'] as $prop => $value) {
+				$user->{$prop} = $value;
+			}
+
+			$this->send($user->getFd(), ['me' => $user->getAll()]);
+		break;
+
+		case 'sendMessage':
+			$this->messageToLoc($user, $payload);
 		break;
 
 		case 'chloc':
-			$user->chloc((int)$data[$type], $this);
+			$user->chloc((int)$payload, $this);
 		break;
 
 		case 'getBackPack':
@@ -84,15 +105,19 @@ class Application {
 		break;
 
 		case 'removeItem':
-			$user->itemAction($this, 'removeItem', $data[$type]);
+			$user->itemAction($this, 'removeItem', $payload);
 		break;
 
 		case 'wearItem':
-			$user->itemAction($this, 'wearItem', $data[$type]);
+			$user->itemAction($this, 'wearItem', $payload);
 		break;
 
-		case 'getMonsters':
+		case 'getLocMonsters':
 			$this->locRepo->getMonsters($user);
+		break;
+
+		case 'getEnemy':
+			$this->locRepo->getEnemy($user, $payload);
 		break;
 		}
 	}
