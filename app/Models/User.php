@@ -27,8 +27,7 @@ class User
 		// $this->attr->fd = $fd;
 
 		
-		$this->min_damage = floor($this->power / 2);
-		$this->max_damage = $this->power + ceil($this->power / 2);
+		[$this->min_damage, $this->max_damage] = self::calculateDamage($this->power);
 		$this->extra_min_damage = 0;
 		$this->extra_max_damage = 0;
 	}
@@ -154,6 +153,11 @@ class User
 	public function getFd()
 	{
 		return $this->fd;
+	}
+
+	public static function calculateDamage($power)
+	{
+		return [floor($power / 2), $power + ceil($power / 2)];
 	}
 
 	public function __call($method, $args)

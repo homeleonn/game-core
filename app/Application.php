@@ -74,20 +74,17 @@ class Application {
 
 		case 'admin_user':
 			// if (!$user->isAdmin()) return;
-			// $toUser = $payload->userId;
-			// $this->send($frame->fd, ['debug' => ['server' => $this]]);
-			// $queryString = '';
-			// foreach ($payload->props as $prop => $value) {
-			// 	$queryString .= "{$prop}={$value},"
-			// }
-			// $queryString = substr($queryString, 0, -1);
-			// \DB::query("UPDATE users SET {$queryString} where id = {$payload->userId}");
-
 
 			if (!$user = $this->userRepo->findById($payload['userId'])) return;
+
+			$queryString = '';
 			foreach ($payload['props'] as $prop => $value) {
 				$user->{$prop} = $value;
+				$queryString .= "{$prop}={$value},";
 			}
+
+			$queryString = substr($queryString, 0, -1);
+			\DB::query("UPDATE users SET {$queryString} where id = {$payload['userId']}");
 
 			$this->send($user->getFd(), ['me' => $user->getAll()]);
 		break;
