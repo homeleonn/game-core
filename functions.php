@@ -6,37 +6,6 @@ ini_set('xdebug.var_display_max_depth', 50);
 ini_set('xdebug.var_display_max_children', 1024);
 ini_set('xdebug.var_display_max_data', 1024);
 
-// xdebug_info();exit;
-
-
-
-$redis = new Redis;
-$redis->connect('127.0.0.1', '6379');
-
-
-// Aliases autoload
-
-$aliases = [
-	'App' => \Core\Facades\App::class,
-	'Router' => \Core\Facades\Router::class,
-	'Route' => \Core\Facades\Router::class,
-	'Response' => \Core\Facades\Response::class,
-	'Auth' => \Core\Facades\Auth::class,
-	'Config' => \Core\Facades\Config::class,
-	'DB' => \Core\Facades\DB::class,
-];
-
-
-spl_autoload_register(function($className) use ($aliases) {
-	if (isset($aliases[$className]) && class_exists($aliases[$className])) {
-		require_once ROOT . '/' . str_replace('\\', '/', $aliases[$className]) . '.php';
-		class_alias($aliases[$className], $className);
-	}
-});
-
-/////////////
-
-
 function d(...$args) {
 	vd($args);
 }
@@ -135,12 +104,8 @@ function prepareUri($uri) {
 
 
 function generateToken($userId) {
-    global $redis;
+  $token = generateRandomString();
+  App::make('storage')->set('socket:' . $token, $userId, 10);
 
-    // dd(get_defined_vars());
-
-    $token = generateRandomString();
-    $redis->set('socket:' . $token, $userId, 10);
-
-    return $token;
+  return $token;
 }

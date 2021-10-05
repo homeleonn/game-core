@@ -3,7 +3,7 @@
 namespace Core\Socket;
 
 use Closure;
-use Core\Socket\DosProtection;
+use Core\DosProtection\DosProtection;
 
 error_reporting(E_ALL); //Выводим все ошибки и предупреждения
 set_time_limit(0);		//Время выполнения скрипта не ограничено

@@ -2,9 +2,9 @@
 
 namespace App\Controllers;
 
-use Core\Facades\Request;
-use Core\Facades\Auth;
-use Core\Facades\Config;
+use Core\Support\Facades\Request;
+use Core\Support\Facades\Auth;
+use Core\Support\Facades\Config;
 
 
 class HomeController
@@ -16,29 +16,17 @@ class HomeController
 
     public function main()
     {
-        // dd(s('loc') ?? '');
         return view('main');
     }
 
     public function wsToken()
     {
-        // dd(s());
-        // echo 1;
         if (Config::get('env') == 'prod') usleep(500000);
-        // echo generateToken(s('id'));
         echo generateToken(1);
-        // echo json_encode(['token' => generateToken(s('id'))]);
     }
 
     public function entry()
     {
-        $a = (object)[
-            'level' => 10,
-            'power' => 7,
-            'critical' => 8,
-        ];
-        // dd(implode(',', (array)$a));
-        foreach ($a as $b){d($b);} exit;
         return view('entry');
     }
 
@@ -57,5 +45,11 @@ class HomeController
         }
 
         return redirect()->route('entry');
+    }
+
+    public function test()
+    {
+        $users = \DB::getAll('Select * from users');
+        return view('test', compact('users'));
     }
 }

@@ -2,60 +2,61 @@
 
 namespace Core;
 
-use Core\Facades\Facade;
+use Core\Support\Facades\Facade;
+use Core\Support\Facades\Response;
 use Closure;
 
 class App
 {
-    protected array $container = [];
-    public array $config;
+	protected array $container = [];
+	public array $config;
+	private array $app;
 
-    public function __construct()
-    {
-    	$this->loadConfig();
-    	$servicesInstances = $this->loadServices();
-		Facade::setFacadeApplication($this);
+	public function __construct()
+	{
+		$this->app = require ROOT . '/config/app.php';
+		$this->loadConfig();
+		Facade::setFacadeApplication($this, $this->app['aliases']);
+		$servicesInstances = $this->loadServices($this->app['providers']);
 		$this->bootServices($servicesInstances);
-        // dd(\DB::getOne('Select location from users where id = 1'));
-    }
+	}
 
-    protected function loadServices()
-    {
-        $services = require ROOT . '/config/services.php';
-        $servicesInstances = [];
+	protected function loadServices(array $services): array
+	{
+		$servicesInstances = [];
 
-        foreach ($services as $service) {
-        	$serviceInstance = new $service($this);
-        	$serviceInstance->register();
-        	$servicesInstances[] = $serviceInstance;
-        }
+		foreach ($services as $service) {
+			$serviceInstance = new $service($this);
+			$serviceInstance->register();
+			$servicesInstances[] = $serviceInstance;
+		}
 
-        return $servicesInstances;
-    }
+		return $servicesInstances;
+	}
 
-    protected function bootServices($services)
-    {
-    	foreach ($services as $service) {
-    		$service->boot();
-    	}
-    }
+	protected function bootServices($services)
+	{
+		foreach ($services as $service) {
+			$service->boot();
+		}
+	}
 
-    protected function loadConfig()
-    {
+	protected function loadConfig()
+	{
 		$this->config = require ROOT . '/.env.php';
-    }
+	}
 
 	public function set($name, $value = null)
 	{
 		$this->container[$name] = $value;
-    }
+	}
 
 	public function make($name)
 	{
-        if ($name == 'app') return $this;
-        
+		if ($name == 'app') return $this;
+		
 		if (!isset($this->container[$name])) {
-			exit("Service '$name' not found");
+			exit("Service '{$name}' not found");
 		}
 
 		if (!is_object($this->container[$name]) || $this->container[$name] instanceof Closure) {
@@ -65,11 +66,12 @@ class App
 		return $this->container[$name];
 	}
 
-    public function run()
-    {
-        $response = $this->make('router')->resolve();
-        
-        echo $response instanceof \Core\Response ? $response->getContent() : $response;
-        // echo $this->make('router')->resolve()->getContent();
-    }
+	public function run()
+	{
+		$response = $this->make('router')->resolve();
+		
+		$responseNamespace = "\\Core\\Http\\Response";
+		echo $response instanceof $responseNamespace ? $response->getContent() : $response;
+		// echo $this->make('router')->resolve()->getContent();
+	}
 }

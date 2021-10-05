@@ -4,7 +4,7 @@ namespace App\Server\Loaders;
 
 use DB;
 use Core\Helpers\Common;
-use App\Application;
+use App\Server\Application;
 
 class LocationsLoader
 {

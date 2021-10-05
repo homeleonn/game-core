@@ -2,8 +2,8 @@
 
 namespace App\Middleware;
 
-use Core\Request;
-use Core\Facades\Auth;
+use Core\Http\Request;
+use Core\Support\Facades\Auth;
 use Closure;
 
 class AuthMiddleware

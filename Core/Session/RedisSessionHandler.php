@@ -3,8 +3,9 @@
 namespace Core\Session;
 
 use Redis;
+use SessionHandlerInterface;
 
-class RedisSessionHandler implements \SessionHandlerInterface
+class RedisSessionHandler implements SessionHandlerInterface
 {
     public $ttl = 1800; // 30 minutes default
     protected $db;
