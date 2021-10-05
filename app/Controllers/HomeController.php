@@ -49,7 +49,8 @@ class HomeController
 
     public function test()
     {
-        $users = \DB::getAll('Select * from users');
-        return view('test', compact('users'));
+        // dd(\Core\Helpers\Common::propsOnly((object)['a' => 1, 'b' => 2, 'c' => 3], ['b', 'c']));
+        // $users = \DB::getAll('Select * from users');
+        // return view('test', compact('users'));
     }
 }

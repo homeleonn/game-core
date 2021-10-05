@@ -12,14 +12,14 @@ class LocRepository extends BaseRepository
 	public array $locsFds;
 	public array $locs = [];
 	public array $closestLocs = [];
-	public array $npc = [];
-	public array $locMonsters = [];
+	public array $npcProtoList = [];
+	public array $npcByLocation = [];
 
 	public function __construct(Application $app)
 	{
 		parent::__construct($app);
 		[$this->locs, $this->closestLocs] = (new LocationsLoader)->load();
-		$this->npc = (new NpcLoader)->load();
+		$this->npcProtoList = (new NpcLoader)->load();
 		$this->spawnNpc();
 	}
 
@@ -49,7 +49,7 @@ class LocRepository extends BaseRepository
 
 	public function getUserData($user)
 	{
-		return [$user->getLoc(), $user->getFd(), $user->getId()];
+		return $user->getDataForLocation();
 	}
 
 	public function getLoc(int $locId)
@@ -71,7 +71,7 @@ class LocRepository extends BaseRepository
 
 	public function chloc(User $user, int $to)
 	{
-		$from 		= $user->getLoc();
+		$from 	= $user->getLoc();
 		$fd 		= $user->getFd();
 
 		if (!$this->checkChangeLoc($from, $to)) {
@@ -99,18 +99,18 @@ class LocRepository extends BaseRepository
 	private function spawnNpc()
 	{
 		$spawnlist = \DB::getAll('SELECT id, npc_id, loc_id, respawn_delay FROM spawnlist');
-		foreach ($spawnlist as $npc) {
-			if (!isset($this->locMonsters[$npc->loc_id])) {
-				 $this->locMonsters[$npc->loc_id] = [];
+		foreach ($spawnlist as $npcProtoList) {
+			if (!isset($this->npcByLocation[$npcProtoList->loc_id])) {
+				 $this->npcByLocation[$npcProtoList->loc_id] = [];
 			}
 
-			$this->locMonsters[$npc->loc_id][] = $this->npc[$npc->npc_id];
+			$this->npcByLocation[$npcProtoList->loc_id][] = $this->npcProtoList[$npcProtoList->npc_id];
 		}
 	}
 
 	public function getMonsters($user)
 	{
-		$this->app->send($user->getFd(), ['locMonsters' => $this->locMonsters[$user->loc] ?? []]);
+		$this->app->send($user->getFd(), ['npcByLocation' => $this->npcByLocation[$user->loc] ?? []]);
 	}
 
 	public function getNpcById($npcId)
@@ -120,6 +120,6 @@ class LocRepository extends BaseRepository
 
 	public function getEnemy($user, $enemyId)
 	{
-		$this->app->send($user->getFd(), ['_enemy' => $this->npc[$enemyId]]);
+		$this->app->send($user->getFd(), ['_enemy' => $this->npcProtoList[$enemyId]]);
 	}
 }

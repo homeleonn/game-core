@@ -160,6 +160,11 @@ class User
 		return [floor($power / 2), $power + ceil($power / 2)];
 	}
 
+	public function getDataForLocation()
+	{
+		return [$this->getLoc(), $this->getFd(), $this->getId()];
+	}
+
 	public function __call($method, $args)
 	{
 		if (preg_match('/^get(.+)/', $method, $matches)) {

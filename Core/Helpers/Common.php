@@ -26,4 +26,15 @@ class Common
 		if(empty($itemsOnKey)) return false;
 		return $itemsOnKey;
 	}
+
+	public static function propsOnly(object $obj, array $keys): array
+	{
+		$resultArray = [];
+
+		foreach ($keys as $key) {
+			$resultArray[$key] = $obj->{$key} ?? null;
+		}
+
+		return $resultArray;
+	}
 }
