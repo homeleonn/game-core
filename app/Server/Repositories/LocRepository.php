@@ -104,13 +104,13 @@ class LocRepository extends BaseRepository
 				 $this->npcByLocation[$npcProtoList->loc_id] = [];
 			}
 
-			$this->npcByLocation[$npcProtoList->loc_id][] = $this->npcProtoList[$npcProtoList->npc_id];
+			$this->npcByLocation[$npcProtoList->loc_id][$npcProtoList->id] = $this->npcProtoList[$npcProtoList->npc_id];
 		}
 	}
 
 	public function getMonsters($user)
 	{
-		$this->app->send($user->getFd(), ['npcByLocation' => $this->npcByLocation[$user->loc] ?? []]);
+		$this->app->send($user->getFd(), ['locMonsters' => $this->npcByLocation[$user->loc] ?? []]);
 	}
 
 	public function getNpcById($npcId)
@@ -121,5 +121,15 @@ class LocRepository extends BaseRepository
 	public function getEnemy($user, $enemyId)
 	{
 		$this->app->send($user->getFd(), ['_enemy' => $this->npcProtoList[$enemyId]]);
+	}
+
+	public function attackMonster($user, $monsterId)
+	{
+		if (!isset($this->npcByLocation[$user->loc][$monsterId])) {
+			d("Monster with id '{$monsterId}' doesn't exists in location id '{$user->loc}'");
+			return;
+		}
+
+		$this->app->fightRepo->init($user, $this->npcByLocation[$user->loc][$monsterId]);
 	}
 }

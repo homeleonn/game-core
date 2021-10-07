@@ -19,12 +19,14 @@ class Fight
 	private int $activeTeam = 0;
 	private int $passiveTeam = 1;
 
-	public function addFighter(Fighter $fighter): void
+	public function addFighter(Fighter $fighter): self
 	{
 		$fighter->fId = $this->fighterIdCounter++;
 		$this->fighters[$fighter->fId] = $fighter;
 		$this->teams[$fighter->fId] = $fighter;
 		$this->addToFreeFighters($fighter);
+
+		return $this;
 	}
 
 	public function addToFreeFighters($fighter)
@@ -34,16 +36,14 @@ class Fight
 
 	public function setPairs()
 	{
-		$activeTeam = 0;
-		$passiveTeam = 1;
-		$allFreeTeamFightersIds = $this->freeFightersIds[$activeTeam];
+		$allFreeTeamFightersIds = $this->freeFightersIds[$this->activeTeam];
 
 		for ($i = 0; $i < $allFreeTeamFightersIds; $i++) {
-			if (empty($this->freeFightersIds[$activeTeam])
-					|| empty($this->freeFightersIds[$passiveTeam])) return;
+			if (empty($this->freeFightersIds[$this->activeTeam])
+					|| empty($this->freeFightersIds[$this->passiveTeam])) return;
 
-			$fighter = $this->getRandomFighter($activeTeam);
-			$fighter->setEnemy($this->getRandomFighter($passiveTeam));
+			$fighter = $this->getRandomFighter($this->activeTeam);
+			$fighter->setEnemy($this->getRandomFighter($this->passiveTeam));
 			$fighter->setSwap();
 		}
 	}
@@ -71,7 +71,7 @@ class Fight
 	private function checkToggleTurn()
 	{
 		// f - fighter
-		foreach ($this->teams[0] as $f) {
+		foreach ($this->teams[$this->activeTeam] as $f) {
 			if (!$f->swap || $f->getTimeTurnLeft() > 1) continue;
 
 			$passFighter = $f->isHitter() ? $f : $f->getEnemy();

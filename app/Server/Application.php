@@ -9,6 +9,7 @@ use Core\Contracts\Session\Session;
 use App\Server\Repositories\UserRepository;
 use App\Server\Repositories\LocRepository;
 use App\Server\Repositories\ItemRepository;
+use App\Server\Repositories\FightRepository;
 
 class Application {
 	public const DISCONNECT = '0';
@@ -22,14 +23,16 @@ class Application {
 	public UserRepository $userRepo;
 	public LocRepository $locRepo;
 	public ItemRepository $itemRepo;
+	public FightRepository $fightRepo;
 
 	public function __construct(WebSocketServer $server, Session $storage)
 	{
-		$this->server 	= $server;
+		$this->server 		= $server;
 		$this->storage 		= $storage;
-		$this->userRepo = new UserRepository($this);
-		$this->locRepo  = new LocRepository($this);
-		$this->itemRepo = new ItemRepository($this);
+		$this->userRepo 	= new UserRepository($this);
+		$this->locRepo  	= new LocRepository($this);
+		$this->itemRepo 	= new ItemRepository($this);
+		$this->fightRepo 	= new FightRepository($this);
 	}
 
 	public static function getInstance(WebSocketServer $server, Session $storage)
@@ -114,6 +117,10 @@ class Application {
 
 		case 'getEnemy':
 			$this->locRepo->getEnemy($user, $payload);
+		break;
+
+		case 'attackMonster':
+			$this->locRepo->attackMonster($user, $payload);
 		break;
 		}
 	}

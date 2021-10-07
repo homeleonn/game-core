@@ -65,7 +65,7 @@ class UserRepository
 
 	private function getUser($userId)
 	{
-		return DB::getRow('SELECT id, login, level, power, critical, evasion, defence, stamina, last_restore, sex, clan, gold, exp, win, defeat, draw, request, fight, image, title, color, curhp, maxhp, team, loc, trans_time, trans_timeout FROM users WHERE id = ?i', $userId);
+		return DB::getRow('SELECT id, login, level, power, critical, evasion, defence, stamina, last_restore, sex, clan, gold, exp, win, defeat, draw, request, fight, image, title, color, curhp, maxhp, team, loc, trans_time, trans_timeout, super_hits FROM users WHERE id = ?i', $userId);
 	}
 
 	public function getAll()
