@@ -27,7 +27,7 @@ class Common
 		return $itemsOnKey;
 	}
 
-	public static function propsOnly(object $obj, array $keys): array
+	public static function propsOnly(object $obj, array $keys, bool $likeObject = false): array
 	{
 		$resultArray = [];
 
@@ -35,6 +35,17 @@ class Common
 			$resultArray[$key] = $obj->{$key} ?? null;
 		}
 
-		return $resultArray;
+		return $likeObject ? (object)$resultArray : $resultArray;
+	}
+
+	public static function toNums($arr)
+	{
+		return array_map(function ($item) {
+			if (is_numeric($item)) {
+				return ctype_digit($item) ? (int)$item : (float)$item;
+			} else {
+				return $item;
+			}
+		}, (array)$arr);
 	}
 }

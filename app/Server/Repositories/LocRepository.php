@@ -28,7 +28,7 @@ class LocRepository extends BaseRepository
 		[$toLoc, $fd, $userId] = $this->getUserData($user);
 		$to = $to ?? $toLoc;
 
-		$this->app->sendToLoc($to, ['addLocUser' => $user->show()]);
+		$this->app->sendToLoc($to, ['addLocUser' => $user->locProps()]);
 		$this->locsFds[$to][$fd] = null;
 	}
 
@@ -129,7 +129,6 @@ class LocRepository extends BaseRepository
 			d("Monster with id '{$monsterId}' doesn't exists in location id '{$user->loc}'");
 			return;
 		}
-
 		$this->app->fightRepo->init($user, $this->npcByLocation[$user->loc][$monsterId]);
 	}
 }

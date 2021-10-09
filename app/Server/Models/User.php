@@ -23,7 +23,7 @@ class User
 	{
 		$this->storage 	= $storage;
 		$this->fd 		= $fd;
-		$this->attr 	= $user;
+		$this->attr 	= (object)Common::toNums($user);
 		// $this->attr->fd = $fd;
 
 		
@@ -136,7 +136,7 @@ class User
 		return $this->trans_timeout <= time();
 	}
 
-	public function show()
+	public function locProps()
 	{
 		return (object)[
 			'id' 	=> $this->getId(),
@@ -153,6 +153,11 @@ class User
 	public function getFd()
 	{
 		return $this->fd;
+	}
+
+	public function setFd($fd)
+	{
+		$this->fd = $fd;
 	}
 
 	public static function calculateDamage($power)

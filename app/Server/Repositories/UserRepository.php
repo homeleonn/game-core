@@ -79,7 +79,7 @@ class UserRepository
 		
 		foreach ($this->app->locRepo->getLoc($locId) as $fd => $dummy) {
 			if ($this->has($fd)) {
-				$users[] = $this->users[$fd]->show();
+				$users[] = $this->users[$fd]->locProps();
 			}
 		}
 

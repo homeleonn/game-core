@@ -4,6 +4,7 @@ namespace Core\Socket;
 
 use Closure;
 use Core\DosProtection\DosProtection;
+use Core\Contracts\PeriodicEvent\PeriodicEvent;
 
 error_reporting(E_ALL); //Выводим все ошибки и предупреждения
 set_time_limit(0);		//Время выполнения скрипта не ограничено
@@ -20,6 +21,7 @@ class Server
 	private $events = ['start', 'open', 'close', 'message'];
 	private $eventsHandlers = [];
 	private $dosProtection;
+	private $periodicEventWorker;
 
 	public function __construct($ip = "127.0.0.1", $port = '8080')
 	{
@@ -30,6 +32,11 @@ class Server
 	public function setDosProtection(DosProtection $dosProtection)
 	{
 		$this->dosProtection = $dosProtection;
+	}
+
+	public function setPeriodicEventWorker(PeriodicEvent $worker)
+	{
+		$this->periodicEventWorker = $worker;
 	}
 
 	public function on(string $event, callable $callback)
@@ -50,7 +57,8 @@ class Server
 			$read = $this->fds;
 			$read[-1] = $this->socket;
 
-			if (!stream_select($read, $write, $except, null)) break;
+			if (stream_select($read, $write, $except, $this->periodicEventWorker->getTimeout()) === false) break;
+				$this->periodicEventWorker->execute();
 
 			if (isset($read[-1])) {
 				$this->open(stream_socket_accept($this->socket, -1));
@@ -94,6 +102,7 @@ class Server
 	{
 		if (!isset($this->fds[$fd])) {
 			// var_dump(debug_backtrace());
+			// foreach (debug_backtrace() as $debug) { echo "{$debug['file']}/{$debug['line']}/{$debug['function']}\n"; }
 			echo "Connection null", __LINE__, "\n";return;
 
 		}

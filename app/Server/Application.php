@@ -122,6 +122,14 @@ class Application {
 		case 'attackMonster':
 			$this->locRepo->attackMonster($user, $payload);
 		break;
+
+		case 'getFight':
+			$this->fightRepo->getById($user);
+		break;
+		
+		case 'hit':
+			$this->fightRepo->hit($user, $payload);
+		break;
 		}
 	}
 
@@ -205,5 +213,10 @@ class Application {
 		$this->storage->del('socket:' . $token);
 
 		return $userId;
+	}
+
+	public function periodicEvent($eventName)
+	{
+		echo $eventName, time(), "\n";
 	}
 }

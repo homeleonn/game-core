@@ -3,6 +3,7 @@
 namespace App\Server\Models;
 
 use App\Server\Helpers\HFight;
+use Core\Helpers\Common;
 
 class Fighter
 {
@@ -11,20 +12,21 @@ class Fighter
 	const TURN_TIME 					= 4;
 	const TURN_TIME_TIMEOUT 	= 10;
 
+	public $user;
 	private int $lastEnemyId 	= 0;
-	private int $turn 				= 0;
+	public int $turn 					= 0;
 	private int $damage 			= 0;
 	private int $fightExp 		= 0;
 	private int $kills 				= 0;
 	private int $timeoutTicks = 0;
-	private array $swap 			= [];
+	public array|null $swap 				= [];
 	private bool $delay 			= false;
-	private Fight $fight;
+	public Fight $fight;
 
-	public function __construct(User $user, Fight $fight)
+	public function __construct(User|\stdClass $user, Fight $fight)
 	{
 		$this->user = $user;
-		$this->user->super_hits = json_decode($this->user->super_hits);
+		$this->super_hits = $this->isBot() ? [] : json_decode($this->user->super_hits);
 		$this->fight = $fight;
 	}
 
@@ -44,15 +46,44 @@ class Fighter
 		return !empty($this->swap) ? null : round($this->swap[self::TURN_TIME] - (time() - self::TURN_TIME_TIMEOUT));
 	}
 
-	public function hit($type)
+	public function hit($type, $app)
 	{
 		[$damage, $crit, $block, $evasion, $superHit] =  $this->isBot ? false : $this->calcDamage($type);
 		$this->resetTimeoutTicks();
-		$isFighterDeath = $this->checkFighterDeath();
 		$this->getEnemy()->curhp -= $damage;
+		$isFighterDeath = $this->checkFighterDeath();
+		$this->send($app, $type, $damage, $crit, $block, $evasion, $superHit);
 		if ($this->fight->isFightEnd) return;
 		// $this->setDelay();
-		$this->toggleTurn($isFighterDeath);
+		// $this->toggleTurn($isFighterDeath);
+	}
+
+	public function send($app, $type, $damage, $crit, $block, $evasion, $superHit)
+	{
+		// d($this);
+		// if ($this->isBot()) return;
+		$sendData = ['_fight' => [
+			'hit' => [
+				'defender' => $this->getEnemy()->fId,
+				'damage' => $damage,
+			],
+		]];
+
+		$sendPrivateData = $sendData;
+		$privateProps = ['type', 'crit', 'block', 'evasion', 'superHit'];
+		foreach ($privateProps as $prop) {
+			$sendPrivateData['_fight']['hit'][$prop] = $$prop;
+		}
+
+		foreach ($this->fight->fightersById as $fighter) {
+			if ($fighter->fId == $this->fId 
+				|| $fighter->fId == $this->enemyfId) {
+				d($fighter->user);
+				$app->send($fighter->getFd(), $sendPrivateData);
+			} else {
+				$app->send($fighter->getFd(), $sendData);
+			}
+		}
 	}
 
 	public function resetTimeoutTicks() {
@@ -94,9 +125,9 @@ class Fighter
 		[$turn, $hitter] = $this->selectTurn();
 		$swap = [$this->fId, $this->getEnemy()->fId, $turn, 2, microtime(true)];
 
-		$this->fight->handleBot(hitter);
+		$this->fight->handleBot($hitter);
 
-		$this->foreachEnemy(function ($fighter) use ($this, $swap) {
+		$this->foreachEnemy(function ($fighter) use ($swap) {
 			$fighter->lastEnemyId = $fighter->getEnemy()->fId;
 			$fighter->swap = &$swap;
 			$this->fight->swap[$fighter->fId] = &$swap;
@@ -107,7 +138,7 @@ class Fighter
 	{
 		// if hit swap was held or enemy defeated
 		if (!--$this->swap[self::HITS_COUNT] || $isEnemyDeath) {
-			$this->foreachEnemy($fighter => {
+			$this->foreachEnemy(function ($fighter) {
 				$fighter->e = $fighter->swap = null;
 				unset($this->fight->swap[$fighter->fId]);
 				if ($fighter->curhp > 0) {
@@ -145,7 +176,7 @@ class Fighter
 		return [$damage, $crit, $block, $evasion, $superHitLevel];
 	}
 
-	checkFighterDeath($byTimeout = false)
+	public function checkFighterDeath($byTimeout = false)
 	{
 		$fighter = $this->getEnemy();
 		if ($fighter->curhp <= 0) {
@@ -168,7 +199,7 @@ class Fighter
 	public function selectTurn()
 	{
 		$isPrevEnemy = $this->lastEnemyId == $this->getEnemy()->fId;
-		$turn = (!$isPrevEnemy ? mt_rand(0, 1) : ($this->turn ? 0 : 1));
+		$turn = (!$isPrevEnemy ? mt_rand(0, 0) : ($this->turn ? 0 : 1));
 		$this->turn = $this->getEnemy()->turn = $turn;
 		[$hitter, $defender] = $this->setRoles($this);
 
@@ -203,13 +234,35 @@ class Fighter
 		return $this->team == $this->turn;
 	}
 
+	public function isBot()
+	{
+		return !is_null($this->aggr);
+	}
+
 	public function setRoles()
 	{
 		return $this->isHitter() ? [$this, $this->getEnemy()] : [$this->getEnemy(), $this];
 	}
 
+	public function fightProps($userId)
+	{
+		$props = ['id', 'fId', 'login', 'level', 'curhp', 'maxhp', 'image', 'team', 'enemyfId', 'turn'];
+		if (!$this->isBot()) {
+			$props[] = 'sex';
+			$props[] = 'swap';
+		} else {
+			$props[] = 'aggr';
+		}
+		return Common::propsOnly($this, $props);
+	}
+
 	public function __get($key)
 	{
-		return $this->user->{$key};
+		return $this->user->{$key} ?? null;
+	}
+
+	public function __call($method, $args)
+	{
+		return $this->user->{$method}($args);
 	}
 }

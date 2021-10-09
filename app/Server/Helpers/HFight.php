@@ -59,7 +59,7 @@ class HFight
 		[$cr1, $cr2] = self::calcStatBigger($u1, $u2, $stat1);
 		$r1 += $cr1; $r2 += $cr2;
 
-		[$r1, $r2] = array_map(function ($r) use ($min) {
+		[$r1, $r2] = array_map(function ($r) use ($min, $stat1, $stat2, $stat3) {
 			$result = round($r[0] + self::calcStat($r[1], $stat1, $stat2, $stat3));
 			return $result < $min ? $min : $result;
 		}, [[$r1, $u1], [$r2, $u2]]);

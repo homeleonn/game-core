@@ -6,24 +6,33 @@ use Core\Helpers\Common;
 
 class Fight
 {
-	private array $fighters = [];
+	public array $fighters = [];
+	public array $fightersById = [];
 	private array $teams = [[], []];
 	private array $freeFightersIds = [[], []];
 	private array $botsHits = [];
-	private array $swap = [];
-	private bool $isFightEnd = false;
+	public array $swap = [];
+	public bool $isFightEnd = false;
 	private int $winTeam;
 	private int $fighterIdCounter = 1;
-	private int $start = microtime(true);
+	private int $start;
 
 	private int $activeTeam = 0;
 	private int $passiveTeam = 1;
 
+	public function __construct()
+	{
+		$this->start = microtime(true);
+	}
+
 	public function addFighter(Fighter $fighter): self
 	{
+		if (!$fighter->isBot()) {
+			$this->fightersById[$fighter->id] = $fighter;
+		}
 		$fighter->fId = $this->fighterIdCounter++;
 		$this->fighters[$fighter->fId] = $fighter;
-		$this->teams[$fighter->fId] = $fighter;
+		$this->teams[$fighter->team][$fighter->fId] = $fighter;
 		$this->addToFreeFighters($fighter);
 
 		return $this;
@@ -40,7 +49,7 @@ class Fight
 
 		for ($i = 0; $i < $allFreeTeamFightersIds; $i++) {
 			if (empty($this->freeFightersIds[$this->activeTeam])
-					|| empty($this->freeFightersIds[$this->passiveTeam])) return;
+			 || empty($this->freeFightersIds[$this->passiveTeam])) return;
 
 			$fighter = $this->getRandomFighter($this->activeTeam);
 			$fighter->setEnemy($this->getRandomFighter($this->passiveTeam));
@@ -51,10 +60,12 @@ class Fight
 	private function getRandomFighter($team)
 	{
 		$fighterIdKey = mt_rand(0, count($this->freeFightersIds[$team]) - 1);
-		$fighterId 		= $this->freeFightersIds[$team][$fighterIdKey];
+		$fighterId = array_keys($this->freeFightersIds[$team])[$fighterIdKey];
+		// d($this->freeFightersIds, $team, $id);
+		// $fighterId 		= $this->freeFightersIds[$team][$id];
 		$fighter 			= $this->teams[$team][$fighterId];
 
-		$this->removeFreeFighter($fighter, $fighterIdKey);
+		$this->removeFreeFighter($fighter, $fighterId);
 
 		return $fighter;
 	}
@@ -63,7 +74,7 @@ class Fight
 	{
 		$key = $fighterIdKey ?? $fighter->fId;
 
-		if (array_key_exists($this->freeFightersIds[$fighter->team][$key])) {
+		if (array_key_exists($key, $this->freeFightersIds[$fighter->team])) {
 			unset($this->freeFightersIds[$fighter->team][$key]);
 		}
 	}
@@ -134,5 +145,14 @@ class Fight
 		}
 
 		return false;
+	}
+
+	public function getData($userId)
+	{
+		return [
+			'fighters' => array_map(function ($f) use ($userId) {
+				return $f->fightProps($userId);
+			}, $this->fighters),
+		];
 	}
 }
