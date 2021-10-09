@@ -48,4 +48,14 @@ class Common
 			}
 		}, (array)$arr);
 	}
+
+	public static function joinBufferLines($cb)
+	{
+		ob_start();
+		$cb();
+		$content = ob_get_contents();
+		ob_end_clean();
+
+		return preg_replace('/\n/m', ' ', $content);
+	}
 }
