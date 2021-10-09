@@ -58,7 +58,8 @@ class Server
 			$read[-1] = $this->socket;
 
 			if (stream_select($read, $write, $except, $this->periodicEventWorker->getTimeout()) === false) break;
-				$this->periodicEventWorker->execute();
+			
+			$this->periodicEventWorker->execute();
 
 			if (isset($read[-1])) {
 				$this->open(stream_socket_accept($this->socket, -1));
@@ -103,8 +104,7 @@ class Server
 		if (!isset($this->fds[$fd])) {
 			// var_dump(debug_backtrace());
 			// foreach (debug_backtrace() as $debug) { echo "{$debug['file']}/{$debug['line']}/{$debug['function']}\n"; }
-			echo "Connection null", __LINE__, "\n";return;
-
+			echo "Connection null. fd: $fd. ", __FILE__, __LINE__, "\n";return;
 		}
 		fwrite($this->fds[$fd], Frame::encode($message));
 	}

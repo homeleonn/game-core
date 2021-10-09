@@ -12,6 +12,7 @@ class UserRepository
 	private $app;
 	public $users;
 	public $usersFdsById;
+	private $marked = []; // Candidates for remove from app
 
 	public function __construct($app)
 	{
@@ -29,7 +30,7 @@ class UserRepository
 
 	public function findByFd(int $fd)
 	{
-		if (isset($this->users[$fd])) {
+		if ($this->has($fd)) {
 			return $this->users[$fd];
 		}
 
@@ -43,6 +44,11 @@ class UserRepository
 		if (isset($this->usersFdsById[$id]) && isset($this->users[$this->usersFdsById[$id]])) {
 			return $this->users[$this->usersFdsById[$id]];
 		}
+	}
+
+	public function has($fd)
+	{
+		return isset($this->users[$fd]);
 	}
 
 	public function remove($user)
@@ -84,11 +90,6 @@ class UserRepository
 		}
 
 		return $users;
-	}
-
-	public function has($fd)
-	{
-		return isset($this->users[$fd]);
 	}
 
 	public function getIds()
@@ -136,5 +137,47 @@ class UserRepository
 	{
 		$this->app->send($fd, Application::DUPLICATE);
 		$this->app->server->close(null, $fd);
+	}
+
+	public function markExit($fd)
+	{
+		$user = $this->findByFd($fd);
+		$this->marked[$user->id] = $fd;
+		$user->markExit();
+	}
+
+	public function clearExited()
+	{
+		$time = time();
+		print_r($this->getAll());
+		foreach ($this->marked as $id => $fd) {
+			$user = $this->findById($id);
+			if ($time > $user->exit) {
+				echo "Remove: fd: {$fd}, login: {$user->login} | ";
+				$this->app->removeFromApp($fd);
+				unset($this->marked[$id]);
+			}
+		}
+	}
+
+	public function restore($newFd, $userId)
+	{
+		if (isset($this->marked[$userId])) {
+			$user = $this->findById($userId);
+			$oldFd = $user->getFd();
+			
+			$this->users[$newFd] = $user;
+			$this->usersFdsById[$user->id] = $newFd;
+			unset($this->users[$oldFd]);
+			unset($this->marked[$userId]);
+
+			$user->clearMarkExit();
+			$user->setFd($newFd);
+			$this->sendUser($user);
+
+			return true;
+		}
+
+		return false;
 	}
 }

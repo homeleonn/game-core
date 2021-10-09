@@ -8,6 +8,7 @@ use DB;
 
 class User 
 {
+	const CLEAR_EXITERS_TIMEOUT = 10;
 	const CAN_TRANSITION_YES = 1;
 	const CAN_TRANSITION_NO = 0;
 	const TRANSITION_TIMEOUT = 0;
@@ -168,6 +169,21 @@ class User
 	public function getDataForLocation()
 	{
 		return [$this->getLoc(), $this->getFd(), $this->getId()];
+	}
+
+	public function clearMarkExit()
+	{
+		unset($this->exit);
+	}
+
+	public function markExit()
+	{
+		$this->exit = time() + self::CLEAR_EXITERS_TIMEOUT;
+	}
+
+	public function isExit()
+	{
+		return !isset($this->exit);
 	}
 
 	public function __call($method, $args)

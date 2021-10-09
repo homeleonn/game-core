@@ -143,11 +143,13 @@ class Application {
 
 	public function close(WebSocketServer $server, int $fd)
 	{
-		$this->removeFromApp($fd);
+		$this->userRepo->markExit($fd);
+		// $this->removeFromApp($fd);
 	}
 
 	public function addToApp($fd, $userId)
 	{
+		if ($this->userRepo->restore($fd, $userId)) return;
 		if (!$user = $this->userRepo->init($fd, $userId)) return;
 
 		$this->userRepo->sendUser($user);
@@ -217,6 +219,11 @@ class Application {
 
 	public function periodicEvent($eventName)
 	{
-		echo $eventName, time(), "\n";
+		echo $eventName, " ", time(), " | ";
+
+		match ($eventName) {
+			'clear_exited_users' => $this->userRepo->clearExited(),
+			default => null,
+		};
 	}
 }

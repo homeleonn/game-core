@@ -15,8 +15,7 @@ $server->setDosProtection($core->make('dosprotection'));
 
 $pe = new PeriodicEventWorker($app);
 $time = time();
-$pe->addEvent('event_1', 5, $time);
-$pe->addEvent('event_2', 20, $time);
+$pe->addEvent('clear_exited_users', 8, $time);
 
 $server->setPeriodicEventWorker($pe);
 
