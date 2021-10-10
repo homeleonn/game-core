@@ -183,7 +183,7 @@ class User
 
 	public function isExit()
 	{
-		return !isset($this->exit);
+		return isset($this->exit);
 	}
 
 	public function __call($method, $args)

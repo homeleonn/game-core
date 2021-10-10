@@ -5,6 +5,7 @@ namespace App\Server\Repositories;
 use DB;
 use App\Server\Models\User;
 use App\Server\Application;
+use Core\Helpers\Common;
 
 class UserRepository
 {
@@ -149,7 +150,7 @@ class UserRepository
 	public function clearExited()
 	{
 		$time = time();
-		print_r($this->getAll());
+		echo Common::joinBufferLines(function () { print_r($this->getAll()); });
 		foreach ($this->marked as $id => $fd) {
 			$user = $this->findById($id);
 			if ($time > $user->exit) {

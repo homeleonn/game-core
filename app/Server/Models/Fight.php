@@ -3,9 +3,12 @@
 namespace App\Server\Models;
 
 use Core\Helpers\Common;
+use App\Server\Helpers\HFight;
+use Core\Support\Facades\App;
 
 class Fight
 {
+	public int $fightId;
 	public array $fighters = [];
 	public array $fightersById = [];
 	private array $teams = [[], []];
@@ -15,14 +18,33 @@ class Fight
 	public bool $isFightEnd = false;
 	private int $winTeam;
 	private int $fighterIdCounter = 1;
-	private int $start;
+	private int $startTime;
 
 	private int $activeTeam = 0;
 	private int $passiveTeam = 1;
 
-	public function __construct()
+	public function __construct($fightId)
 	{
-		$this->start = microtime(true);
+		$this->fightId = $fightId;
+		$this->startTime = time();
+	}
+
+	public function cicle()
+	{
+		$this->checkToggleTurn();
+		$this->processBotsTick();
+	}
+
+	private function processBotsTick()
+	{
+		$time = time();
+		foreach ($this->botsHits as $botfId => $hit) {
+			if ($time < $hit) return;
+			unset($this->botsHits[$botfId]);
+			$bot = $this->fighters[$botfId];
+			[$hitter] = $bot->setRoles();
+			$hitter?->hit(mt_rand(1, 3));
+		}
 	}
 
 	public function addFighter(Fighter $fighter): self
@@ -83,6 +105,7 @@ class Fight
 	{
 		// f - fighter
 		foreach ($this->teams[$this->activeTeam] as $f) {
+			echo ($f->getTimeTurnLeft() ?? null);
 			if (!$f->swap || $f->getTimeTurnLeft() > 1) continue;
 
 			$passFighter = $f->isHitter() ? $f : $f->getEnemy();
@@ -90,6 +113,7 @@ class Fight
 
 			if ($death) {
 				$passFighter->kill();
+				if ($this->isFightEnd) return;
 			}
 
 			$this->handleBot($f);
@@ -99,7 +123,7 @@ class Fight
 
 	public function handleBot($fighter)
 	{
-		if (isset($fighter->isBot)) {
+		if ($fighter->isBot()) {
 			$this->botsHits[$fighter->fId] = $this->monsterDamageTime();
 		}
 	}
@@ -111,12 +135,12 @@ class Fight
 
 	public function isEnd($defender)
 	{
-		if (!$this->checkAliveTeam($this->teams[$defender->team])) return false;
+		if ($this->checkAliveTeam($this->teams[$defender->team])) return false;
 
-		// stopAllTimers();
 		$this->isFightEnd = true;
 		$this->winTeam = $defender->getEnemy()->team;
 		$this->setStatistics($this->winTeam);
+		App::make('game')->fightRepo->remove($this->fightId);
 
 		return true;
 	}
@@ -129,13 +153,13 @@ class Fight
 		foreach ($this->teams as $idx => $team) {
 			$isWinner = $idx == $this->winTeam;
 			foreach ($team as $fighter) {
-				$teamsStatisticts[$idx][$fighter->fId] = Common::propsOnly($fighter, ['fId', 'login', 'level', 'damage', 'kills']);
+				$teamsStatisticts[$idx][$fighter->fId] = Common::propsOnly($fighter, $needProps);
 				$teamsStatisticts[$idx][$fighter->fId]['fightExp'] = $isWinner ? $fighter->damage * 2 : 0;
 			}
 		}
 
 		// Send statistics to all fight members
-		// [start, winTeam, teamsStatisticts]
+		HFight::send('statistics', $this->fighters, $this->startTime, $this->winTeam, $teamsStatisticts);
 	}
 
 	private function checkAliveTeam($team)

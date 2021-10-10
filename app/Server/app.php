@@ -10,12 +10,14 @@ use App\Server\Application;
 $core 	= new App();
 $server = new Server(Config::get('host'), Config::get('port'));
 $app 		= new Application($server, $core->make('storage'));
+$core->set('game', $app);
 
 $server->setDosProtection($core->make('dosprotection'));
 
 $pe = new PeriodicEventWorker($app);
 $time = time();
-$pe->addEvent('clear_exited_users', 8, $time);
+$pe->addEvent('clear_exited_users', 60, $time);
+$pe->addEvent('fight_worker', 5, $time);
 
 $server->setPeriodicEventWorker($pe);
 

@@ -10,6 +10,7 @@ use App\Server\Repositories\UserRepository;
 use App\Server\Repositories\LocRepository;
 use App\Server\Repositories\ItemRepository;
 use App\Server\Repositories\FightRepository;
+use App\Server\Models\Fighter;
 
 class Application {
 	public const DISCONNECT = '0';
@@ -133,8 +134,12 @@ class Application {
 		}
 	}
 
-	public function send(int $fd, $message)
+	public function send($fd, $message)
 	{
+		if ($fd instanceof Fighter) {
+			if (isset($fd->user->aggr) || $fd->isExit()) return;
+			$fd = $fd->getFd();
+		}
 		$this->server->push(
 			$fd, 
 			is_array($message) ? json_encode($message) : $message
@@ -219,10 +224,11 @@ class Application {
 
 	public function periodicEvent($eventName)
 	{
-		echo $eventName, " ", time(), " | ";
+		echo "\n", $eventName, " ", time(), " | ";
 
 		match ($eventName) {
 			'clear_exited_users' => $this->userRepo->clearExited(),
+			'fight_worker' => $this->fightRepo->cicle(),
 			default => null,
 		};
 	}

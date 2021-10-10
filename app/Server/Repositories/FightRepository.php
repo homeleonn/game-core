@@ -17,7 +17,7 @@ class FightRepository
 	public function init($fighter1, $fighter2)
 	{
 		// $this->fightId++;
-		$fight = new Fight();
+		$fight = new Fight(1);
 		$fighter1 = new Fighter($fighter1, $fight);
 		$fighter2 = new Fighter($fighter2, $fight);
 		$fighter1->team = 0;
@@ -60,8 +60,15 @@ class FightRepository
 		$this->app->send($user->getFd(), ['_fight' => $this->fights[1]?->getData($user->id) ?? null]);
 	}
 
+	public function remove($fightId)
+	{
+		echo "Remove Fight: $fightId";
+		unset($this->fights[$fightId]);
+	}
+
 	public function hit($user, $type)
 	{
+		d(array_keys($this->fights));
 		$fighter = $this->fights[1]->fightersById[$user->id];
 		// d($this->fights[1]->fightersById);
 		if (!$fighter->isHitter()) {
@@ -69,5 +76,12 @@ class FightRepository
 			return;
 		}
 		$fighter->hit($type, $this->app);
+	}
+
+	public function cicle()
+	{
+		foreach ($this->fights as $fight) {
+			$fight->cicle();
+		}
 	}
 }

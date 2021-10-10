@@ -2,6 +2,8 @@
 
 namespace App\Server\Helpers;
 
+use Core\Support\Facades\App;
+
 class HFight
 {
 	public static function checkAttack($u1, $u2, $type, $superHitLevel)
@@ -178,5 +180,67 @@ class HFight
 		} while ($duplicate);
 
 		return $generatedSuperHit;
+	}
+
+	public static function send($messageType, ...$args)
+	{
+		$methodName = 'message' . ucfirst($messageType);
+		self::$methodName(...$args);
+	}
+
+	public static function messageHit($curFighter, $type, $damage, $crit, $block, $evasion, $superHit)
+	{
+		$sendHitData = ['_fight' => [
+			'hit' => [
+				'defender' => $curFighter->getEnemy()->fId,
+				'damage' => $damage,
+			],
+		]];
+
+		$sendPrivateHitData = $sendHitData;
+		$privateProps = ['type', 'crit', 'block', 'evasion', 'superHit'];
+		foreach ($privateProps as $prop) {
+			$sendPrivateHitData['_fight']['hit'][$prop] = $$prop;
+		}
+
+		foreach ($curFighter->fight->fightersById as $fighter) {
+			$hitData = self::isCurrentFighter($fighter, $curFighter)
+				? $sendPrivateHitData
+				: $sendHitData;
+			App::make('game')->send($fighter->getFd(), $hitData);
+		}
+	}
+
+	public static function isCurrentFighter($fighter, $curFighter)
+	{
+		return $fighter->fId == $curFighter->fId 
+				|| $fighter->fId == $curFighter->enemyfId;
+	}
+
+	public static function messageSwap($fighter)
+	{
+		foreach ([$fighter, $fighter->getEnemy()] as $fighter) {
+			App::make('game')->send($fighter, ['_fight' => ['swap' => $fighter->swap]]);
+		}
+	}
+
+	public static function messageStatistics($fighters, $startTime, $winTeam, $teamsStatisticts)
+	{
+		foreach ($fighters as $fighter) {
+			App::make('game')->send($fighter, ['_fight' => ['statistics' => [
+				'startTime' => $startTime,
+				'winTeam' => $winTeam,
+				'teamsStatisticts' => $teamsStatisticts,
+			]]]);
+		}
+	}
+
+	public static function messageKill($fighters, $fId)
+	{
+		foreach ($fighters as $fighter) {
+			App::make('game')->send($fighter, ['_fight' => ['kill' => [
+				'fId' => $fId,
+			]]]);
+		}
 	}
 }

@@ -56,6 +56,6 @@ class Common
 		$content = ob_get_contents();
 		ob_end_clean();
 
-		return preg_replace('/\n/m', ' ', $content);
+		return preg_replace(['/[\n]/m', '/(\t|\s)+/'], ' ', $content);
 	}
 }

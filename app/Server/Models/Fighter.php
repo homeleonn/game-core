@@ -15,11 +15,11 @@ class Fighter
 	public $user;
 	private int $lastEnemyId 	= 0;
 	public int $turn 					= 0;
-	private int $damage 			= 0;
-	private int $fightExp 		= 0;
-	private int $kills 				= 0;
-	private int $timeoutTicks = 0;
-	public array|null $swap 				= [];
+	public int $damage 				= 0;
+	public int $fightExp 			= 0;
+	public int $kills 				= 0;
+	public int $timeoutTicks 	= 0;
+	public array|null $swap 	= [];
 	private bool $delay 			= false;
 	public Fight $fight;
 
@@ -43,50 +43,23 @@ class Fighter
 
 	public function getTimeTurnLeft()
 	{
-		return !empty($this->swap) ? null : round($this->swap[self::TURN_TIME] - (time() - self::TURN_TIME_TIMEOUT));
+		return empty($this->swap) ? null : $this->swap[self::TURN_TIME] - (time() - self::TURN_TIME_TIMEOUT);
 	}
 
-	public function hit($type, $app)
+	public function hit($type)
 	{
 		[$damage, $crit, $block, $evasion, $superHit] =  $this->isBot ? false : $this->calcDamage($type);
 		$this->resetTimeoutTicks();
 		$this->getEnemy()->curhp -= $damage;
+		HFight::send('hit', $this, $type, $damage, $crit, $block, $evasion, $superHit);
 		$isFighterDeath = $this->checkFighterDeath();
-		$this->send($app, $type, $damage, $crit, $block, $evasion, $superHit);
 		if ($this->fight->isFightEnd) return;
 		// $this->setDelay();
-		// $this->toggleTurn($isFighterDeath);
+		$this->toggleTurn($isFighterDeath);
 	}
 
-	public function send($app, $type, $damage, $crit, $block, $evasion, $superHit)
+	public function resetTimeoutTicks()
 	{
-		// d($this);
-		// if ($this->isBot()) return;
-		$sendData = ['_fight' => [
-			'hit' => [
-				'defender' => $this->getEnemy()->fId,
-				'damage' => $damage,
-			],
-		]];
-
-		$sendPrivateData = $sendData;
-		$privateProps = ['type', 'crit', 'block', 'evasion', 'superHit'];
-		foreach ($privateProps as $prop) {
-			$sendPrivateData['_fight']['hit'][$prop] = $$prop;
-		}
-
-		foreach ($this->fight->fightersById as $fighter) {
-			if ($fighter->fId == $this->fId 
-				|| $fighter->fId == $this->enemyfId) {
-				d($fighter->user);
-				$app->send($fighter->getFd(), $sendPrivateData);
-			} else {
-				$app->send($fighter->getFd(), $sendData);
-			}
-		}
-	}
-
-	public function resetTimeoutTicks() {
 		$this->timeoutTicks = 0;
 	}
 
@@ -118,16 +91,17 @@ class Fighter
 			$this->swap[self::TURN_TIME] = time();
 			$this->fight->handleBot($this->getEnemy());
 		}
+		HFight::send('swap', $this);
 	}
 
 	public function setSwap()
 	{
 		[$turn, $hitter] = $this->selectTurn();
-		$swap = [$this->fId, $this->getEnemy()->fId, $turn, 2, microtime(true)];
+		$swap = [$this->fId, $this->getEnemy()->fId, $turn, 2, time()];
 
 		$this->fight->handleBot($hitter);
 
-		$this->foreachEnemy(function ($fighter) use ($swap) {
+		$this->foreachEnemy(function ($fighter) use (&$swap) {
 			$fighter->lastEnemyId = $fighter->getEnemy()->fId;
 			$fighter->swap = &$swap;
 			$this->fight->swap[$fighter->fId] = &$swap;
@@ -193,13 +167,15 @@ class Fighter
 	{
 		$this->curhp = 0;
 		$this->swap = null;
+		HFight::send('kill', $this->fight->fighters, $this->fId);
 		$this->fight->isEnd($this);
 	}
 
 	public function selectTurn()
 	{
 		$isPrevEnemy = $this->lastEnemyId == $this->getEnemy()->fId;
-		$turn = (!$isPrevEnemy ? mt_rand(0, 0) : ($this->turn ? 0 : 1));
+		echo $this->turn;
+		$turn = (!$isPrevEnemy ? mt_rand(0, 1) : ($this->turn ? 0 : 1));
 		$this->turn = $this->getEnemy()->turn = $turn;
 		[$hitter, $defender] = $this->setRoles($this);
 
