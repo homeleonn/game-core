@@ -16,4 +16,5 @@ Route::group(['middleware' => 'guest'], function() {
 	Route::get('', [HomeController::class, 'entry'])->name('entry');
 	Route::post('login', [HomeController::class, 'login'])->name('login');
 	Route::get('test', [HomeController::class, 'test']);
+	Route::get('test/id', [HomeController::class, 'test']);
 });

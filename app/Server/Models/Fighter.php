@@ -21,11 +21,13 @@ class Fighter
 	public int $timeoutTicks 	= 0;
 	public array|null $swap 	= [];
 	private bool $delay 			= false;
+	public int $team;
 	public Fight $fight;
 
-	public function __construct(User|\stdClass $user, Fight $fight)
+	public function __construct(User|\stdClass $user, int $team, Fight $fight)
 	{
 		$this->user = $user;
+		$this->team = $team;
 		$this->super_hits = $this->isBot() ? [] : json_decode($this->user->super_hits);
 		$this->fight = $fight;
 	}

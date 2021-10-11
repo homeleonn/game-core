@@ -22,7 +22,8 @@ class HomeController
     public function wsToken()
     {
         if (Config::get('env') == 'prod') usleep(500000);
-        echo generateToken(1);
+        // d(Request::get('id'));
+        echo generateToken((int)(Request::get('id') ?? 1));
     }
 
     public function entry()
@@ -47,8 +48,10 @@ class HomeController
         return redirect()->route('entry');
     }
 
-    public function test()
+    public function test($userId = 1)
     {
+        // $request = \App::make('request');
+        // dd(Request::only(['id']) ?? null);
         // dd(\Core\Helpers\Common::propsOnly((object)['a' => 1, 'b' => 2, 'c' => 3], ['b', 'c']));
         // $users = \DB::getAll('Select * from users');
         // return view('test', compact('users'));

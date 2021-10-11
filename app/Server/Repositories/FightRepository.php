@@ -14,32 +14,24 @@ class FightRepository
 		private Application $app
 	) {}
 
-	public function init($fighter1, $fighter2)
+	public function init($fighterProto1, $fighterProto2)
 	{
 		// $this->fightId++;
-		$fight = new Fight(1);
-		$fighter1 = new Fighter($fighter1, $fight);
-		$fighter2 = new Fighter($fighter2, $fight);
-		$fighter1->team = 0;
-		$fighter2->team = 1;
-
-		$fight->addFighter($fighter1)
-						->addFighter($fighter2);
-		$fight->setPairs();
-		// $fight->run();
+		$fight = new Fight($this->fightId, $this->app);
 		$this->fights[$this->fightId] = $fight;
-		// array_walk([$fighter1, $fighter2], function (&$fighter) {
-		// 	$this->beforeFight($fighter, $this->fightId);
-		// });
-		$this->beforeFight($fighter1, $this->fightId);
-		$this->beforeFight($fighter2, $this->fightId);
+
+		$fighterProto1->curhp = $fighterProto1->maxhp = 200;
+		$fight->addFighter($fighterProto1, 1);
+		$this->createBots($fighterProto2, 0, $this->fightId, 3);
+		$fight->setPairs();
 	}
 
-	private function beforeFight($fighter, $fightId)
+	private function createBots($proto, $team, $fightId, $count = 1)
 	{
-		$fighter->user->fight = $fightId;
-		if (!$fighter->isBot()) {
-			$this->app->send($fighter->user->getFd(), ['fight' => 'start']);
+		if ($count <= 0) return;
+		$fight = $this->fights[$fightId];
+		while ($count--) {
+			$fight->addFighter($proto, $team);
 		}
 	}
 
@@ -47,9 +39,7 @@ class FightRepository
 	{
 		if (!isset($this->fights[$fightId])) return;
 
-		$this->fights[$fightId]
-			->addFighter($fighter)
-			->setPairs();
+		$this->fights[$fightId]->addFighter($fighter);
 	}
 
 	public function getById($user)
@@ -68,7 +58,7 @@ class FightRepository
 
 	public function hit($user, $type)
 	{
-		d(array_keys($this->fights));
+		// d(array_keys($this->fights));
 		$fighter = $this->fights[1]->fightersById[$user->id];
 		// d($this->fights[1]->fightersById);
 		if (!$fighter->isHitter()) {

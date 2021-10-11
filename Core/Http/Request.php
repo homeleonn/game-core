@@ -23,6 +23,11 @@ class Request
         $this->uri = \prepareUri($urlParts['path']);
     }
 
+    public function get($param)
+    {
+        return $_REQUEST[$param] ?? null;
+    }
+
     public function getUri()
     {
         return $this->uri;
@@ -42,12 +47,13 @@ class Request
     {
         $res = [];
 
-        foreach ($only as $item) {
-            if (!isset($_REQUEST[$item])) {
-                throw new Exception("Request item {$item} not found");
-            }
+        foreach ($only as $param) {
+            // if (!isset($_REQUEST[$item])) {
+            //     // throw new Exception("Request item {$item} not found");
+            //     // return null;
+            // }
 
-            $res[$item] = $_REQUEST[$item];
+            $res[$param] = $this->get($param);
         }
 
         return $res;

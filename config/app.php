@@ -13,6 +13,7 @@ $app = [
 		'Router' => \Core\Support\Facades\Router::class,
 		'Route' => \Core\Support\Facades\Router::class,
 		'Response' => \Core\Support\Facades\Response::class,
+		'Request' => \Core\Support\Facades\Request::class,
 		'Auth' => \Core\Support\Facades\Auth::class,
 		'Config' => \Core\Support\Facades\Config::class,
 		'DB' => \Core\Support\Facades\DB::class,

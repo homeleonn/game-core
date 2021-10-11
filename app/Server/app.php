@@ -15,9 +15,8 @@ $core->set('game', $app);
 $server->setDosProtection($core->make('dosprotection'));
 
 $pe = new PeriodicEventWorker($app);
-$time = time();
-$pe->addEvent('clear_exited_users', 60, $time);
-$pe->addEvent('fight_worker', 5, $time);
+$pe->addEvent('clear_exited_users', 60);
+$pe->addEvent('fight_worker', 5);
 
 $server->setPeriodicEventWorker($pe);
 

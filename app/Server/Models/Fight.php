@@ -19,12 +19,14 @@ class Fight
 	private int $winTeam;
 	private int $fighterIdCounter = 1;
 	private int $startTime;
+	private $app;
 
 	private int $activeTeam = 0;
 	private int $passiveTeam = 1;
 
-	public function __construct($fightId)
+	public function __construct($fightId, $app)
 	{
+		$this->app = $app;
 		$this->fightId = $fightId;
 		$this->startTime = time();
 	}
@@ -47,10 +49,13 @@ class Fight
 		}
 	}
 
-	public function addFighter(Fighter $fighter): self
+	public function addFighter($fighterProto, $team): self
 	{
+		$fighter = new Fighter($fighterProto, $team, $this);
+		$fighter->user->fight = $this->fightId;
 		if (!$fighter->isBot()) {
 			$this->fightersById[$fighter->id] = $fighter;
+			$this->app->send($fighter->user->getFd(), ['fight' => 'start']);
 		}
 		$fighter->fId = $this->fighterIdCounter++;
 		$this->fighters[$fighter->fId] = $fighter;
