@@ -110,7 +110,7 @@ class Fight
 	{
 		// f - fighter
 		foreach ($this->teams[$this->activeTeam] as $f) {
-			echo ($f->getTimeTurnLeft() ?? null);
+			// echo ($f->getTimeTurnLeft() ?? null);
 			if (!$f->swap || $f->getTimeTurnLeft() > 1) continue;
 
 			$passFighter = $f->isHitter() ? $f : $f->getEnemy();

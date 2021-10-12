@@ -13,7 +13,7 @@ class Fighter
 	const TURN_TIME_TIMEOUT 	= 10;
 
 	public $user;
-	private int $lastEnemyId 	= 0;
+	public int $lastEnemyfId 	= 0;
 	public int $turn 					= 0;
 	public int $damage 				= 0;
 	public int $fightExp 			= 0;
@@ -34,7 +34,7 @@ class Fighter
 
 	public function getEnemy()
 	{
-		return $this->fight->fighters[$this->enemyfId];
+		return $this->enemyfId ? $this->fight->fighters[$this->enemyfId] : null;
 	}
 
 	public function setEnemy($fighter)
@@ -104,7 +104,7 @@ class Fighter
 		$this->fight->handleBot($hitter);
 
 		$this->foreachEnemy(function ($fighter) use (&$swap) {
-			$fighter->lastEnemyId = $fighter->getEnemy()->fId;
+			$fighter->lastEnemyfId = $fighter->getEnemy()->fId;
 			$fighter->swap = &$swap;
 			$this->fight->swap[$fighter->fId] = &$swap;
 		});
@@ -113,9 +113,9 @@ class Fighter
 	public function canSwap($isEnemyDeath)
 	{
 		// if hit swap was held or enemy defeated
-		if (!--$this->swap[self::HITS_COUNT] || $isEnemyDeath) {
+		if (!$this->swap || !--$this->swap[self::HITS_COUNT] || $isEnemyDeath) {
 			$this->foreachEnemy(function ($fighter) {
-				$fighter->e = $fighter->swap = null;
+				$fighter->enemyfId = $fighter->swap = null;
 				unset($this->fight->swap[$fighter->fId]);
 				if ($fighter->curhp > 0) {
 					$this->fight->addToFreeFighters($fighter);
@@ -175,8 +175,8 @@ class Fighter
 
 	public function selectTurn()
 	{
-		$isPrevEnemy = $this->lastEnemyId == $this->getEnemy()->fId;
-		echo $this->turn;
+		$isPrevEnemy = $this->lastEnemyfId == $this->getEnemy()->fId;
+		// echo $this->turn;
 		$turn = (!$isPrevEnemy ? mt_rand(0, 1) : ($this->turn ? 0 : 1));
 		$this->turn = $this->getEnemy()->turn = $turn;
 		[$hitter, $defender] = $this->setRoles($this);

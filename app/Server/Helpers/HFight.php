@@ -219,8 +219,9 @@ class HFight
 
 	public static function messageSwap($fighter)
 	{
-		foreach ([$fighter, $fighter->getEnemy()] as $fighter) {
-			App::make('game')->send($fighter, ['_fight' => ['swap' => $fighter->swap]]);
+		$pair = [$fighter, $fighter->swap ? $fighter->getEnemy() : $fighter->fight->fighters[$fighter->lastEnemyfId]];
+		foreach ($pair as $fighter) {
+			App::make('game')->send($fighter, ['_fight' => ['swap' => $fighter->swap ?? null]]);
 		}
 	}
 
