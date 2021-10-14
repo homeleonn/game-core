@@ -150,7 +150,7 @@ class UserRepository
 	public function clearExited()
 	{
 		$time = time();
-		echo Common::joinBufferLines(function () { print_r($this->getAll()); });
+		// echo Common::joinBufferLines(function () { print_r($this->getAll()); });
 		foreach ($this->marked as $id => $fd) {
 			$user = $this->findById($id);
 			if ($time > $user->exit) {

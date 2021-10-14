@@ -224,7 +224,7 @@ class Application {
 
 	public function periodicEvent($eventName)
 	{
-		echo "\n", $eventName, " ", time(), " | ";
+		// echo "\n", $eventName, " ", time(), " | ";
 
 		match ($eventName) {
 			'clear_exited_users' => $this->userRepo->clearExited(),

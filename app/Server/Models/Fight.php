@@ -75,8 +75,7 @@ class Fight
 		$allFreeTeamFightersIds = $this->freeFightersIds[$this->activeTeam];
 
 		for ($i = 0; $i < $allFreeTeamFightersIds; $i++) {
-			if (empty($this->freeFightersIds[$this->activeTeam])
-			 || empty($this->freeFightersIds[$this->passiveTeam])) return;
+			if ($this->noFreeFighters()) return;
 
 			$fighter = $this->getRandomFighter($this->activeTeam);
 			$fighter->setEnemy($this->getRandomFighter($this->passiveTeam));
@@ -84,25 +83,27 @@ class Fight
 		}
 	}
 
+	public function noFreeFighters()
+	{
+		return empty($this->freeFightersIds[$this->activeTeam]) || empty($this->freeFightersIds[$this->passiveTeam]);
+	}
+
 	private function getRandomFighter($team)
 	{
 		$fighterIdKey = mt_rand(0, count($this->freeFightersIds[$team]) - 1);
-		$fighterId = array_keys($this->freeFightersIds[$team])[$fighterIdKey];
-		// d($this->freeFightersIds, $team, $id);
-		// $fighterId 		= $this->freeFightersIds[$team][$id];
-		$fighter 			= $this->teams[$team][$fighterId];
+		$fighterId 		= array_keys($this->freeFightersIds[$team])[$fighterIdKey];
+		$fighter 			= $this->fighters[$fighterId];
 
-		$this->removeFreeFighter($fighter, $fighterId);
+		$this->removeFreeFighter($fighter);
 
 		return $fighter;
 	}
 
-	private function removeFreeFighter($fighter, $fighterIdKey = null)
+	private function removeFreeFighter($fighter)
 	{
-		$key = $fighterIdKey ?? $fighter->fId;
 
-		if (array_key_exists($key, $this->freeFightersIds[$fighter->team])) {
-			unset($this->freeFightersIds[$fighter->team][$key]);
+		if (array_key_exists($fighter->fId, $this->freeFightersIds[$fighter->team])) {
+			unset($this->freeFightersIds[$fighter->team][$fighter->fId]);
 		}
 	}
 
@@ -128,14 +129,15 @@ class Fight
 
 	public function handleBot($fighter)
 	{
-		if ($fighter->isBot()) {
+		if ($fighter->isBot() && $fighter->isAlive()) {
 			$this->botsHits[$fighter->fId] = $this->monsterDamageTime();
 		}
 	}
 
 	private function monsterDamageTime()
 	{
-		return time() + 1;
+		return time() + mt_rand(2, 5);
+		// return time() + 3;
 	}
 
 	public function isEnd($defender)

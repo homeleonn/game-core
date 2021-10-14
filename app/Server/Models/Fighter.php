@@ -12,7 +12,7 @@ class Fighter
 	const TURN_TIME 					= 4;
 	const TURN_TIME_TIMEOUT 	= 10;
 
-	public $user;
+	public User|\stdClass $user;
 	public int $lastEnemyfId 	= 0;
 	public int $turn 					= 0;
 	public int $damage 				= 0;
@@ -43,6 +43,12 @@ class Fighter
 		$fighter->enemyfId = $this->fId;
 	}
 
+	public function clearEnemy()
+	{
+		$this->enemyfId = null;
+		$this->swap = null;
+	}
+
 	public function getTimeTurnLeft()
 	{
 		return empty($this->swap) ? null : $this->swap[self::TURN_TIME] - (time() - self::TURN_TIME_TIMEOUT);
@@ -50,14 +56,15 @@ class Fighter
 
 	public function hit($type)
 	{
-		[$damage, $crit, $block, $evasion, $superHit] =  $this->isBot ? false : $this->calcDamage($type);
+		[$damage, $crit, $block, $evasion, $superHit] = $this->calcDamage($type);
 		$this->resetTimeoutTicks();
 		$this->getEnemy()->curhp -= $damage;
 		HFight::send('hit', $this, $type, $damage, $crit, $block, $evasion, $superHit);
-		$isFighterDeath = $this->checkFighterDeath();
+		$isEnemyDeath = $this->checkFighterDeath();
 		if ($this->fight->isFightEnd) return;
 		// $this->setDelay();
-		$this->toggleTurn($isFighterDeath);
+		$this->shiftHit();
+		$this->toggleTurn($isEnemyDeath);
 	}
 
 	public function resetTimeoutTicks()
@@ -83,49 +90,52 @@ class Fighter
 		}
 	}
 
-	public function toggleTurn($isFighterDeath = false)
+	public function toggleTurn($isEnemyDeath = false)
 	{
-		if ($this->canSwap($isFighterDeath)) {
+		if ($this->needToChangeEnemy($isEnemyDeath)) {
+			$this->foreachEnemy(function ($fighter) {
+				$this->clearEnemy();
+				if ($fighter->isAlive()) {
+					$this->fight->addToFreeFighters($fighter);
+				}
+			});
 			$this->fight->setPairs();
 		} else {
 			[$turn] = $this->selectTurn();
 			$this->swap[self::HIT_TURN] = $turn;
 			$this->swap[self::TURN_TIME] = time();
 			$this->fight->handleBot($this->getEnemy());
+			// HFight::send('swap', $this);
 		}
-		HFight::send('swap', $this);
 	}
 
 	public function setSwap()
 	{
 		[$turn, $hitter] = $this->selectTurn();
-		$swap = [$this->fId, $this->getEnemy()->fId, $turn, 2, time()];
+		$swap = [$this->fId, $this->enemyfId, $turn, 2, time()];
 
 		$this->fight->handleBot($hitter);
 
 		$this->foreachEnemy(function ($fighter) use (&$swap) {
-			$fighter->lastEnemyfId = $fighter->getEnemy()->fId;
+			$fighter->lastEnemyfId = $fighter->enemyfId;
 			$fighter->swap = &$swap;
-			$this->fight->swap[$fighter->fId] = &$swap;
 		});
+		HFight::send('swap', $this);
 	}
 
-	public function canSwap($isEnemyDeath)
+	private function needToChangeEnemy($isEnemyDeath)
 	{
-		// if hit swap was held or enemy defeated
-		if (!$this->swap || !--$this->swap[self::HITS_COUNT] || $isEnemyDeath) {
-			$this->foreachEnemy(function ($fighter) {
-				$fighter->enemyfId = $fighter->swap = null;
-				unset($this->fight->swap[$fighter->fId]);
-				if ($fighter->curhp > 0) {
-					$this->fight->addToFreeFighters($fighter);
-				}
-			});
+		return !$this->swap || !$this->hitsExist() || $isEnemyDeath;
+	}
 
-			return true;
-		}
+	private function shiftHit()
+	{
+		if ($this->swap) $this->swap[self::HITS_COUNT]--;
+	}
 
-		return false;
+	private function hitsExist()
+	{
+		return $this->swap[self::HITS_COUNT] ?? null;
 	}
 
 	public function calcDamage($type)
@@ -175,13 +185,18 @@ class Fighter
 
 	public function selectTurn()
 	{
-		$isPrevEnemy = $this->lastEnemyfId == $this->getEnemy()->fId;
+		$isPrevEnemy = $this->lastEnemyfId == $this->enemyfId;
 		// echo $this->turn;
-		$turn = (!$isPrevEnemy ? mt_rand(0, 1) : ($this->turn ? 0 : 1));
+		$turn = $isPrevEnemy ? ($this->turn ? 0 : 1) : mt_rand(0, 1);
 		$this->turn = $this->getEnemy()->turn = $turn;
 		[$hitter, $defender] = $this->setRoles($this);
 
 		return [$turn, $hitter, $defender];
+	}
+
+	public function _toggleTurn()
+	{
+		
 	}
 
 	public function checkSuperHit($type)
@@ -192,7 +207,7 @@ class Fighter
 			if ($h->hit[$h->step] === $type) {
 				$h->step++;
 				if ($h->step === count($h->hit)) {
-					d('SUPER-HIT');
+					// echo('SUPER-HIT');
 					$h->step = 0;
 					return $level;
 				}
@@ -207,9 +222,14 @@ class Fighter
 		return false;
 	}
 
+	public function isAlive()
+	{
+		return $this->curhp > 0;
+	}
+
 	public function isHitter()
 	{
-		return $this->team == $this->turn;
+		return $this->enemyfId && $this->team == $this->turn;
 	}
 
 	public function isBot()

@@ -22,7 +22,9 @@ class FightRepository
 
 		$fighterProto1->curhp = $fighterProto1->maxhp = 200;
 		$fight->addFighter($fighterProto1, 1);
-		$this->createBots($fighterProto2, 0, $this->fightId, 3);
+		$this->createBots($fighterProto2, 1, $this->fightId, 4);
+		$this->createBots($fighterProto2, 0, $this->fightId, 4);
+		// $this->createBots($fighterProto2, 0, $this->fightId, 1);
 		$fight->setPairs();
 	}
 
@@ -38,7 +40,6 @@ class FightRepository
 	public function addFighter($fighter, $fightId)
 	{
 		if (!isset($this->fights[$fightId])) return;
-
 		$this->fights[$fightId]->addFighter($fighter);
 	}
 
@@ -52,7 +53,7 @@ class FightRepository
 
 	public function remove($fightId)
 	{
-		echo "Remove Fight: $fightId";
+		// echo "Remove Fight: $fightId";
 		unset($this->fights[$fightId]);
 	}
 
@@ -65,7 +66,7 @@ class FightRepository
 			d('not hitter');
 			return;
 		}
-		$fighter->hit($type, $this->app);
+		$fighter->hit($type);
 	}
 
 	public function cicle()

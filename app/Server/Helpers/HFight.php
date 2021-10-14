@@ -190,8 +190,10 @@ class HFight
 
 	public static function messageHit($curFighter, $type, $damage, $crit, $block, $evasion, $superHit)
 	{
+		// if ($damage == 0) return;
 		$sendHitData = ['_fight' => [
 			'hit' => [
+				'hitter' => $curFighter->fId,
 				'defender' => $curFighter->getEnemy()->fId,
 				'damage' => $damage,
 			],
@@ -204,9 +206,13 @@ class HFight
 		}
 
 		foreach ($curFighter->fight->fightersById as $fighter) {
-			$hitData = self::isCurrentFighter($fighter, $curFighter)
-				? $sendPrivateHitData
-				: $sendHitData;
+			if (self::isCurrentFighter($fighter, $curFighter)) {
+				$hitData = $sendPrivateHitData;
+			} else {
+				if ($damage == 0) continue;
+				$hitData = $sendHitData;
+			}
+
 			App::make('game')->send($fighter->getFd(), $hitData);
 		}
 	}
@@ -219,9 +225,13 @@ class HFight
 
 	public static function messageSwap($fighter)
 	{
-		$pair = [$fighter, $fighter->swap ? $fighter->getEnemy() : $fighter->fight->fighters[$fighter->lastEnemyfId]];
+		if (is_null($fighter->swap)) return;
+		$pair = [$fighter, $fighter->enemyfId ? $fighter->getEnemy() : $fighter->fight->fighters[$fighter->lastEnemyfId]];
 		foreach ($pair as $fighter) {
-			App::make('game')->send($fighter, ['_fight' => ['swap' => $fighter->swap ?? null]]);
+			// if (is_null($fighter->swap)) {
+			// 	continue;
+			// }
+			App::make('game')->send($fighter, ['_fight' => ['swap' => $fighter->swap]]);
 		}
 	}
 

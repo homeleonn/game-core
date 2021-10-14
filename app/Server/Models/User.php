@@ -70,7 +70,7 @@ class User
 		$this->packItems = Common::itemsOnKeys(
 			DB::getAll("Select * from items where owner_id = {$this->id}"),
 			['id'],
-			function(&$item) use ($app) {
+			function (&$item) use ($app) {
 				$item = (object)array_merge((array)$app->itemRepo->getItemById($item->item_id), (array)$item);
 			}
 		);
