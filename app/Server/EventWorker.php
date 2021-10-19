@@ -9,24 +9,24 @@ if (!$fp) {
     file_put_contents(__DIR__ . '/../resources/log.txt', "Error: $errno - $errstr\n");
     exit;
 } else {
-	fwrite($fp, 
-	    	"GET / HTTP/1.1\n" .
-	    	"Sec-WebSocket-Key: ".generateRandomString(16)."\r\n" . 	
-	    	"event-key: 123\r\n\r\n" 
-	);
+    fwrite($fp,
+            "GET / HTTP/1.1\n" .
+            "Sec-WebSocket-Key: ".generateRandomString(16)."\r\n" .
+            "event-key: 123\r\n\r\n"
+    );
     while (true) {
-    	sleep(5);
+        sleep(5);
 
-    	$t = str_replace('.', '', round(microtime(true), 4));
-    	if (!empty($events = $redis->zrangebyscore('events', '-inf', $t))) {
-    		$redis->zremrangebyscore('events', '-inf', $t);
-    		$result = fwrite($fp, encode(json_encode(['ev' => $events]), 'text', true));
+        $t = str_replace('.', '', round(microtime(true), 4));
+        if (!empty($events = $redis->zrangebyscore('events', '-inf', $t))) {
+            $redis->zremrangebyscore('events', '-inf', $t);
+            $result = fwrite($fp, encode(json_encode(['ev' => $events]), 'text', true));
 
-    		if ($result === false) {
-    			fclose($fp);
-	    		echo "Server refused. I'm terminate";exit;
-	    	}
-    	}
+            if ($result === false) {
+                fclose($fp);
+                echo "Server refused. I'm terminate";exit;
+            }
+        }
     }
 }
 
@@ -94,19 +94,19 @@ function encode($payload, $type = 'text', $masked = false) {
         $frameHead = array_merge($frameHead, $mask);
     }
     $frame = implode('', $frameHead);
-    
+
     // append payload to frame:
     for ($i = 0; $i < $payloadLength; $i++) {
-    	$frame .= ($masked === true) ? $payload[$i] ^ $mask[$i % 4] : $payload[$i];
+        $frame .= ($masked === true) ? $payload[$i] ^ $mask[$i % 4] : $payload[$i];
     }
 
     return $frame;
 }
 
 function generateRandomString($length = 20) {
-	return substr(str_shuffle(str_repeat('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 3)), 0, $length);
+    return substr(str_shuffle(str_repeat('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 3)), 0, $length);
 }
 
 function removeTimeDot(){
-	return str_replace('.', '', round(microtime(true), 4));
+    return str_replace('.', '', round(microtime(true), 4));
 }

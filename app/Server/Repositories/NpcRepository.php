@@ -8,5 +8,5 @@ use App\Server\Application;
 
 class NpcRepository extends BaseRepository
 {
-	
+
 }

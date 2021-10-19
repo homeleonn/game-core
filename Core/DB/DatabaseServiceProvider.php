@@ -7,14 +7,10 @@ use Core\Support\ServiceProvider;
 
 class DatabaseServiceProvider extends ServiceProvider
 {
-	public function boot()
-	{
-	}
-
-	public function register()
-	{
-		$this->app->set('db', function($app) {
-			return new SafeMySQL(Config::get('db'));
-		});
-	}
+    public function register()
+    {
+        $this->app->set('db', function($app) {
+            return new SafeMySQL(Config::get('db'));
+        });
+    }
 }

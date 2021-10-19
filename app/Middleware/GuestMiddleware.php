@@ -8,12 +8,12 @@ use Closure;
 
 class GuestMiddleware
 {
-	public function handle(Request $request, Closure $next)
-	{
-		if (Auth::check()) {
-			return redirect()->route('main');
-		}
+    public function handle(Request $request, Closure $next)
+    {
+        if (Auth::check()) {
+            return redirect()->route('main');
+        }
 
-		return $next($request);
-	}
+        return $next($request);
+    }
 }

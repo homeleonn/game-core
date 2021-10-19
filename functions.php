@@ -95,7 +95,11 @@ function redirect($uri = null) {
 function route($name) {
 	$route = Router::getByName($name);
 	// dd($route);
-	return $route ? $route['uri'] : null;
+	return $route ? $route->getUri() : null;
+}
+
+function request() {
+	return \App::make('request');
 }
 
 function prepareUri($uri) {

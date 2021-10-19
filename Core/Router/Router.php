@@ -13,13 +13,8 @@ class Router
     private Request $request;
     private Response $response;
     private array $routes = [];
-    private array $byName = [];
-    private array $groups = [];
     private $lastRoute;
-    private $lastRouteUri;
-    // private $dispatchedRoute;
-    private $currentRouteOptions = [];
-    private $currentOptions = [];
+    private $groupOptions = [];
     private $routeMiddleware = [
         'auth' => \App\Middleware\AuthMiddleware::class,
         'guest' => \App\Middleware\GuestMiddleware::class,
@@ -47,53 +42,122 @@ class Router
 
     private function addRoute(string $method, string $uri, $callback)
     {
-        $uri = \prepareUri($uri);
-        $this->currentOptions['callback'] = $callback;
+        $uri = $this->addStartSlash($uri);
+        $route = new Route($method, $uri, $callback);
+        $this->routes[] = $route;
 
-        foreach ($this->currentOptions as $option => $value) {
-            $this->routes[$method][$uri][$option] = $value;
+        if (empty($this->groupOptions)) return;
+
+        foreach ($this->groupOptions as $option => $value) {
+            $route->{$option}($value);
         }
 
-        $this->lastRoute = &$this->routes[$method][$uri];
-        $this->lastRouteUri = $uri;
+        $this->lastRoute = $route;
     }
 
-    public function group(array $options, Closure $routeList)
+    public function addStartSlash(string $uri): string
     {
-        $this->currentOptions = $options;
-        $routeList();
-        $this->currentOptions = [];
+        if (!str_starts_with($uri, '/')) {
+            return '/' . $uri;
+        }
+
+        return $uri;
+    }
+
+    public function group(array $options, Closure $register)
+    {
+        $this->groupOptions = $options;
+        $register();
+        $this->groupOptions = [];
     }
 
     public function name(string $name)
     {
-        $this->byName[$name] = [
-            'route' => $this->lastRoute,
-            'uri' => $this->lastRouteUri,
-        ];
+        array_pop($this->routes);
+        $this->routes[$name] = $this->lastRoute;
+
+        return $this;
     }
 
     public function getByName($name, $part = null)
     {
-        if (!isset($this->byName[$name])) {
+        if (!isset($this->routes[$name])) {
             throw new Exception("Named route {$name} not found");
         }
 
-        return ($part && isset($this->byName[$name][$part])) ? $this->byName[$name][$part] : $this->byName[$name];
+        return $this->routes[$name];
     }
 
     public function middleware(string $middleware)
     {
-        $this->lastRoute['middleware'][] = $middleware;
+        $this->lastRoute->middleware($middleware);
+
+        return $this;
     }
 
-    public function getRouteResolver($method, $uri)
+    private function findRoute()
     {
-        if (isset($this->routes[$method][$uri])) {
-            return $this->routes[$method][$uri]['callback'];
+        $method     = strtolower($this->request->getMethod());
+        $uri        = $this->request->getUri();
+        $route      = null;
+        $notFound   = $action = $isClosure = false;
+
+        foreach ($this->routes as $_route) {
+            if (!$_route->match($method, $uri))  continue;
+            $route = $_route;
+            break;
         }
 
-        throw new Exception("Route resolver not found with method {$method} and path {$uri}");
+        if (!$route) {
+            $notFound = true;
+        } else {
+            $action = $route->getAction();
+            if ($action instanceof Closure) {
+                $isClosure = true;
+
+                if (!is_callable($action)) {
+                    $notFound = true;
+                }
+            } elseif (!call_user_func_array('method_exists', $action)) {
+                $notFound = true;
+            }
+        }
+
+        if ($notFound) {
+            $this->response->setStatusCode(404);
+            try {
+                exit(view('404'));
+            } catch (\Exception $e) {
+                throw new HttpNotFoundException('Page not found');
+            }
+        }
+
+        if (!$isClosure) {
+            [$controllerClassName, $method] = $action;
+            $controller = new $controllerClassName;
+            $route->setAction([$controller, $method]);
+        }
+
+        return $route;
+    }
+
+    public function resolve()
+    {
+        $route = $this->findRoute();
+        // dd($this->request->routeResolveAction);
+        $this->request->routeResolveAction = $route->getResolveAction();
+        $activatedMiddlewareStack = $this->activationMiddlewareStack($route->getMiddleware());
+
+        return $activatedMiddlewareStack($this->request);
+    }
+
+    private function activationMiddlewareStack($middleware)
+    {
+        return array_reduce(
+            array_reverse($middleware),
+            $this->carry(),
+            $this->response->fire()
+        );
     }
 
     public function carry()
@@ -113,75 +177,13 @@ class Router
         };
     }
 
-    public function preparedDestination()
-    {
-        return function ($request, $next) {
-            return $next($request);
-        };
-    }
-
     public function checkMiddleware(string $middleware)
     {
-        if (isset($this->routeMiddleware[$middleware]) && 
+        if (isset($this->routeMiddleware[$middleware]) &&
             class_exists($this->routeMiddleware[$middleware])) {
             return $this->routeMiddleware[$middleware];
         }
 
         throw new Exception("Middleware {$middleware} not found");
-    }
-
-    public function resolve()
-    {
-        // dd($this->routes);
-        $method     = strtolower($this->request->getMethod());
-        $uri       = $this->request->getUri();
-        $notFound   = $callback = $isClosure = false;
-
-        if (!isset($this->routes[$method][$uri])) {
-            $notFound = true;
-        } else{
-            $callback = $this->routes[$method][$uri]['callback'];
-            
-            if ($callback instanceof Closure) {
-                $isClosure = true;
-
-                if (!is_callable($callback)) {
-                    $notFound = true;
-                }
-            } elseif (!call_user_func_array('method_exists', $callback)) {
-                $notFound = true;
-            }
-        }
-
-        if ($notFound) {
-            $this->response->setStatusCode(404);
-            return 'Page not found';
-        }
-
-        if (!$isClosure) {
-            list($class, $runMethod) = $callback;
-            $class = new $class;
-            $callback = [$class, $runMethod];
-        }
-
-        $this->request->routeResolver = $callback;
-
-        $middleware = [];
-        if (isset($this->routes[$method][$uri]['middleware'])) {
-            $middleware = is_array($this->routes[$method][$uri]['middleware'])  ? 
-                                $this->routes[$method][$uri]['middleware'] : 
-                                [$this->routes[$method][$uri]['middleware']];
-        }
-        
-        $middleware[] = $this->preparedDestination();
-        $middleware = array_reduce(
-                array_reverse($middleware),
-                $this->carry(), 
-                $this->response
-            );
-
-        return $middleware($this->request);
-
-        // return call_user_func($callback);
     }
 }

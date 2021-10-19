@@ -2,9 +2,11 @@
 
 namespace App\Controllers;
 
-use Core\Support\Facades\Request;
+// use Core\Support\Facades\Request;
+use Core\Http\Request;
 use Core\Support\Facades\Auth;
 use Core\Support\Facades\Config;
+use App\Models\User;
 
 
 class HomeController
@@ -48,12 +50,18 @@ class HomeController
         return redirect()->route('entry');
     }
 
-    public function test($userId = 1)
+    // public function test(int $userId = 1)
+    // {
+    //     dd($userId);
+    // }
+
+    public function test(User $user)
     {
-        // $request = \App::make('request');
-        // dd(Request::only(['id']) ?? null);
-        // dd(\Core\Helpers\Common::propsOnly((object)['a' => 1, 'b' => 2, 'c' => 3], ['b', 'c']));
-        // $users = \DB::getAll('Select * from users');
-        // return view('test', compact('users'));
+        dd($user->login, $user);
     }
+
+    // public function test(Request $request, int $userId = 1)
+    // {
+    //     dd($request, $userId);
+    // }
 }
