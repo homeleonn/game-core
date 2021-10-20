@@ -83,7 +83,7 @@ class Route
         //     $this->actualArguments = array_merge($args, $this->actualArguments);
         // }
         foreach ($requiredArgs as $idx => $param) {
-            $className = $param->getClass()?->name;
+            $className = $param->getType()?->getName();
             if (!class_exists($className)) continue;
             try {
                 array_splice($this->actualArguments, $idx, 0, [\App::make($className)]);

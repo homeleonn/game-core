@@ -7,6 +7,7 @@ use Core\Http\Request;
 use Core\Support\Facades\Auth;
 use Core\Support\Facades\Config;
 use App\Models\User;
+use Core\DB\DB;
 
 
 class HomeController
@@ -21,14 +22,14 @@ class HomeController
         return view('main');
     }
 
-    public function wsToken()
+    public function wsToken(Request $request)
     {
         if (Config::get('env') == 'prod') usleep(500000);
         // d(Request::get('id'));
-        echo generateToken((int)(Request::get('id') ?? 1));
+        echo generateToken((int)($request->get('id') ?? 1));
     }
 
-    public function entry()
+    public function entry(DB $db)
     {
         return view('entry');
     }
