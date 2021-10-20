@@ -6,18 +6,17 @@ use Exception;
 
 class Config
 {
+    private array $config;
 
-    private $config;
-
-    public function __construct($config)
+    public function __construct(array $config)
     {
         $this->config = $config;
     }
 
-    public function get($key)
+    public function get(string $key): mixed
     {
         if (!isset($this->config[$key])) {
-            new Exception("Config '{$key}' doesn't exists!");
+            throw new Exception("Config '{$key}' doesn't exists!");
         }
 
         return $this->config[$key];

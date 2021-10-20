@@ -10,7 +10,7 @@ class DatabaseServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->set('db', function($app) {
-            return new SafeMySQL(Config::get('db'));
+            return new MySQL(Config::get('db'));
         });
     }
 }
