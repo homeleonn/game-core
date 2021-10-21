@@ -9,4 +9,6 @@ interface Session
     public function set(string $key, $value);
 
     public function del(string $key);
+
+    public function all();
 }

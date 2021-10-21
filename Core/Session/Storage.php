@@ -7,25 +7,27 @@ use SessionHandlerInterface;
 
 class Storage implements Session
 {
-    private $handler;
+    // public function __construct()
+    // {
+    // }
 
-    public function __construct(SessionHandlerInterface $handler)
+    public function get(?string $key = null)
     {
-        $this->handler = $handler;
-    }
-
-    public function get(string $key)
-    {
-        return $this->handler->read($key);
+        return is_null($key) ? $_SESSION : ($_SESSION[$key] ?? null);
     }
 
     public function set(string $key, $value)
     {
-        return $this->handler->write($key, $value);
+        $_SESSION[$key] = $value;
     }
 
     public function del(string $key)
     {
-        return $this->handler->destroy($key);
+        unset($_SESSION[$key]);
+    }
+
+    public function all()
+    {
+        // return
     }
 }

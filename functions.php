@@ -23,6 +23,14 @@ function vd(){
 }
 
 function s($name = null, $value = false) {
+    static $start = false;
+    if (!$start) {
+        global $app;
+        $app->storage;
+    } else {
+        $start = true;
+    }
+
 	if (is_null($name)) {
 		return $_SESSION;
 	} elseif ($value === false) {

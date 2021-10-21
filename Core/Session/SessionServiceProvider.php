@@ -18,7 +18,7 @@ class SessionServiceProvider extends ServiceProvider
         session_set_save_handler($sessionHandler, true);
         session_start();
 
-        $this->app->set('storage', function($app) use ($sessionHandler) {
+        $this->app->set('storage', function ($app) use ($sessionHandler) {
             return new Storage($sessionHandler);
         });
     }

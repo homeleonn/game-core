@@ -11,9 +11,13 @@ class Model
         $this->identifyTableName();
     }
 
-    public function find(int $id)
+    public function find(int $id): ?static
     {
-        $this->attr = \DB::getRow("SELECT * from `{$this->table}` LIMIT 1");
+        $model = \DB::getRow("SELECT * from `{$this->table}` where `id` = {$id} LIMIT 1");
+
+        if (!$model) return null;
+
+        $this->attr = $model;
 
         return $this;
     }

@@ -21,10 +21,30 @@ class DosProtectionTest extends TestCase
 
     public function testThatLimitIsExceeded()
     {
-        while ($this->limit--) {
-            $this->dosProtection->isValid($this->ip);
-        }
+        $this->ticks($this->limit);
 
         $this->assertFalse($this->dosProtection->isValid($this->ip));
+    }
+
+    public function testThatIpWasCleared()
+    {
+        $twoThirdsOfLimit = round($this->limit / 1.5);
+        $this->ticks($twoThirdsOfLimit);
+        $this->dosProtection->clearIp($this->ip);
+        $this->ticks($twoThirdsOfLimit);
+
+        $this->assertTrue($this->dosProtection->isValid($this->ip));
+
+    }
+
+    private function ticks(int $count): void
+    {
+        if ($count < 0) {
+            throw new UnexpectedValueException('Count of ticks in less than 0');
+        }
+
+        while ($count--) {
+            $this->dosProtection->isValid($this->ip);
+        }
     }
 }

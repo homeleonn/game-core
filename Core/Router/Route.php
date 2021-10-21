@@ -65,29 +65,13 @@ class Route
             $refMethod = new ReflectionMethod($this->action[0], $this->action[1]);
         }
         $requiredArgs = $refMethod->getParameters();
-
-        // if (count($this->actualArguments) < count($requiredArgs)) {
-        //     $neededExtraArgsCount = count($requiredArgs) - count($this->actualArguments);
-        //     $args = [];
-        //     for ($i = 0; $i < $neededExtraArgsCount; $i++) {
-        //         $className = $refMethod->getParameters()[0]->getClass()?->name;
-        //         // dd($className, class_exists($className));
-        //         if (!class_exists($className)) continue;
-        //         try {
-        //             $args[] = \App::make($className);
-        //         } catch (\Exception $e) {
-        //             $args[] = new $className(array_unshift($this->actualArguments));
-        //         }
-        //         echo 1;
-        //     }
-        //     $this->actualArguments = array_merge($args, $this->actualArguments);
-        // }
         foreach ($requiredArgs as $idx => $param) {
             $className = $param->getType()?->getName();
             if (!class_exists($className)) continue;
             try {
                 array_splice($this->actualArguments, $idx, 0, [\App::make($className)]);
             } catch (\Exception $e) {
+                if (!isset($this->actualArguments[$idx])) continue;
                 array_splice($this->actualArguments, $idx, 1, [(new $className())->find($this->actualArguments[$idx])]);
             }
         }

@@ -2,37 +2,98 @@
 
 namespace Core\DosProtection;
 
-class DosProtection
-{
-    private $ips = [];
-    private $limit; // limit connections per minute by ip
-    private $timeDelay = 60;
+use Core\Contracts\DosProtection\DosProtectionInterface;
 
-    public function __construct(int $limit = 60)
+class DosProtection implements DosProtectionInterface
+{
+    private array $ips = [];
+    private string $ip;
+    private int|float $time;
+
+    /**
+     * @param $limit max num of touch program during $timeDelay
+     * @param $timeDelay seconds, after which dos counter will be reset
+     */
+    public function __construct(
+        private int $limit = 100,
+        private int $timeDelay = 5,
+    ) {}
+
+    /**
+     * Check that current tick is not dos
+     *
+     * @param  string $ip current ip
+     * @return bool
+     */
+    public function isValid(string $ip): bool
     {
-        $this->limit = $limit;
+        $this->ip = $ip;
+        $this->time = time();
+
+        $this->handle();
+
+        if ($this->isDos()) {
+            echo "DoS protection detected({$this->ip}): {$this->ips[$this->ip]['count']}\n";
+        }
+
+        return !$this->isDos();
     }
 
-    public function isValid($ip)
+    /**
+     * clear ip from container
+     *
+     * @param  string $ip ip which need to remove
+     * @return void
+     */
+    public function clearIp(string $ip): void
     {
-        if (!isset($this->ips[$ip])) {
-            $this->ips[$ip] = [
-                'count' => 1,
-                'time'  => time()
-            ];
-        } else {
-            if ($this->ips[$ip]['time'] < time() - $this->timeDelay) {
-                $this->ips[$ip]['count'] = 0;
-            }
+        if (isset($this->ips[$ip])) {
+            unset($this->ips[$ip]);
+        }
+    }
+
+    /**
+     * Handle the tick. Initialize a touch and/or increment it
+     *
+     * @return void
+     */
+    private function handle(): void
+    {
+        if (!isset($this->ips[$this->ip]) || $this->isToReset($this->time)) {
+            $this->ips[$this->ip]['count'] = 0;
         }
 
-        $this->ips[$ip]['count']++;
-        $this->ips[$ip]['time'] = time();
+        $this->tick($this->time);
+    }
 
-        if ($this->ips[$ip]['count'] >= $this->limit) {
-            echo "DoS protection detected({$ip}): {$this->ips[$ip]['count']}\n";
-        }
+    /**
+     * Is touches are bigger than limit
+     *
+     * @return bool
+     */
+    private function isDos(): bool
+    {
+        return $this->ips[$this->ip]['count'] >= $this->limit;
+    }
 
-        return $this->ips[$ip]['count'] < $this->limit;
+    /**
+     * Is last touch was bigger than time delay ago
+     *
+     * @return bool
+     */
+    private function isToReset(): bool
+    {
+        return $this->time - $this->timeDelay > $this->ips[$this->ip]['time'];
+    }
+
+    /**
+     * Tick ip. Increment touches and mainstreaming the time of touch
+     *
+     * @return void
+     */
+    private function tick(): void
+    {
+        $this->ips[$this->ip]['count']++;
+        $this->ips[$this->ip]['time'] = $this->time;
     }
 }

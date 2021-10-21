@@ -9,15 +9,12 @@ use Closure;
 class App
 {
     protected array $container = [];
-    public array $config;
-    private array $appConfig;
 
     public function __construct()
     {
-        $this->appConfig = require ROOT . '/config/app.php';
-        $this->loadConfig();
-        Facade::setFacadeApplication($this, $this->appConfig['aliases']);
-        $servicesInstances = $this->loadServices($this->appConfig['providers']);
+        $config = require ROOT . '/config/app.php';
+        Facade::setFacadeApplication($this, $config['aliases']);
+        $servicesInstances = $this->loadServices($config['providers']);
         $this->bootServices($servicesInstances);
     }
 
@@ -41,11 +38,6 @@ class App
         }
     }
 
-    protected function loadConfig()
-    {
-        $this->config = require ROOT . '/.env.php';
-    }
-
     public function set($name, $value = null)
     {
         $this->container[$name] = $value;
@@ -58,6 +50,19 @@ class App
         if (!isset($this->container[$name])) {
             throw new \Exception("Service '{$name}' not found");
         }
+
+        // $isclosure = false;
+        // if (is_string($this->container[$name]) && isset($this->container[$this->container[$name]])) {
+        //     if ($this->container[$this->container[$name]] instanceof Closure) {
+        //        $name = $this->container[$name];
+        //        $isclosure = true;
+        //     }
+        // }
+
+        // if ($isclosure || $this->container[$name] instanceof Closure) {
+        //     dd($this->container);
+        //     $this->container[$name] = $this->container[$name]($this);
+        // }
 
         if ($this->container[$name] instanceof Closure) {
             $this->container[$name] = $this->container[$name]($this);
@@ -73,5 +78,10 @@ class App
         $response = $this->make('router')->resolve();
 
         echo $response instanceof (\Core\Http\Response::class) ? $response->getContent() : $response;
+    }
+
+    public function __get($key)
+    {
+        return $this->make($key);
     }
 }

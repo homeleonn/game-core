@@ -2,32 +2,43 @@
 
 namespace Core\Auth;
 
-use Core\Support\Facades\DB;
+use Core\DB\DB;
+use Core\Contracts\Session\Session;
 use App\Models\User;
 
 class Auth
 {
     private $auth = 'email';
 
+    public function __construct(
+        private DB $db,
+        private Session $storage,
+    ) {}
+
     public function check()
     {
-        return s('id');
+        return $this->storage->get('id');
     }
 
-    public function attempt($data)
+    public function attempt(array $data): bool
     {
         if (!isset($data[$this->auth]) || !isset($data['password'])) {
             return false;
         }
 
-        $user = DB::getRow('SELECT id, password FROM users WHERE email = ?s', $data[$this->auth]);
+        $user = $this->db->getRow('SELECT id, password FROM users WHERE email = ?s', $data[$this->auth]);
 
-        if (!$user || !password_verify($data['password'], $user->password)) {
+        if (!$user || !$this->passwordVerify($data['password'], $user->password)) {
             return false;
         }
 
-        s('id', $user->id);
+        $this->storage->set('id', $user->id);
 
         return true;
+    }
+
+    private function passwordVerify($password, $actualPassword)
+    {
+        return password_verify($password, $actualPassword);
     }
 }

@@ -3,7 +3,7 @@
 namespace Core\Socket;
 
 use Closure;
-use Core\DosProtection\DosProtection;
+use Core\Contracts\DosProtection\DosProtectionInterface;
 use Core\Contracts\PeriodicEvent\PeriodicEvent;
 
 error_reporting(E_ALL); //Выводим все ошибки и предупреждения
@@ -29,7 +29,7 @@ class Server
         $this->port = $port;
     }
 
-    public function setDosProtection(DosProtection $dosProtection)
+    public function setDosProtection(DosProtectionInterface $dosProtection)
     {
         $this->dosProtection = $dosProtection;
     }

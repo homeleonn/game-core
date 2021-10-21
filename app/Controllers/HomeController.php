@@ -29,7 +29,7 @@ class HomeController
         echo generateToken((int)($request->get('id') ?? 1));
     }
 
-    public function entry(DB $db)
+    public function entry()
     {
         return view('entry');
     }
@@ -37,13 +37,14 @@ class HomeController
     public function logout()
     {
     	s('id', null);
+        // s('id', 2);
+        // session_destroy();
+        // dd(s('id'));
 		return redirect()->route('entry');
     }
 
-    public function login()
+    public function login(Request $request)
     {
-        $request = \App::make('request');
-
         if (Auth::attempt($request->only(['email', 'password']))) {
             return redirect()->route('main');
         }
@@ -56,8 +57,9 @@ class HomeController
     //     dd($userId);
     // }
 
-    public function test(User $user)
+    public function test(User $user = null)
     {
+        // if ($user)
         dd($user->login, $user);
     }
 

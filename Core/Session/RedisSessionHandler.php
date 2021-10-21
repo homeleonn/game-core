@@ -41,14 +41,16 @@ class RedisSessionHandler implements SessionHandlerInterface
 
     public function write($id, $data) {
         // if (!$data) return true;
+        // dd($data, $id);exit;
         $id = $this->prefix . $id;
         $this->db->set($id, $data, $this->ttl);
         return true;
     }
 
     public function destroy($id) {
+        // dd($this->prefix . $id);
         $this->db->del($this->prefix . $id);
-        return false;
+        return true;
     }
 
     public function gc($maxLifetime) {

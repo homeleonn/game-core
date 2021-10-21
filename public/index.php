@@ -9,7 +9,7 @@ use Core\App;
 try {
     $app = new App();
 } catch (Exception $e) {
-    // dd($e->getMessage());
+
 }
 
 require routes('web.php');
