@@ -1,4 +1,6 @@
 <?php
+// var_dump($_SERVER);exit;
+
 define('HTTP_SIDE', '');
 header("Access-Control-Allow-Origin: *");
 require '../vendor/autoload.php';
@@ -15,3 +17,4 @@ try {
 require routes('web.php');
 
 $app->run();
+dd($app->db->getStats());

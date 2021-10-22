@@ -15,7 +15,7 @@ class HttpServiceProvider extends ServiceProvider
 
         $this->app->set(Request::class, 'request');
         $this->app->set('request', function () {
-            return new Request();
+            return new Request($_SERVER, $_REQUEST);
         });
 
         $this->app->set('response', function () {

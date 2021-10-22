@@ -37,7 +37,7 @@ class Auth
         return true;
     }
 
-    private function passwordVerify($password, $actualPassword)
+    private function passwordVerify(string $password, string $actualPassword): bool
     {
         return password_verify($password, $actualPassword);
     }

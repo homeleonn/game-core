@@ -21,9 +21,12 @@ class DosProtectionTest extends TestCase
 
     public function testThatLimitIsExceeded()
     {
+        ob_start();
         $this->ticks($this->limit);
+        $isValid = $this->dosProtection->isValid($this->ip);
+        ob_end_clean();
 
-        $this->assertFalse($this->dosProtection->isValid($this->ip));
+        $this->assertFalse($isValid);
     }
 
     public function testThatIpWasCleared()

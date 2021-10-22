@@ -7,37 +7,50 @@ use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase
 {
+    public function testCheck()
+    {
+        $db = $this->getMockBuilder(DB::class)->getMock();
+
+        $storage = $this->getMockBuilder(Storage::class)
+                        ->onlyMethods(['get'])
+                        ->getMock();
+        $storage->expects($this->once())
+                ->method('get')
+                ->with($this->equalTo('id'))
+                ->willReturn(true);
+
+        $auth = new Auth($db, $storage);
+
+        $this->assertTrue($auth->check());
+    }
+
     public function testAttempt()
     {
-        $data = [
+        $loginData = [
             'email' => 'test@mail.com',
             'password' => '123321',
         ];
 
+         $hashForDataPassword = '$2y$10$ww9RdZonqThiReJv6tH1m.oGZpUg.QW5vwk/CoJr5s9/MVOM4H7eC';
+        // $hashForDataPassword = password_hash($loginData['password'],  PASSWORD_BCRYPT);
+
         $db = $this->getMockBuilder(DB::class)
-                   ->setMethods(['getRow'])
+                   ->onlyMethods(['getRow'])
                    ->getMock();
 
         $db->expects($this->once())
            ->method('getRow')
-           ->with($this->equalTo('SELECT id, password FROM users WHERE email = ?s', $data['email']));
-
+           ->willReturn((object)['id' => 1, 'password' => $hashForDataPassword]);
 
         $storage = $this->getMockBuilder(Storage::class)
-                   ->setMethods(['set'])
-                   ->getMock();
+                        ->onlyMethods(['set'])
+                        ->getMock();
 
         $storage->expects($this->once())
-           ->method('set')
-           ->with($this->equalTo(null));
+                ->method('set');
 
-        $auth = $this->getMockBuilder(Auth::class)
-                         ->setConstructorArgs([$db, $storage])
-                         ->getMock();
-        $auth->method('passwordVerify')
-             ->willReturn(true);
-        // var_dump(get_class_methods($auth));exit;
+        $auth = new Auth($db, $storage);
 
-        $this->assertTrue($auth->attempt($data));
+        $this->assertTrue($auth->attempt($loginData));
     }
 }

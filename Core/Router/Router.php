@@ -4,9 +4,9 @@ namespace Core\Router;
 
 use Closure;
 use Exception;
+use Core\Helpers\Str;
 use Core\Http\Request;
 use Core\Http\Response;
-
 
 class Router
 {
@@ -42,7 +42,7 @@ class Router
 
     private function addRoute(string $method, string $uri, $callback)
     {
-        $uri = $this->addStartSlash($uri);
+        $uri = Str::addStartSlash($uri);
         $route = new Route($method, $uri, $callback);
         $this->routes[] = $route;
 
@@ -53,15 +53,6 @@ class Router
         }
 
         $this->lastRoute = $route;
-    }
-
-    public function addStartSlash(string $uri): string
-    {
-        if (!str_starts_with($uri, '/')) {
-            return '/' . $uri;
-        }
-
-        return $uri;
     }
 
     public function group(array $options, Closure $register)

@@ -3,29 +3,44 @@
 namespace Core\Http;
 
 use Exception;
+use Core\Helpers\Str;
 
 class Request
 {
     private array $server;
+    private array $request;
     private string $uri;
     private string $method;
 
-    public function __construct()
+    public function __construct(array $server, array $request)
     {
-        $this->server = $_SERVER;
-        $this->method = $_SERVER['REQUEST_METHOD'] ?? '/';
-        $this->parseUrl();
+        $this->server   = $server;
+        $this->method   = $this->server['REQUEST_METHOD'] ?? 'GET';
+        $this->uri      = $this->parseUrl();
+        $this->request  = $this->sanitizeRequest($request);
     }
 
-    private function parseUrl(): void
+    private function parseUrl(): string
     {
-        $urlParts = parse_url($_SERVER['REQUEST_URI']);
-        $this->uri = \prepareUri($urlParts['path']);
+        $urlParts = parse_url($this->server['REQUEST_URI']);
+
+        return Str::addStartSlash($urlParts['path']);
+    }
+
+    private function sanitizeRequest(array $request): array
+    {
+        foreach ($request as $key => $value) {
+            unset($request[$key]);
+            [$key, $value] = str_replace(['"', '\'', '<'], '',  [$key, $value]);
+            $request[$key] = $value;
+        }
+
+        return $request;
     }
 
     public function get($param)
     {
-        return $_REQUEST[$param] ?? null;
+        return $this->request[$param] ?? null;
     }
 
     public function getUri()
@@ -40,7 +55,7 @@ class Request
 
     public function all()
     {
-        return $_REQUEST;
+        return $this->request;
     }
 
     public function only(array $only)
@@ -48,11 +63,6 @@ class Request
         $res = [];
 
         foreach ($only as $param) {
-            // if (!isset($_REQUEST[$item])) {
-            //     // throw new Exception("Request item {$item} not found");
-            //     // return null;
-            // }
-
             $res[$param] = $this->get($param);
         }
 
@@ -61,7 +71,7 @@ class Request
 
     public function except(array $except)
     {
-        $req = $_REQUEST;
+        $req = $this->request;
 
         foreach ($except as $item) {
             if (isset($req[$item])) {

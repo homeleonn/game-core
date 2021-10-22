@@ -110,11 +110,6 @@ function request() {
 	return \App::make('request');
 }
 
-function prepareUri($uri) {
-	return '/' . ltrim($uri, '/');
-}
-
-
 function generateToken($userId) {
   $token = generateRandomString();
   App::make('storage')->set('socket:' . $token, $userId, 10);

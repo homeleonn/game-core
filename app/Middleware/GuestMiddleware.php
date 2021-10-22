@@ -10,7 +10,6 @@ class GuestMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // dd(Auth::check());
         if (Auth::check()) {
             return redirect()->route('main');
         }

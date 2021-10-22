@@ -60,7 +60,8 @@ class HomeController
     public function test(User $user = null)
     {
         // if ($user)
-        dd($user->login, $user);
+        // dd($user->login, $user);
+        return view('test');
     }
 
     // public function test(Request $request, int $userId = 1)
