@@ -2,13 +2,11 @@
 
 namespace App\Controllers;
 
-// use Core\Support\Facades\Request;
 use Core\Http\Request;
 use Core\Support\Facades\Auth;
 use Core\Support\Facades\Config;
 use App\Models\User;
 use Core\DB\DB;
-
 
 class HomeController
 {
@@ -27,6 +25,7 @@ class HomeController
         if (Config::get('env') == 'prod') usleep(500000);
         // d(Request::get('id'));
         echo generateToken((int)($request->get('id') ?? 1));
+        exit;
     }
 
     public function entry()
@@ -37,9 +36,6 @@ class HomeController
     public function logout()
     {
     	s('id', null);
-        // s('id', 2);
-        // session_destroy();
-        // dd(s('id'));
 		return redirect()->route('entry');
     }
 
@@ -68,4 +64,15 @@ class HomeController
     // {
     //     dd($request, $userId);
     // }
+
+    public function test1(int $userId = 1)
+    {
+        dd(route('test', 22));
+        dd($userId);
+    }
+
+    public function test2(int $userId = 1, $a = 2)
+    {
+        dd(route('test', [443]));
+    }
 }

@@ -5,7 +5,7 @@ namespace App\Server\Repositories;
 use DB;
 use App\Server\Models\User;
 use App\Server\Application;
-use Core\Helpers\Common;
+use Core\Support\Common;
 
 class UserRepository
 {
@@ -17,13 +17,13 @@ class UserRepository
 
     public function __construct($app)
     {
-        $this->app      = $app;
+        $this->app     = $app;
         $this->storage = $app->storage;
     }
 
     public function add(int $fd, $user)
-    {
-        $this->users[$fd]      = new User($this->storage, $fd, $user);
+    {d(new User($this->storage, $fd, $user));
+        $this->users[$fd] = new User($this->storage, $fd, $user);
         $this->usersFdsById[$user->id] = $fd;
 
         return $this->users[$fd];
@@ -163,22 +163,20 @@ class UserRepository
 
     public function restore($newFd, $userId)
     {
-        if (isset($this->marked[$userId])) {
-            $user = $this->findById($userId);
-            $oldFd = $user->getFd();
+        if (!isset($this->marked[$userId])) return false;
 
-            $this->users[$newFd] = $user;
-            $this->usersFdsById[$user->id] = $newFd;
-            unset($this->users[$oldFd]);
-            unset($this->marked[$userId]);
+        $user = $this->findById($userId);
+        $oldFd = $user->getFd();
 
-            $user->clearMarkExit();
-            $user->setFd($newFd);
-            $this->sendUser($user);
+        $this->users[$newFd] = $user;
+        $this->usersFdsById[$user->id] = $newFd;
+        unset($this->users[$oldFd]);
+        unset($this->marked[$userId]);
 
-            return true;
-        }
+        $user->clearMarkExit();
+        $user->setFd($newFd);
+        $this->sendUser($user);
 
-        return false;
+        return true;
     }
 }

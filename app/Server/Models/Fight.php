@@ -2,7 +2,7 @@
 
 namespace App\Server\Models;
 
-use Core\Helpers\Common;
+use Core\Support\Common;
 use App\Server\Helpers\HFight;
 use Core\Support\Facades\App;
 

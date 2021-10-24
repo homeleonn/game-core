@@ -16,18 +16,18 @@ class Storage implements Session
         return is_null($key) ? $_SESSION : ($_SESSION[$key] ?? null);
     }
 
-    public function set(string $key, $value)
+    public function set(string $key, $value): void
     {
-        $_SESSION[$key] = $value;
+        $_SESSION[$key] = (string)$value;
     }
 
-    public function del(string $key)
+    public function del(string $key): void
     {
         unset($_SESSION[$key]);
     }
 
-    public function all()
+    public function all(): mixed
     {
-        // return
+         return $_SESSION;
     }
 }

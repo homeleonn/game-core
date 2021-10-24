@@ -3,7 +3,7 @@
 namespace App\Server\Models;
 
 use App\Server\Helpers\HFight;
-use Core\Helpers\Common;
+use Core\Support\Common;
 
 class Fighter
 {

@@ -3,7 +3,7 @@
 namespace App\Server\Loaders;
 
 use DB;
-use Core\Helpers\Common;
+use Core\Support\Common;
 use App\Server\Models\User;
 
 class NpcLoader

@@ -5,7 +5,7 @@ namespace App\Server;
 use Core\Socket\Server as WebSocketServer;
 use Core\Socket\Request;
 use Core\Socket\Frame;
-use Core\Contracts\Session\Session;
+use Redis;
 use App\Server\Repositories\UserRepository;
 use App\Server\Repositories\LocRepository;
 use App\Server\Repositories\ItemRepository;
@@ -21,13 +21,13 @@ class Application {
     private static $instance;
 
     public WebSocketServer $server;
-    public Session $storage;
+    public Redis $storage;
     public UserRepository $userRepo;
     public LocRepository $locRepo;
     public ItemRepository $itemRepo;
     public FightRepository $fightRepo;
 
-    public function __construct(WebSocketServer $server, Session $storage)
+    public function __construct(WebSocketServer $server, Redis $storage)
     {
         $this->server         = $server;
         $this->storage        = $storage;
@@ -37,7 +37,7 @@ class Application {
         $this->fightRepo      = new FightRepository($this);
     }
 
-    public static function getInstance(WebSocketServer $server, Session $storage)
+    public static function getInstance(WebSocketServer $server, Redis $storage)
     {
         if (!static::$instance) {
             static::$instance = new static($server, $storage);
@@ -232,6 +232,7 @@ class Application {
 
         if (!$userId = $this->storage->get('socket:' . $token)) {
             echo "Invalid token\n";
+            $this->storage->del('socket:' . $token);
             $server->close(null, $request->fd);
             return false;
         }

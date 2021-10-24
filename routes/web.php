@@ -15,5 +15,7 @@ Route::group(['middleware' => 'guest'], function () {
     Route::get('wsToken', [HomeController::class, 'wsToken']);
     Route::get('', [HomeController::class, 'entry'])->name('entry');
     Route::post('login', [HomeController::class, 'login'])->name('login');
-    Route::get('test/{id?}', [HomeController::class, 'test']);
+    Route::get('test1/{id}', [HomeController::class, 'test1'])->name('test');
+    Route::get('test2/{id}/{name}', [HomeController::class, 'test2'])->name('test2');
+    // Route::get('test/{id?}', [HomeController::class, 'test']);
 });

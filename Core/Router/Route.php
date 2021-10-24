@@ -33,6 +33,14 @@ class Route
         return $this->uri;
     }
 
+    public function buildUri(?array $params = null)
+    {
+        return preg_replace_callback('~{\w+\??}~', function ($placeholder) use ($params) {
+            static $i = 0;
+            return $params[$i++] ?? $placeholder[0];
+        }, $this->uri);
+    }
+
     public function getMethod()
     {
         return $this->method;
@@ -64,14 +72,19 @@ class Route
         } else {
             $refMethod = new ReflectionMethod($this->action[0], $this->action[1]);
         }
+
         $requiredArgs = $refMethod->getParameters();
+
         foreach ($requiredArgs as $idx => $param) {
             $className = $param->getType()?->getName();
+
             if (!class_exists($className)) continue;
+
             try {
                 array_splice($this->actualArguments, $idx, 0, [\App::make($className)]);
             } catch (\Exception $e) {
                 if (!isset($this->actualArguments[$idx])) continue;
+
                 array_splice($this->actualArguments, $idx, 1, [(new $className())->find($this->actualArguments[$idx])]);
             }
         }
@@ -136,6 +149,7 @@ class Route
             fn($matches) => '/?(' . ($this->patterns[$matches['param']] ?? '\w+') . ')' . $matches['required'],
           $this->uri
         );
+        // d($patternedUri);
 
         return rtrim($patternedUri, '/');
     }

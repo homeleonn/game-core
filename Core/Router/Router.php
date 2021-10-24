@@ -4,7 +4,7 @@ namespace Core\Router;
 
 use Closure;
 use Exception;
-use Core\Helpers\Str;
+use Core\Support\Str;
 use Core\Http\Request;
 use Core\Http\Response;
 

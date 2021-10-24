@@ -84,7 +84,6 @@ class MySQL
         $this->free($res);
 
         return $result;
-
     }
 
 	public function getOne()

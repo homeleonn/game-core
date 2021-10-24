@@ -3,7 +3,7 @@
 namespace Core\Http;
 
 use Exception;
-use Core\Helpers\Str;
+use Core\Support\Str;
 
 class Request
 {

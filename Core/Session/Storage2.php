@@ -28,9 +28,4 @@ class Storage implements Session
     {
         return $this->handler->destroy($key);
     }
-
-    public function all()
-    {
-        // return
-    }
 }

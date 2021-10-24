@@ -8,7 +8,7 @@ class RouterServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        $this->app->set('router', function($app) {
+        $this->app->set('router', function ($app) {
             return new Router(
                 $app->make('request'),
                 $app->make('response')

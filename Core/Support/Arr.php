@@ -1,28 +1,28 @@
 <?php
 
-namespace Core\Helpers;
+namespace Core\Support;
 
 class Arr
 {
-    public static function find($haystack, $needle): ?mixed
+    public static function find($haystack, $needle): mixed
     {
         if (array_key_exists($needle, $haystack)) return $haystack[$needle];
         if (strpos($needle, '.') === false) return;
 
         $keys       = explode('.', $needle);
         $keyCount   = count($keys);
-        $finded     = &$haystack;
+        $found      = &$haystack;
 
         for ($i = 0; $i < $keyCount; $i++) {
-            if (!array_key_exists($keys[$i], $finded)) return;
+            if (!array_key_exists($keys[$i], $found)) return;
 
-            $finded = &$finded[$keys[$i]];
+            $found = &$found[$keys[$i]];
         }
 
-        return $finded;
+        return $found;
     }
 
-    public static function &last(array &$arr)
+    public static function &last(array &$arr): mixed
     {
         return $arr[array_key_last($arr)];
     }

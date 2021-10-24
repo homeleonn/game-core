@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\Helpers;
+namespace Core\Support;
 
 use Closure;
 

@@ -5,6 +5,7 @@ namespace Core;
 use Core\Support\Facades\Facade;
 use Core\Support\Facades\Response;
 use Closure;
+use Exception;
 
 class App
 {
@@ -48,7 +49,7 @@ class App
         if ($name == 'app') return $this;
 
         if (!isset($this->container[$name])) {
-            throw new \Exception("Service '{$name}' not found");
+            throw new Exception("Service '{$name}' not found");
         }
 
         // $isclosure = false;

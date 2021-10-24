@@ -3,6 +3,7 @@
 $app = [
     'providers' => [
         Core\Config\ConfigServiceProvider::class,
+        Core\Redis\RedisServiceProvider::class,
         Core\Session\SessionServiceProvider::class,
         Core\DB\DatabaseServiceProvider::class,
         Core\DosProtection\DosProtectionServiceProvider::class,

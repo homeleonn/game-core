@@ -6,9 +6,11 @@ require __DIR__ . '/../../functions.php';
 use Core\App;
 use Core\Socket\{Server, PeriodicEventWorker, Frame};
 use App\Server\Application;
+use Core\Support\Str;
+
 $core     = new App();
 
-// echo generateRandomString(32);exit;
+// echo Str::random(32);exit;
 
 // var_dump(Config::get('host'));
 
@@ -19,7 +21,7 @@ if ($argc > 1 && $argv[1] == '-q') {
     } else {
         fwrite($fp,
         "GET / HTTP/1.1\n" .
-        "Sec-WebSocket-Key: ".generateRandomString(16)."\r\n" .
+        "Sec-WebSocket-Key: ".Str::random(16)."\r\n" .
         "event-key: ".Config::get('key')."\r\n\r\n"
         );
         fwrite($fp, Frame::encode('CLOSE', 'text', true));
@@ -29,7 +31,7 @@ if ($argc > 1 && $argv[1] == '-q') {
 }
 
 $server = new Server(Config::get('host'), Config::get('port'));
-$app         = new Application($server, $core->make('storage'));
+$app         = new Application($server, $core->make('redis'));
 $core->set('game', $app);
 
 $server->setDosProtection($core->make('dosprotection'));

@@ -3,7 +3,7 @@
 namespace App\Server\Repositories;
 
 use DB;
-use Core\Helpers\Common;
+use Core\Support\Common;
 use App\Server\Application;
 
 class ItemRepository

@@ -2,11 +2,10 @@
 
 namespace Core\Http;
 
-use Core\Support\Facades\Router;
+use Closure;
 
 class Response
 {
-
     private $content;
 
     public function setStatusCode(int $code)
@@ -29,19 +28,19 @@ class Response
         return ($request->routeResolveAction)();
     }
 
-    public function fire()
+    public function fire(): Closure
     {
         return fn($request) => ($request->routeResolveAction)();
     }
 
-    public function redirect($uri = null, int $statusCode = 302)
+    public function redirect($uri = null, int $statusCode = 302): self
     {
         $this->setStatusCode($statusCode);
 
         return $this;
     }
 
-    public function route(string $name)
+    public function route(string $name): self
     {
         $this->setRedirect(\route($name));
 

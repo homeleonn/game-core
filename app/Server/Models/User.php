@@ -2,8 +2,8 @@
 
 namespace App\Server\Models;
 
-use Core\Helpers\Common;
-use Core\Contracts\Session\Session;
+use Core\Support\Common;
+use Redis;
 use DB;
 
 class User
@@ -16,11 +16,11 @@ class User
     const ITEM_REMOVE_YES = 1;
     const ITEM_REMOVE_NO = 0;
 
-    private Session $storage;
+    private Redis $storage;
     private int $fd;
     public object $attr;
 
-    public function __construct(Session $storage, int $fd, object $user)
+    public function __construct(Redis $storage, int $fd, object $user)
     {
         $this->storage     = $storage;
         $this->fd         = $fd;

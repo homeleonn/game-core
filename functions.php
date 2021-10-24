@@ -1,5 +1,7 @@
 <?php
 
+use Core\Support\Str;
+
 define('ROOT', __DIR__);
 
 ini_set('xdebug.var_display_max_depth', 50);
@@ -23,39 +25,23 @@ function vd(){
 }
 
 function s($name = null, $value = false) {
-    static $start = false;
-    if (!$start) {
-        global $app;
-        $app->storage;
-    } else {
-        $start = true;
-    }
-
+    $session = App::make('storage');
 	if (is_null($name)) {
-		return $_SESSION;
+	    return $session->all();
 	} elseif ($value === false) {
-		return $_SESSION[$name] ?? null;
+		return $session->get($name);
 	} elseif (is_null($value)) {
-		unset($_SESSION[$name]);
-		return;
+		return $session->del($name);
 	}
 
-	$_SESSION[$name] = (string)$value;
+	$session->set($name, $value);
 
-	return $_SESSION[$name];
+	return $session->get($name);
 }
 
 
 function generatePasswordHash($password): string {
 	return password_hash($password, PASSWORD_BCRYPT);
-}
-
-function authAttempt($password): bool {
-	return password_verify($password, generatePasswordHash($password));
-}
-
-function generateRandomString($length = 20) {
-	return substr(str_shuffle(str_repeat('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 3)), 0, $length);
 }
 
 function view(string $view, array $args = []) {
@@ -66,7 +52,6 @@ function view(string $view, array $args = []) {
 
     $content  = viewBuffer($view, $args);
     return $content;
-    // return viewBuffer('resources/views/layouts/main.php', ['content' => $content]);
 }
 
 function viewBuffer($viewPath, $args) {
@@ -100,10 +85,10 @@ function redirect($uri = null) {
 	return $uri ? $response->redirect($uri) : $response->redirect();
 }
 
-function route($name) {
+function route($name, array $params = []) {
 	$route = Router::getByName($name);
-	// dd($route);
-	return $route ? $route->getUri() : null;
+    $uri = $route ? $route->buildUri($params) : null;
+	return $uri;
 }
 
 function request() {
@@ -111,8 +96,8 @@ function request() {
 }
 
 function generateToken($userId) {
-  $token = generateRandomString();
-  App::make('storage')->set('socket:' . $token, $userId, 10);
+  $token = Str::random();
+  App::make('redis')->set('socket:' . $token, $userId, 10);
 
   return $token;
 }
