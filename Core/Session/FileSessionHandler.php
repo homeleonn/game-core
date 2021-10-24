@@ -18,7 +18,7 @@ class FileSessionHandler implements SessionHandlerInterface
 
     public function path($id)
     {
-        return $this->savePath . '/' . $this->prefix . $id;
+        return $this->savePath . '/' . $this->prefix . str_replace(['/', '\\'], '', $id);
     }
 
     public function open($savePath, $sessionName)
