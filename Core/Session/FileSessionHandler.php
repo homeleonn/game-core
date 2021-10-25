@@ -7,7 +7,6 @@ use SessionHandlerInterface;
 
 class FileSessionHandler implements SessionHandlerInterface
 {
-    public $ttl = 1800; // 30 minutes default
     protected $prefix;
     protected $savePath;
 

@@ -78,7 +78,8 @@ class App
     {
         $response = $this->make('router')->resolve();
 
-        echo $response instanceof (\Core\Http\Response::class) ? $response->getContent() : $response;
+        $className = \Core\Http\Response::class;
+        echo $response instanceof $className ? $response->getContent() : $response;
     }
 
     public function __get($key)

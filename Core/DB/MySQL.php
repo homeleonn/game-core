@@ -8,6 +8,7 @@ class MySQL
 	private $stats;
 	private $emode;
 	private $exname;
+    private $model;
 
     private $config = [
 		'host'      => '127.0.0.1',
@@ -46,6 +47,11 @@ class MySQL
 		return $this->conn;
 	}
 
+    public function setModel($modelName)
+    {
+        $this->model = $modelName;
+    }
+
 	public function query()
 	{
 		return $this->rawQuery($this->prepareQuery(func_get_args()));
@@ -53,7 +59,9 @@ class MySQL
 
 	public function fetch($result, $mode = MYSQLI_ASSOC)
 	{
-		return mysqli_fetch_object($result);
+        $model = $this->model ?? "stdClass";
+		return mysqli_fetch_object($result, $model);
+        // return mysqli_fetch_object($result);
 	}
 
 	public function affectedRows()
@@ -76,33 +84,35 @@ class MySQL
 		mysqli_free_result($result);
 	}
 
-    public function get($args, $cb)
+    private function _get($args, $cb)
     {
         $preparedQuery = $this->prepareQuery($args);
         if (!$res = $this->rawQuery($preparedQuery)) return false;
         $result = $cb($res);
         $this->free($res);
+        $this->model = null;
 
         return $result;
     }
 
 	public function getOne()
 	{
-        return $this->get(func_get_args(), function ($result) {
+        return $this->_get(func_get_args(), function ($result) {
             return current($this->fetch($result));
         });
 	}
 
 	public function getRow()
 	{
-        return $this->get(func_get_args(), function ($result) {
+        return $this->_get(func_get_args(), function ($result) {
             return $this->fetch($result);
         });
 	}
 
 	public function getCol()
 	{
-        return $this->get(func_get_args(), function ($result) {
+        return $this->_get(func_get_args(), function ($result) {
+            $return = [];
             while ($row = $this->fetch($result)) {
                 $return[] = current($row);
             }
@@ -112,7 +122,8 @@ class MySQL
 
 	public function getAll()
 	{
-        return $this->get(func_get_args(), function ($result) {
+        return $this->_get(func_get_args(), function ($result) {
+            $return = [];
             while ($row = $this->fetch($result)) {
                 $return[] = $row;
             }
@@ -124,7 +135,8 @@ class MySQL
 	{
         $args  = func_get_args();
         $index = array_shift($args);
-        return $this->get($args, function ($result) use ($index) {
+        return $this->_get($args, function ($result) use ($index) {
+            $return = [];
             while ($row = $this->fetch($result)) {
                 $ind = is_object($row) ? $row->{$index} : $row[$index];
                 $return[$ind] = $row;
@@ -137,7 +149,7 @@ class MySQL
 	{
         $args  = func_get_args();
         $index = array_shift($args);
-        return $this->get($args, function ($result) use ($index) {
+        return $this->_get($args, function ($result) use ($index) {
             while ($row = $this->fetch($result)) {
                 $key = $row->{$index};
                 unset($row->{$row->{$index}});
@@ -207,7 +219,8 @@ class MySQL
     	$this->stats[] = [
 			'query' => $query,
 			'start' => $start,
-			'timer' => round((microtime(true) - $start) * 1000, 2),
+			// 'timer' => round((microtime(true) - $start) * 1000, 2),
+            'timer' => (microtime(true) - $start),
 		];
 		if (!$res) {
 			$error = mysqli_error($this->conn);

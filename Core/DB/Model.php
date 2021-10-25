@@ -2,44 +2,28 @@
 
 namespace Core\DB;
 
+use DB;
+use Core\Support\Str;
+
 class Model
 {
     protected string $table = '';
-    public function __construct(
-        private $attr = null
-    ){
-        $this->identifyTableName();
-    }
+    protected $attr;
 
-    public function find(int $id): ?static
+    public function __construct($attr = null)
     {
-        $model = \DB::getRow("SELECT * from `{$this->table}` where `id` = {$id} LIMIT 1");
+        $this->attr = $this->attr ?? $attr ?? new \stdClass();
 
-        if (!$model) return null;
-
-        $this->attr = $model;
-
-        return $this;
-    }
-
-    private function identifyTableName()
-    {
-        if ($this->table) return;
-
-        preg_match('/([^\\\]+)$/', static::class, $matches);
-        $this->table = lcfirst($matches[1]);
-        $this->table = $this->plural($this->table);
-    }
-
-    private function plural($word)
-    {
-        $lastLetter = substr($word, -1);
-
-        if ($lastLetter == 'y') {
-            return substr_replace($word, 'ies', -1);
+        if (!$this->table) {
+            $this->table = self::identifyTableName();
         }
+    }
 
-        return $word . 's';
+    public static function identifyTableName()
+    {
+        $caller = strtolower(Str::lastPart(static::class, '\\'));
+
+        return Str::plural($caller);
     }
 
     public function __get($key)
@@ -49,6 +33,15 @@ class Model
 
     public function __set($key, $value)
     {
+        if (is_null($this->attr)) {
+            $this->attr = new \stdClass;
+        }
+
         return $this->attr->{$key} = $value;
+    }
+
+    public static function __callStatic(string $method, array $args)
+    {
+        return DB::table(self::identifyTableName(), static::class)->$method(...$args);
     }
 }
