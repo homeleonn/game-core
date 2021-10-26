@@ -35,4 +35,13 @@ class Str
 
         return $word . 's';
     }
+
+    public static function toNum($item)
+    {
+        if (is_string($item)) {
+            return is_numeric($item) ? (ctype_digit($item) ? (int)$item : (float)$item) : $item;
+        }
+
+        return $item;
+    }
 }

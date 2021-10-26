@@ -59,9 +59,11 @@ class MySQL
 
 	public function fetch($result, $mode = MYSQLI_ASSOC)
 	{
-        $model = $this->model ?? "stdClass";
-		return mysqli_fetch_object($result, $model);
-        // return mysqli_fetch_object($result);
+        if ($this->model) {
+            return mysqli_fetch_object($result, $this->model);
+        }
+
+        return mysqli_fetch_array($result, $mode);
 	}
 
 	public function affectedRows()

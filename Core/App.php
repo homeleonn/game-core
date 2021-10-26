@@ -52,19 +52,6 @@ class App
             throw new Exception("Service '{$name}' not found");
         }
 
-        // $isclosure = false;
-        // if (is_string($this->container[$name]) && isset($this->container[$this->container[$name]])) {
-        //     if ($this->container[$this->container[$name]] instanceof Closure) {
-        //        $name = $this->container[$name];
-        //        $isclosure = true;
-        //     }
-        // }
-
-        // if ($isclosure || $this->container[$name] instanceof Closure) {
-        //     dd($this->container);
-        //     $this->container[$name] = $this->container[$name]($this);
-        // }
-
         if ($this->container[$name] instanceof Closure) {
             $this->container[$name] = $this->container[$name]($this);
         } elseif (is_string($this->container[$name]) && isset($this->container[$this->container[$name]])) {

@@ -2,16 +2,15 @@
 
 namespace Core\Auth;
 
-use Core\DB\DB;
+use Core\Contracts\Database\Database;
 use Core\Contracts\Session\Session;
-use App\Models\User;
 
 class Auth
 {
     private $auth = 'email';
 
     public function __construct(
-        private DB $db,
+        private Database $db,
         private Session $storage,
     ) {}
 

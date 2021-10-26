@@ -2,7 +2,6 @@
 
 namespace Core\Session;
 
-use Redis;
 use SessionHandlerInterface;
 
 class FileSessionHandler implements SessionHandlerInterface

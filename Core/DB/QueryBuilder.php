@@ -25,6 +25,14 @@ class QueryBuilder
         return $this;
     }
 
+    public function count(): self
+    {
+        $this->select();
+        $this->builder['count'] = true;
+
+        return $this;
+    }
+
     public function where($field, $value): self
     {
 
@@ -114,10 +122,6 @@ class QueryBuilder
 
         $result = $this->connection->{"get{$type}"}($this->getResult());
 
-        // if ($this->model) {
-        //     return new $this->model($result);
-        // }
-
         return $result;
     }
 
@@ -135,7 +139,7 @@ class QueryBuilder
         return $result;
     }
 
-    public function join($values, $sep, $equals = '=', $tableName = true)
+    public function join($values, $sep = '', $equals = '=', $tableName = true)
     {
         if (is_null($values)) return '';
 
@@ -155,7 +159,7 @@ class QueryBuilder
     {
         $tableName = $this->getTableName();
         // return $fields ? "`{$tableName}`.`" . implode("`, `{$tableName}`.`", $this->builder['fields']) . '`' : '*';
-        return $fields ? implode(", ", $this->builder['fields']) : '*';
+        return $fields ? implode(", ", $this->builder['fields']) : (isset($this->builder['count']) ? 'count(*)' : '*');
     }
 
     public function getTableName()
