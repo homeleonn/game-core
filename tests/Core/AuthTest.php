@@ -12,7 +12,8 @@ class AuthTest extends TestCase
         $db = $this->getMockBuilder(DB::class)->getMock();
 
         $storage = $this->getMockBuilder(Storage::class)
-                        ->onlyMethods(['get'])
+                        ->disableOriginalConstructor()
+                        // ->onlyMethods(['get'])
                         ->getMock();
         $storage->expects($this->once())
                 ->method('get')
@@ -43,7 +44,8 @@ class AuthTest extends TestCase
            ->willReturn((object)['id' => 1, 'password' => $hashForDataPassword]);
 
         $storage = $this->getMockBuilder(Storage::class)
-                        ->onlyMethods(['set'])
+                        ->disableOriginalConstructor()
+                        // ->onlyMethods(['set'])
                         ->getMock();
 
         $storage->expects($this->once())

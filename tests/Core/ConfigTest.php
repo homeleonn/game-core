@@ -19,9 +19,8 @@ class ConfigTest extends TestCase
         $this->assertEquals('fake', $this->config->get('test'));
     }
 
-    public function testThatConfigIsThrowException()
+    public function testThatConfigIsReturnsNull()
     {
-        $this->expectException(Exception::class);
-        $this->config->get('wrongKey');
+        $this->assertEquals(null, $this->config->get('wrongKey'));
     }
 }
