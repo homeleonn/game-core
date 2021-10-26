@@ -48,11 +48,19 @@ class Router
 
         if (empty($this->groupOptions)) return;
 
+        $this->setRequiredMiddleware($route);
+
         foreach ($this->groupOptions as $option => $value) {
             $route->{$option}($value);
         }
 
         $this->lastRoute = $route;
+    }
+
+    public function setRequiredMiddleware($route)
+    {
+        $route->middleware(\Core\Session\Middleware\StartSession::class);
+        $route->middleware(\Core\Session\Middleware\ValidateCsrfToken::class);
     }
 
     public function group(array $options, Closure $register)
@@ -163,7 +171,9 @@ class Router
                     throw new Exception("Middleware {$pipe} not found");
                 }
 
-                return (new $pipe)->handle($passable, $stack);
+                $res = (new $pipe)->handle($passable, $stack);
+
+                return $res;
             };
         };
     }

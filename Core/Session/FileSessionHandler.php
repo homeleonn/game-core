@@ -9,14 +9,14 @@ class FileSessionHandler implements SessionHandlerInterface
     protected $prefix;
     protected $savePath;
 
-    public function __construct($prefix = 'sess_')
+    public function __construct($prefix = '')
     {
         $this->prefix = $prefix;
     }
 
-    public function path($id)
+    public function path($filename)
     {
-        return $this->savePath . '/' . $this->prefix . str_replace(['/', '\\'], '', $id);
+        return $this->savePath . '/' . $this->prefix . str_replace(['/', '\\'], '', $filename);
     }
 
     public function open($savePath, $sessionName)
@@ -31,22 +31,22 @@ class FileSessionHandler implements SessionHandlerInterface
         return true;
     }
 
-    public function read($id)
+    public function read($filename)
     {
-        $path = $this->path($id);
-        if (!file_exists($path)) return '';
+        $path = $this->path($filename);
+        if (!file_exists($path)) return [];
 
         return (string)file_get_contents($path);
     }
 
-    public function write($id, $data)
+    public function write($filename, $data)
     {
-        return file_put_contents($this->path($id), $data) === false ? false : true;
+        return file_put_contents($this->path($filename), $data) === false ? false : true;
     }
 
-    public function destroy($id)
+    public function destroy($filename)
     {
-        $file = $this->path($id);
+        $file = $this->path($filename);
 
         if (file_exists($file)) {
             unlink($file);
@@ -59,7 +59,7 @@ class FileSessionHandler implements SessionHandlerInterface
         if (mt_rand(1, 100) > 2) return;
 
         foreach (glob($this->path('*')) as $file) {
-            if (file_exists($file) && filemtime($file) + $maxlifetime < time()) {
+            if (file_exists($file) && filemtime($file) + $maxLifetime < time()) {
                 unlink($file);
             }
         }

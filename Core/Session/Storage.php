@@ -4,30 +4,120 @@ namespace Core\Session;
 
 use Core\Contracts\Session\Session;
 use SessionHandlerInterface;
+use Core\Support\Crypter;
+use Core\Support\Str;
+use Config;
+use Request;
+use RuntimeException;
 
 class Storage implements Session
 {
-    // public function __construct()
-    // {
-    // }
+    const DEFAULT_LIFETIME = 120;
+
+    private $config;
+    private SessionHandlerInterface $handler;
+    private string $sessionId;
+    private string $sessionFilename;
+    private string $sessionName = 'fw_session';
+    private string $separator = '___';
+    private int $lifetime;
+    private array $data;
+
+    public function __construct(SessionHandlerInterface $handler)
+    {
+        $this->handler = $handler;
+        $this->config = Config::get('session');
+        [$this->sessionFilename, $this->sessionId] = $this->getSessionId();
+        $this->lifetime = $this->config['lifetime'] ?? self::DEFAULT_LIFETIME;
+
+        // $this->start();
+    }
+
+    public function start()
+    {
+        $this->sendSessionCookieIdToUser();
+        $this->handler->open($this->config['path'], '');
+        $this->handler->gc($this->lifetime);
+        $this->read();
+
+    }
+
+    private function sendSessionCookieIdToUser()
+    {
+        setCookie($this->sessionName, $this->sessionId, [
+            'expires' => time() + $this->lifetime * 60,
+            'httponly' => true,
+            'path' => '/',
+            'samesite' => 'Lax',
+        ]);
+    }
+
+    private function read()
+    {
+        $data = $this->handler->read($this->sessionFilename);
+        if ($data) {
+            $this->data = unserialize($data);
+        } else {
+            $this->data = [];
+        }
+    }
+
+    private function write()
+    {
+        $this->handler->write($this->sessionFilename, serialize($this->data));
+    }
 
     public function get(?string $key = null)
     {
-        return is_null($key) ? $_SESSION : ($_SESSION[$key] ?? null);
+        return is_null($key) ? $this->data : ($this->data[$key] ?? null);
     }
 
     public function set(string $key, $value): void
     {
-        $_SESSION[$key] = (string)$value;
+        $this->data[$key] = $value;
     }
 
     public function del(string $key): void
     {
-        unset($_SESSION[$key]);
+        unset($this->data[$key]);
     }
 
     public function all(): mixed
     {
-         return $_SESSION;
+         return $this->data;
+    }
+
+    private function generateCsrfToken()
+    {
+        return Str::random(32);
+    }
+
+    private function getSessionId()
+    {
+        $key = Config::get('app_key');
+        $crypter = new Crypter($key);
+
+        if (isset($_COOKIE[$this->sessionName])) {
+            try {
+                $sessionValue = $crypter->decrypt($_COOKIE[$this->sessionName]);
+            } catch (RuntimeException $e) {
+                exit('wrong session');
+            }
+
+            [$token, $sessionFilename] = explode($this->separator, $sessionValue);
+            Config::set('_token', $token);
+        } else {
+            $sessionFilename = Str::random(32);
+        }
+
+        $csrfToken = $this->generateCsrfToken();
+        Config::set('csrf_token', $csrfToken);
+
+        return [$sessionFilename, $crypter->encrypt($csrfToken . $this->separator . $sessionFilename)];
+    }
+
+    public function __destruct()
+    {
+        $this->write();
     }
 }

@@ -53,17 +53,29 @@ class HomeController
     //     dd($userId);
     // }
 
-    public function test(User $user = null)
+    // public function test(User $user = null)
+    // {
+    //     // if ($user)
+    //     // dd($user->login, $user);
+    //     return view('test');
+    // }
+
+    public function registration()
     {
-        // if ($user)
-        // dd($user->login, $user);
-        return view('test');
+        // echo 22;
     }
 
-    // public function test(Request $request, int $userId = 1)
-    // {
-    //     dd($request, $userId);
-    // }
+    public function test()
+    {
+        // return view('test');
+        // dd($request, $userId);
+    }
+
+    public function testForm()
+    {
+        return view('test');
+        // dd($request, $userId);
+    }
 
     public function test1(int $userId = 1)
     {

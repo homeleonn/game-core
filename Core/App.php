@@ -6,6 +6,7 @@ use Core\Support\Facades\Facade;
 use Core\Support\Facades\Response;
 use Closure;
 use Exception;
+use Config;
 
 class App
 {
@@ -17,6 +18,7 @@ class App
         Facade::setFacadeApplication($this, $config['aliases']);
         $servicesInstances = $this->loadServices($config['providers']);
         $this->bootServices($servicesInstances);
+        $this->checkKey();
     }
 
     protected function loadServices(array $services): array
@@ -36,6 +38,13 @@ class App
     {
         foreach ($services as $service) {
             $service->boot();
+        }
+    }
+
+    public function checkKey()
+    {
+        if (!Config::get('app_key')) {
+            throw new Exception('App key doesn\'t exists');
         }
     }
 
@@ -66,6 +75,7 @@ class App
         $response = $this->make('router')->resolve();
 
         $className = \Core\Http\Response::class;
+
         echo $response instanceof $className ? $response->getContent() : $response;
     }
 

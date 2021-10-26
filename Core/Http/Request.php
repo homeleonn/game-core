@@ -27,6 +27,11 @@ class Request
         return Str::addStartSlash($urlParts['path']);
     }
 
+    public function getUrl()
+    {
+        return "{$this->server['REQUEST_SCHEME']}://{$this->server['SERVER_NAME']}{$this->server['REQUEST_URI']}";
+    }
+
     private function sanitizeRequest(array $request): array
     {
         foreach ($request as $key => $value) {

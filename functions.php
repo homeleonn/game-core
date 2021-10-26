@@ -26,6 +26,7 @@ function vd(){
 
 function s($name = null, $value = false) {
     $session = App::make('storage');
+    // dd($session, $name, $value );
 	if (is_null($name)) {
 	    return $session->all();
 	} elseif ($value === false) {
@@ -37,6 +38,14 @@ function s($name = null, $value = false) {
 	$session->set($name, $value);
 
 	return $session->get($name);
+}
+
+function csrf_token() {
+    return s('_token');
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="_token" value="'.csrf_token().'">';
 }
 
 

@@ -11,7 +11,7 @@ class RedisSessionHandler implements SessionHandlerInterface
     protected $db;
     protected $prefix;
 
-    public function __construct(Redis $db, $prefix = 'SID:') {
+    public function __construct(Redis $db, $prefix = '') {
         $this->db = $db;
         $this->prefix = $prefix;
     }

@@ -5,6 +5,7 @@ define('HTTP_SIDE', '');
 header("Access-Control-Allow-Origin: *");
 require '../vendor/autoload.php';
 require '../functions.php';
+require '../Core/Support/helpers.php';
 
 use Core\App;
 
@@ -17,4 +18,4 @@ try {
 require routes('web.php');
 
 $app->run();
-dd($app->db->getStats());
+d($app->db->getStats());

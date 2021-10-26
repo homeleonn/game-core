@@ -15,10 +15,11 @@ class Config
 
     public function get(string $key): mixed
     {
-        if (!isset($this->config[$key])) {
-            throw new Exception("Config '{$key}' doesn't exists!");
-        }
+        return $this->config[$key] ?? null;
+    }
 
-        return $this->config[$key];
+    public function set($key, $value)
+    {
+        $this->config[$key] = $value;
     }
 }

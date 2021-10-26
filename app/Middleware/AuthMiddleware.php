@@ -2,11 +2,12 @@
 
 namespace App\Middleware;
 
+use Closure;
 use Core\Http\Request;
 use Core\Support\Facades\Auth;
-use Closure;
+use Core\Support\MiddlewareInterface;
 
-class AuthMiddleware
+class AuthMiddleware implements MiddlewareInterface
 {
     public function handle(Request $request, Closure $next)
     {

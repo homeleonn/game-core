@@ -3,6 +3,8 @@
 namespace Core\Http;
 
 use Closure;
+use Config;
+use Session;
 
 class Response
 {
@@ -23,6 +25,11 @@ class Response
         $this->content = $content;
     }
 
+    public function setToken()
+    {
+        // s('_token', Config::get('csrf_token'));
+    }
+
     public function __invoke($request)
     {
         return ($request->routeResolveAction)();
@@ -30,6 +37,7 @@ class Response
 
     public function fire(): Closure
     {
+        // $this->setToken();
         return fn($request) => ($request->routeResolveAction)();
     }
 
@@ -40,9 +48,17 @@ class Response
         return $this;
     }
 
-    public function route(string $name): self
+    public function route(string $name)
     {
         $this->setRedirect(\route($name));
+
+        return $this;
+    }
+
+    public function back()
+    {
+        $back = Session::get('_previous')['url'];
+        $this->setRedirect($back);
 
         return $this;
     }
