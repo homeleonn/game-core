@@ -46,9 +46,9 @@ class Router
         $route = new Route($method, $uri, $callback);
         $this->routes[] = $route;
 
-        if (empty($this->groupOptions)) return;
-
         $this->setRequiredMiddleware($route);
+
+        if (empty($this->groupOptions)) return;
 
         foreach ($this->groupOptions as $option => $value) {
             $route->{$option}($value);

@@ -64,7 +64,9 @@ class Storage implements Session
 
     private function write()
     {
-        $this->handler->write($this->sessionFilename, serialize($this->data));
+        if (isset($this->data)) {
+            $this->handler->write($this->sessionFilename, serialize($this->data));
+        }
     }
 
     public function get(?string $key = null)

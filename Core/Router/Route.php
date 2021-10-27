@@ -85,7 +85,18 @@ class Route
             } catch (\Exception $e) {
                 if (!isset($this->actualArguments[$idx])) continue;
 
-                array_splice($this->actualArguments, $idx, 1, [(new $className())->find($this->actualArguments[$idx])]);
+                $model = (new $className())->find($this->actualArguments[$idx]);
+
+                if (!$model) {
+                    \Response::setStatusCode(404);
+                    try {
+                        exit(view('404'));
+                    } catch (\Exception $e) {
+                        throw new HttpNotFoundException('Page not found');
+                    }
+                }
+
+                array_splice($this->actualArguments, $idx, 1, [$model]);
             }
         }
     }
