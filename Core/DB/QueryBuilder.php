@@ -76,7 +76,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function get(array $fields = [])
+    public function get(array $fields = []): string
     {
         $table      = isset($this->builder['table_alias'])
                     ? "{$this->builder['table']} as {$this->builder['table_alias']}"
@@ -139,7 +139,7 @@ class QueryBuilder
         return $result;
     }
 
-    public function join($values, $sep = '', $equals = '=', $tableName = true)
+    public function join($values, $sep = '', $equals = '=', $tableName = true): string
     {
         if (is_null($values)) return '';
 
@@ -155,19 +155,19 @@ class QueryBuilder
         return $s;
     }
 
-    public function prepareFields($fields)
+    public function prepareFields($fields): string
     {
         $tableName = $this->getTableName();
         // return $fields ? "`{$tableName}`.`" . implode("`, `{$tableName}`.`", $this->builder['fields']) . '`' : '*';
         return $fields ? implode(", ", $this->builder['fields']) : (isset($this->builder['count']) ? 'count(*)' : '*');
     }
 
-    public function getTableName()
+    public function getTableName(): string
     {
         return $this->builder['table_alias'] ?? $this->builder['table'];
     }
 
-    public function prepareOrderBy($orderBy)
+    public function prepareOrderBy($orderBy): string
     {
         return is_null($orderBy) ? '' : ' ORDER BY ' . key($orderBy) . ' ' . current($orderBy);
     }

@@ -22,7 +22,7 @@ class ValidateCsrfToken implements MiddlewareInterface
             ]);
         }
 
-        s('_token', Config::get('csrf_token'));
+        Session::set('_token', Config::get('csrf_token'));
 
         return $next($request);
     }

@@ -29,7 +29,7 @@ class Request
         return Str::addStartSlash($urlParts['path'] ?? '/');
     }
 
-    public function getUrl()
+    public function getUrl(): string
     {
         return "{$this->server['REQUEST_SCHEME']}://{$this->server['SERVER_NAME']}{$this->server['REQUEST_URI']}";
     }
@@ -45,27 +45,27 @@ class Request
         return $request;
     }
 
-    public function get($param)
+    public function get($param): mixed
     {
         return $this->request[$param] ?? null;
     }
 
-    public function getUri()
+    public function getUri(): string
     {
         return $this->uri;
     }
 
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
 
-    public function all()
+    public function all(): ?array
     {
         return $this->request;
     }
 
-    public function only(array $only)
+    public function only(array $only): array
     {
         $res = [];
 
@@ -76,7 +76,7 @@ class Request
         return $res;
     }
 
-    public function except(array $except)
+    public function except(array $except): ?array
     {
         $req = $this->request;
 

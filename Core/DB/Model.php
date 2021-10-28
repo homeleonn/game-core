@@ -25,19 +25,19 @@ class Model
         }
     }
 
-    public static function identifyTableName()
+    public static function identifyTableName(): string
     {
         $caller = strtolower(Str::lastPart(static::class, '\\'));
 
         return Str::plural($caller);
     }
 
-    public function getId()
+    public function getId(): mixed
     {
         return $this->attr[$this->primaryKey] ?? null;
     }
 
-    public function update(array $values)
+    public function update(array $values): void
     {
         $this->attr = array_merge($this->attr, $values);
 
@@ -53,12 +53,12 @@ class Model
         return false;
     }
 
-    public function save()
+    public function save(): ?static
     {
         $insert = array_diff_assoc($this->attr, $this->original);
 
         if (empty($insert)) {
-            return;
+            return null;
         }
 
         $id         = $this->getId();
@@ -81,7 +81,7 @@ class Model
         return $this;
     }
 
-    private function prepareSet(array $insert)
+    private function prepareSet(array $insert): string
     {
         $s = '';
         foreach ($insert as $key => $value) {
@@ -93,7 +93,7 @@ class Model
         return substr($s, 0, -2);
     }
 
-    private function prepareInsert($insert)
+    private function prepareInsert($insert): array
     {
         $insertColumns = implode(', ', array_keys($insert));
         $preparedValues = implode(', ', array_map(function ($value) {

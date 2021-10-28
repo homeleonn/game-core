@@ -15,29 +15,18 @@ class Response
         http_response_code($code);
     }
 
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }
 
-    public function setContent($content)
+    public function setContent(string $content)
     {
         $this->content = $content;
     }
 
-    public function setToken()
-    {
-        // s('_token', Config::get('csrf_token'));
-    }
-
-    public function __invoke($request)
-    {
-        return ($request->routeResolveAction)();
-    }
-
     public function fire(): Closure
     {
-        // $this->setToken();
         return fn($request) => ($request->routeResolveAction)();
     }
 
@@ -48,14 +37,14 @@ class Response
         return $this;
     }
 
-    public function route(string $name)
+    public function route(string $name): seld
     {
         $this->setRedirect(\route($name));
 
         return $this;
     }
 
-    public function back()
+    public function back(): seld
     {
         $back = Session::get('_previous')['url'];
         $this->setRedirect($back);
@@ -63,7 +52,7 @@ class Response
         return $this;
     }
 
-    public function setRedirect($url)
+    public function setRedirect($url): void
     {
         $this->setContent('<!DOCTYPE html>
 <html lang="en">

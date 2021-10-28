@@ -16,7 +16,7 @@ class Route
     private string $name;
     private array $middleware = [];
     private array $patterns;
-    private array|null $actualArguments = [];
+    private ?array $actualArguments = [];
 
     public function __construct(
         private string $method,
@@ -31,12 +31,12 @@ class Route
         $this->name = $name;
     }
 
-    public function getUri()
+    public function getUri(): string
     {
         return $this->uri;
     }
 
-    public function buildUri(?array $params = null)
+    public function buildUri(?array $params = null): mixed
     {
         return preg_replace_callback('~{\w+\??}~', function ($placeholder) use ($params) {
             static $i = 0;
@@ -44,7 +44,7 @@ class Route
         }, $this->uri);
     }
 
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
@@ -54,12 +54,12 @@ class Route
         return $this->action;
     }
 
-    public function getActualArguments()
+    public function getActualArguments(): ?array
     {
         return $this->actualArguments;
     }
 
-    public function getResolveAction()
+    public function getResolveAction(): Closure
     {
         $this->prepareArguments();
 
@@ -68,7 +68,7 @@ class Route
         };
     }
 
-    private function prepareArguments()
+    private function prepareArguments(): void
     {
         if ($this->action instanceof Closure) {
             $refMethod = new ReflectionFunction($this->action);
@@ -113,7 +113,7 @@ class Route
         return $this->action = $action;
     }
 
-    public function getMiddleware()
+    public function getMiddleware(): array
     {
         return $this->middleware;
     }

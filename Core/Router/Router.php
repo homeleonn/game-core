@@ -26,14 +26,14 @@ class Router
         $this->response = $response;
     }
 
-    public function get(string $uri,  $callback)
+    public function get(string $uri,  $callback): self
     {
         $this->addRoute('get', $uri, $callback);
 
         return $this;
     }
 
-    public function post(string $uri, $callback)
+    public function post(string $uri, $callback): self
     {
         $this->addRoute('post', $uri, $callback);
 
@@ -57,20 +57,20 @@ class Router
         $this->lastRoute = $route;
     }
 
-    public function setRequiredMiddleware($route)
+    public function setRequiredMiddleware($route): void
     {
         $route->middleware(\Core\Session\Middleware\StartSession::class);
         $route->middleware(\Core\Session\Middleware\ValidateCsrfToken::class);
     }
 
-    public function group(array $options, Closure $register)
+    public function group(array $options, Closure $register): void
     {
         $this->groupOptions = $options;
         $register();
         $this->groupOptions = [];
     }
 
-    public function name(string $name)
+    public function name(string $name): self
     {
         array_pop($this->routes);
         $this->routes[$name] = $this->lastRoute;
@@ -78,7 +78,7 @@ class Router
         return $this;
     }
 
-    public function getByName($name, $part = null)
+    public function getByName($name, $part = null): Route
     {
         if (!isset($this->routes[$name])) {
             throw new Exception("Named route {$name} not found");
@@ -87,14 +87,14 @@ class Router
         return $this->routes[$name];
     }
 
-    public function middleware(string $middleware)
+    public function middleware(string $middleware): self
     {
         $this->lastRoute->middleware($middleware);
 
         return $this;
     }
 
-    private function findRoute()
+    private function findRoute(): Route
     {
         $method     = strtolower($this->request->getMethod());
         $uri        = $this->request->getUri();
@@ -141,7 +141,7 @@ class Router
         return $route;
     }
 
-    public function resolve()
+    public function resolve(): mixed
     {
         $route = $this->findRoute();
         // dd($this->request->routeResolveAction);
@@ -151,7 +151,7 @@ class Router
         return $activatedMiddlewareStack($this->request);
     }
 
-    private function activationMiddlewareStack($middleware)
+    private function activationMiddlewareStack($middleware): mixed
     {
         return array_reduce(
             array_reverse($middleware),
@@ -160,7 +160,7 @@ class Router
         );
     }
 
-    public function carry()
+    public function carry(): Closure
     {
         return function ($stack, $pipe) {
             return function ($passable) use ($stack, $pipe) {
