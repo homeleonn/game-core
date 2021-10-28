@@ -15,6 +15,12 @@ class ConfigServiceProvider extends ServiceProvider
 
     public function loadConfig()
     {
-        return require ROOT . '/.env.php';
+        $configFile = ROOT . '/.env.php';
+
+        if (!file_exists($configFile)) {
+            throw new Exception('Config file does not exists. Please run "php fw" in root directory for build config file');
+        }
+
+        return require $configFile;
     }
 }
