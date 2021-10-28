@@ -13,6 +13,7 @@ class App
 
     public function __construct()
     {
+        $this->coreAliasesRegister();
         $config = require ROOT . '/config/app.php';
         Facade::setFacadeApplication($this, $config['aliases']);
         $servicesInstances = $this->loadServices($config['providers']);
@@ -62,11 +63,45 @@ class App
 
         if ($this->container[$name] instanceof Closure) {
             $this->container[$name] = $this->container[$name]($this);
-        } elseif (is_string($this->container[$name]) && isset($this->container[$this->container[$name]])) {
-            $this->container[$name] = $this->container[$this->container[$name]];
+        } elseif (is_array($this->container[$name])) {
+            foreach ($this->container[$name] as $serviceClassName) {
+                if (isset($this->container[$serviceClassName])) {
+                    $this->container[$name] = $this->container[$serviceClassName];
+
+                    if ($this->container[$name] instanceof $serviceClassName) {
+                        break;
+                    } elseif ($this->container[$name] instanceof Closure){
+                        $this->container[$name] = $this->container[$name]($this);
+                    }
+                }
+            }
+        }
+
+        if (is_string($this->container[$name])) {
+            throw new Exception("Service '{$name}' has not booted");
         }
 
         return $this->container[$name];
+    }
+
+    private function coreAliasesRegister()
+    {
+        foreach ([
+            'auth' => [\Core\Auth\Auth::class],
+            'config' => [\Core\Config\Config::class],
+            'db' => [\Core\DB\DB::class, \Core\Contracts\Database\Database::class],
+            'request' => [\Core\Http\Request::class],
+            'response' => [\Core\Http\Response::class],
+            'redis' => [\Redis::class],
+            'router' => [\Core\Router\Router::class],
+            'route' => [\Core\Router\Route::class],
+            'session' => [\Core\Session\Session::class, \Core\Contracts\Session\Session::class],
+        ] as $alias => $services) {
+            // foreach ($services as $service) {
+            //     $this->set($service, $alias);
+            // }
+            $this->set($alias, $services);
+        }
     }
 
     public function run()

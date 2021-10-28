@@ -11,12 +11,12 @@ class Auth
 
     public function __construct(
         private Database $db,
-        private Session $storage,
+        private Session $session,
     ) {}
 
     public function check()
     {
-        return $this->storage->get('id');
+        return $this->session->get('id');
     }
 
     public function attempt(array $data): bool
@@ -31,7 +31,7 @@ class Auth
             return false;
         }
 
-        $this->storage->set('id', $user->id);
+        $this->session->set('id', $user->id);
 
         return true;
     }

@@ -25,7 +25,7 @@ function vd(){
 }
 
 function s($name = null, $value = false) {
-    $session = App::make('storage');
+    $session = App::make('session');
     // dd($session, $name, $value );
 	if (is_null($name)) {
 	    return $session->all();

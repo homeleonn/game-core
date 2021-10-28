@@ -8,7 +8,7 @@ class ConfigServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        $this->app->set('config', function ($app) {
+        $this->app->set(Config::class, function ($app) {
             return new Config($this->loadConfig());
         });
     }

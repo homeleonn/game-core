@@ -9,8 +9,7 @@ class DatabaseServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        $this->app->set(DB::class, 'db');
-        $this->app->set('db', function ($app) {
+        $this->app->set(DB::class, function ($app) {
             return new DB($app->config->get('db'));
         });
     }

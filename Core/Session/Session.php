@@ -2,7 +2,7 @@
 
 namespace Core\Session;
 
-use Core\Contracts\Session\Session;
+use Core\Contracts\Session\Session as SessionContract;
 use SessionHandlerInterface;
 use Core\Support\Crypter;
 use Core\Support\Str;
@@ -10,7 +10,7 @@ use Core\Support\Facades\Config;
 use Core\Support\Facades\Request;
 use RuntimeException;
 
-class Storage implements Session
+class Session implements SessionContract
 {
     const DEFAULT_LIFETIME = 120;
 

@@ -2,4 +2,6 @@
 
 namespace Core\Redis;
 
-// class Redis
+use Redis;
+
+class

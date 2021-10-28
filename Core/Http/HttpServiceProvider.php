@@ -8,17 +8,11 @@ class HttpServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        // $this->app->bind(Request::class, function() {
-        //     return new Request();
-        // });
-        // $this->app->alias('request', Request::class)
-
-        $this->app->set(Request::class, 'request');
-        $this->app->set('request', function () {
+        $this->app->set(Request::class, function () {
             return new Request($_SERVER, $_REQUEST);
         });
 
-        $this->app->set('response', function () {
+        $this->app->set(Response::class, function () {
             return new Response();
         });
     }
