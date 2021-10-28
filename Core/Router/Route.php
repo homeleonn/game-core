@@ -5,6 +5,9 @@ namespace Core\Router;
 use Closure;
 use ReflectionMethod;
 use ReflectionFunction;
+use ReflectionNamedType;
+use Core\Support\Facades\App;
+use Core\Support\Facades\Response;
 
 class Route
 {
@@ -76,19 +79,23 @@ class Route
         $requiredArgs = $refMethod->getParameters();
 
         foreach ($requiredArgs as $idx => $param) {
-            $className = $param->getType()?->getName();
+            $classType = $param->getType();
 
-            if (!class_exists($className)) continue;
+            if ($classType instanceof ReflectionNamedType) {
+                $className = $classType->getName();
+            }
+
+            if (!isset($className) || !class_exists($className)) continue;
 
             try {
-                array_splice($this->actualArguments, $idx, 0, [\App::make($className)]);
+                array_splice($this->actualArguments, $idx, 0, [App::make($className)]);
             } catch (\Exception $e) {
                 if (!isset($this->actualArguments[$idx])) continue;
 
                 $model = (new $className())->find($this->actualArguments[$idx]);
 
                 if (!$model) {
-                    \Response::setStatusCode(404);
+                    Response::setStatusCode(404);
                     try {
                         exit(view('404'));
                     } catch (\Exception $e) {
@@ -131,16 +138,15 @@ class Route
     /**
      * Search match with actual uri by regex
      *
-     * @return matched params | false
+     * @return bool matched params | false
      */
     public function match($method, $uri): array|bool
     {
         if ($this->method != $method) return false;
 
         $patchedUri = $this->patchUri();
-        // d($uri, $patchedUri);
 
-        if (preg_match('~^' . $patchedUri . '/?$~', $uri, $this->actualArguments)) {//dd($this->actualArguments);
+        if (preg_match('~^' . $patchedUri . '/?$~', $uri, $this->actualArguments)) {
             array_shift($this->actualArguments);
             return true;
         }

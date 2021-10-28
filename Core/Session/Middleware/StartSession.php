@@ -3,7 +3,7 @@
 namespace Core\Session\Middleware;
 
 use Closure;
-use Session;
+use Core\Support\Facades\Session;
 use Core\Http\Request;
 use Core\Support\MiddlewareInterface;
 

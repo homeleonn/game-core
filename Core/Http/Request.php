@@ -2,6 +2,7 @@
 
 namespace Core\Http;
 
+use Closure;
 use Exception;
 use Core\Support\Str;
 
@@ -11,6 +12,7 @@ class Request
     private array $request;
     private string $uri;
     private string $method;
+    public Closure $routeResolveAction;
 
     public function __construct(array $server, array $request)
     {
@@ -24,7 +26,7 @@ class Request
     {
         $urlParts = parse_url($this->server['REQUEST_URI']);
 
-        return Str::addStartSlash($urlParts['path']);
+        return Str::addStartSlash($urlParts['path'] ?? '/');
     }
 
     public function getUrl()

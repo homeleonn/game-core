@@ -4,6 +4,8 @@ namespace App\Server\Models;
 
 class Loc
 {
+    private ?array $attr;
+
     public function __construct($loc)
     {
         $this->attr = $loc;
@@ -18,6 +20,6 @@ class Loc
 
     private function __get($key)
     {
-        return $this->attr->$key ?? null;
+        return $this->attr[$key] ?? null;
     }
 }

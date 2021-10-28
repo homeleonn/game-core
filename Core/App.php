@@ -6,7 +6,6 @@ use Core\Support\Facades\Facade;
 use Core\Support\Facades\Response;
 use Closure;
 use Exception;
-use Config;
 
 class App
 {
@@ -43,8 +42,8 @@ class App
 
     public function checkKey()
     {
-        if (!Config::get('app_key')) {
-            throw new Exception('App key doesn\'t exists');
+        if (!$this->make('config')->get('app_key')) {
+            throw new Exception('Application key doesn\'t exists. First generate app key');
         }
     }
 

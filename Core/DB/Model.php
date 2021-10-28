@@ -2,7 +2,7 @@
 
 namespace Core\DB;
 
-use DB;
+use Core\Support\Facades\DB;
 use Core\Support\Str;
 
 class Model

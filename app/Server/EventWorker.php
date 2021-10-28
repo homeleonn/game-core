@@ -2,7 +2,7 @@
 
 file_put_contents(__DIR__ . '/../resources/event_manager_pid.txt', getmypid());
 $redis = new Redis;
-$redis->pconnect('127.0.0.1', '6379');
+$redis->pconnect('127.0.0.1', 6379);
 $fp = stream_socket_client("tcp://192.168.0.101:8080", $errno,$errstr);
 
 if (!$fp) {
@@ -17,7 +17,7 @@ if (!$fp) {
     while (true) {
         sleep(5);
 
-        $t = str_replace('.', '', round(microtime(true), 4));
+        $t = str_replace('.', '', (string)round(microtime(true), 4));
         if (!empty($events = $redis->zrangebyscore('events', '-inf', $t))) {
             $redis->zremrangebyscore('events', '-inf', $t);
             $result = fwrite($fp, encode(json_encode(['ev' => $events]), 'text', true));

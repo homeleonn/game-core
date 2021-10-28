@@ -59,11 +59,11 @@ class DosProtection implements DosProtectionInterface
      */
     private function handle(): void
     {
-        if (!isset($this->ips[$this->ip]) || $this->isToReset($this->time)) {
+        if (!isset($this->ips[$this->ip]) || $this->isToReset()) {
             $this->ips[$this->ip]['count'] = 0;
         }
 
-        $this->tick($this->time);
+        $this->tick();
     }
 
     /**

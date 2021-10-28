@@ -24,7 +24,7 @@ class HFight
 
     private static function cancelDefenceBySuperHit($userLevel, $superHitLevel)
     {
-        $chance;
+        $chance = 0;
         $diffLevel = $userLevel - $superHitLevel;
 
         if ($diffLevel < 1) {

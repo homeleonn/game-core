@@ -17,4 +17,5 @@ interface Database
     public function lastQuery();
     public function escapeString($value);
     public function getStats();
+    public function table(string $tableName, $model = null);
 }

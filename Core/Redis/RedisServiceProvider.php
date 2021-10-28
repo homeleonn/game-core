@@ -11,7 +11,7 @@ class RedisServiceProvider extends ServiceProvider
     {
         $this->app->set('redis', function ($app) {
             $redis = new Redis;
-            $redis->connect('127.0.0.1', '6379');
+            $redis->connect('127.0.0.1', 6379);
 
             return $redis;
         });

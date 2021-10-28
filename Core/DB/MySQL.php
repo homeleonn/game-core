@@ -2,12 +2,13 @@
 
 namespace Core\DB;
 
+use Exception;
+
 class MySQL
 {
     private $conn;
 	private $stats;
 	private $emode;
-	private $exname;
     private $model;
 
     private $config = [
@@ -28,7 +29,6 @@ class MySQL
 	{
 		$this->config = array_merge($this->config, $opt);
     	$this->emode  = $this->config['errmode'];
-		$this->exname = $this->config['exception'];
     	if ($this->config['pconnect']) {
 			$this->config['host'] = "p:".$this->config['host'];
 		}
@@ -152,11 +152,14 @@ class MySQL
         $args  = func_get_args();
         $index = array_shift($args);
         return $this->_get($args, function ($result) use ($index) {
+            $return = [];
+
             while ($row = $this->fetch($result)) {
                 $key = $row->{$index};
                 unset($row->{$row->{$index}});
                 $return[$key] = current($row);
             }
+
             return $return;
         });
 	}
@@ -181,9 +184,9 @@ class MySQL
      * $sql  = "SELECT * FROM table ORDER BY ?p ?p LIMIT ?i,?i"
      * $data = $db->getArr($sql, $order, $dir, $start, $per_page);
      *
-     * @param string $iinput   - field name to test
+     * @param string $input   - field name to test
      * @param  array  $allowed - an array with allowed variants
-     * @param  string $default - optional variable to set if no match found. Default to false.
+     * @param  string|FALSE $default - optional variable to set if no match found. Default to false.
      * @return string|FALSE    - either sanitized value or FALSE
      */
 	public function whiteList($input, $allowed, $default = false)
@@ -240,7 +243,7 @@ class MySQL
 
     	$query                 = '';
 		$raw                   = array_shift($args);
-		$array                 = preg_split('~(\?[nsiuap])~u', $raw, null, PREG_SPLIT_DELIM_CAPTURE);
+		$array                 = preg_split('~(\?[nsiuap])~u', $raw, -1, PREG_SPLIT_DELIM_CAPTURE);
 		$argsCount             = count($args);
 		$placeholdersCount     = floor(count($array) / 2);
 
@@ -357,7 +360,7 @@ class MySQL
 			$err .= ". Error initiated in " . $this->caller() . ", thrown";
 			trigger_error($err, E_USER_ERROR);
 		} else {
-			throw new $this->exname($err);
+			throw new Exception($err);
 		}
 	}
 
@@ -379,7 +382,7 @@ class MySQL
 
 	private function cutStats()
 	{
-		if (count($this->stats) < 100) return;
+		if ($this->stats && count($this->stats) < 100) return;
 
         unset($this->stats[array_key_first($this->stats)]);
 	}

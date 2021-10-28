@@ -20,7 +20,7 @@ class EventManager
         $timeout = 3;
         $this->redis->zadd(
             'events',
-            (str_replace('.', '', round(microtime(true) + $timeout, 4))),
+            (float)(str_replace('.', '', (string)round(microtime(true) + $timeout, 4))),
             json_encode($event));
     }
 

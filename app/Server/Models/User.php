@@ -4,7 +4,7 @@ namespace App\Server\Models;
 
 use Core\Support\Common;
 use Redis;
-use DB;
+use Core\Support\Facades\DB;
 
 class User
 {
@@ -93,10 +93,10 @@ class User
             ['itemActionRemove' => 1]
         );
 
-        if ($remove) {
+        // if ($remove) {
             unset($this->packItems[$itemId]);
             DB::query('DELETE from items where id = ?i', $itemId);
-        }
+        // }
     }
 
     private function wearItem($app, $itemId)
@@ -195,7 +195,7 @@ class User
 
     public function __get($key)
     {
-        return $this->attr->$key ?? null;
+        return $this->attr[$key] ?? null;
     }
 
     public function __set($key, $value)

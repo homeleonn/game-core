@@ -7,6 +7,7 @@ use Core\App;
 use Core\Socket\{Server, PeriodicEventWorker, Frame};
 use App\Server\Application;
 use Core\Support\Str;
+use Core\Support\Facades\Config;
 
 $core     = new App();
 

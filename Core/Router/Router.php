@@ -99,7 +99,8 @@ class Router
         $method     = strtolower($this->request->getMethod());
         $uri        = $this->request->getUri();
         $route      = null;
-        $notFound   = $action = $isClosure = false;
+        $notFound   = $isClosure = false;
+        $action     = [];
 
         foreach ($this->routes as $_route) {
             if (!$_route->match($method, $uri))  continue;

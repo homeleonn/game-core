@@ -34,7 +34,7 @@ class FileSessionHandler implements SessionHandlerInterface
     public function read($filename)
     {
         $path = $this->path($filename);
-        if (!file_exists($path)) return [];
+        if (!file_exists($path)) return '';
 
         return (string)file_get_contents($path);
     }
@@ -50,7 +50,10 @@ class FileSessionHandler implements SessionHandlerInterface
 
         if (file_exists($file)) {
             unlink($file);
+            return true;
         }
+
+        return false;
     }
 
     public function gc($maxLifetime)
@@ -58,12 +61,14 @@ class FileSessionHandler implements SessionHandlerInterface
         // prevent many attempts scanning session folder to 2% chance
         if (mt_rand(1, 100) > 2) return;
 
+        $countOfDeletedFiles = 0;
         foreach (glob($this->path('*')) as $file) {
             if (file_exists($file) && filemtime($file) + $maxLifetime < time()) {
                 unlink($file);
+                $countOfDeletedFiles++;
             }
         }
 
-        return true;
+        return $countOfDeletedFiles;
     }
 }

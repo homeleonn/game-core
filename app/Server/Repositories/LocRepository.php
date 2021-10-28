@@ -5,6 +5,7 @@ namespace App\Server\Repositories;
 use App\Server\Loaders\{LocationsLoader, NpcLoader};
 use App\Server\Models\{Loc, User};
 use App\Server\Application;
+use Core\Support\Facades\DB;
 
 class LocRepository extends BaseRepository
 {
@@ -98,7 +99,7 @@ class LocRepository extends BaseRepository
 
     private function spawnNpc()
     {
-        $spawnlist = \DB::getAll('SELECT id, npc_id, loc_id, respawn_delay FROM spawnlist');
+        $spawnlist = DB::getAll('SELECT id, npc_id, loc_id, respawn_delay FROM spawnlist');
         foreach ($spawnlist as $npcProtoList) {
             if (!isset($this->npcByLocation[$npcProtoList->loc_id])) {
                  $this->npcByLocation[$npcProtoList->loc_id] = [];

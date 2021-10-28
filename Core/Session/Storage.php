@@ -6,8 +6,8 @@ use Core\Contracts\Session\Session;
 use SessionHandlerInterface;
 use Core\Support\Crypter;
 use Core\Support\Str;
-use Config;
-use Request;
+use Core\Support\Facades\Config;
+use Core\Support\Facades\Request;
 use RuntimeException;
 
 class Storage implements Session

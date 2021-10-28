@@ -6,6 +6,7 @@ class Frame
 {
     public $fd;
     public $data;
+    public $type;
 
     public function __construct($fd)
     {

@@ -11,7 +11,8 @@ use App\Server\Repositories\LocRepository;
 use App\Server\Repositories\ItemRepository;
 use App\Server\Repositories\FightRepository;
 use App\Server\Models\Fighter;
-use Config;
+use Core\Support\Facades\Config;
+use Core\Support\Facades\DB;
 
 class Application {
     public const DISCONNECT = '0';
@@ -90,7 +91,7 @@ class Application {
             }
 
             $queryString = substr($queryString, 0, -1);
-            \DB::query("UPDATE users SET {$queryString} where id = {$payload['userId']}");
+            DB::query("UPDATE users SET {$queryString} where id = {$payload['userId']}");
 
             $this->send($user->getFd(), ['me' => $user->getAll()]);
         break;

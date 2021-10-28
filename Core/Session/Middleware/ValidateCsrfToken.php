@@ -2,9 +2,9 @@
 
 namespace Core\Session\Middleware;
 
-use Config;
+use Core\Support\Facades\Config;
 use Closure;
-use Session;
+use Core\Support\Facades\Session;
 use Core\Http\Request;
 use Core\Support\MiddlewareInterface;
 

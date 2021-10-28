@@ -71,7 +71,7 @@ class HomeController
         // dd($request, $userId);
     }
 
-    public function testForm()
+    public function testForm(request $request)
     {
         return view('test');
         // dd($request, $userId);
@@ -79,7 +79,7 @@ class HomeController
 
     public function test1(int $userId = 1)
     {
-        dd(route('test', 22));
+        dd(route('test', [22]));
         dd($userId);
     }
 

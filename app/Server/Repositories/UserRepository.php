@@ -2,7 +2,7 @@
 
 namespace App\Server\Repositories;
 
-use DB;
+use Core\Support\Facades\DB;
 use App\Server\Models\User;
 use App\Server\Application;
 use Core\Support\Common;

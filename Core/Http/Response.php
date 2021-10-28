@@ -3,8 +3,8 @@
 namespace Core\Http;
 
 use Closure;
-use Config;
-use Session;
+use Core\Support\Facades\Config;
+use Core\Support\Facades\Session;
 
 class Response
 {

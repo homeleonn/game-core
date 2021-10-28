@@ -81,7 +81,7 @@ class QueryBuilder
         $table      = isset($this->builder['table_alias'])
                     ? "{$this->builder['table']} as {$this->builder['table_alias']}"
                     : "{$this->builder['table']}";
-        $fields     = $this->prepareFields($this->builder['fields'] ?? $fields ?? null);
+        $fields     = $this->prepareFields($this->builder['fields'] ?? ($fields ?: null));
         $where      = $this->join($this->builder['where'] ?? null, ' WHERE ');
         $andWhere   = $this->join($this->builder['and_where'] ?? null, ' AND ');
         $orWhere    = $this->join($this->builder['or_where'] ?? null, ' OR ');

@@ -3,7 +3,7 @@
 namespace Core\Session;
 
 use Redis;
-use Config;
+use Core\Support\Facades\Config;
 use Exception;
 use Core\Support\ServiceProvider;
 
@@ -31,14 +31,14 @@ class SessionServiceProvider extends ServiceProvider
 
     private function setSessionHandler()
     {
-        $config = Config::get('session');
+        $config = $this->app->make('config')->get('session');
 
         if ($config['driver'] === 'redis') {
             try {
                 $redis = $this->app->make('redis');
             } catch (Exception $e) {
                 $redis = new Redis;
-                $redis->connect('127.0.0.1', '6379');
+                $redis->connect('127.0.0.1', 6379);
             }
 
             // $savePath = 'tcp://127.0.0.1:6379';

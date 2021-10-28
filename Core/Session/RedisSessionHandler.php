@@ -49,6 +49,6 @@ class RedisSessionHandler implements SessionHandlerInterface
 
     public function gc($maxLifetime) {
         // no action necessary because using EXPIRE
-        return true;
+        return 0;
     }
 }

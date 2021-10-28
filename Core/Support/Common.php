@@ -27,7 +27,7 @@ class Common
         return $itemsOnKey;
     }
 
-    public static function propsOnly(object $obj, array $keys, bool $likeObject = false): array
+    public static function propsOnly(object $obj, array $keys, bool $likeObject = false): array|object
     {
         $resultArray = [];
 

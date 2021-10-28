@@ -4,29 +4,30 @@ namespace App\Server\Models;
 
 use App\Server\Helpers\HFight;
 use Core\Support\Common;
+use stdClass;
 
 class Fighter
 {
-    const HIT_TURN                         = 2;
-    const HITS_COUNT                     = 3;
-    const TURN_TIME                     = 4;
-    const TURN_TIME_TIMEOUT     = 10;
+    const HIT_TURN                = 2;
+    const HITS_COUNT              = 3;
+    const TURN_TIME               = 4;
+    const TURN_TIME_TIMEOUT       = 10;
 
-    public User|\stdClass $user;
-    public int $lastEnemyfId     = 0;
-    public int $turn                     = 0;
-    public int $damage                 = 0;
-    public int $fightExp             = 0;
-    public int $kills                 = 0;
-    public int $timeoutTicks     = 0;
-    public array|null $swap     = [];
-    private bool $delay             = false;
+    public User|stdClass $user;
+    public int $lastEnemyfId      = 0;
+    public int $turn              = 0;
+    public int $damage            = 0;
+    public int $fightExp          = 0;
+    public int $kills             = 0;
+    public int $timeoutTicks      = 0;
+    public array|null $swap       = [];
+    private bool $delay           = false;
     public int $team;
     public Fight $fight;
 
-    public function __construct(User|\stdClass $user, int $team, Fight $fight)
+    public function __construct(User|array $user, int $team, Fight $fight)
     {
-        $this->user = $user;
+        $this->user = $user instanceof User ? $user : (object)$user;
         $this->team = $team;
         $this->super_hits = $this->isBot() ? [] : json_decode($this->user->super_hits);
         $this->fight = $fight;
@@ -189,7 +190,7 @@ class Fighter
         // echo $this->turn;
         $turn = $isPrevEnemy ? ($this->turn ? 0 : 1) : mt_rand(0, 1);
         $this->turn = $this->getEnemy()->turn = $turn;
-        [$hitter, $defender] = $this->setRoles($this);
+        [$hitter, $defender] = $this->setRoles();
 
         return [$turn, $hitter, $defender];
     }

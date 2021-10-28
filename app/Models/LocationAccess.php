@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class LocationAccess extends Model
+class LocationAccess
 {
     protected $table = 'locs_access';
 }
