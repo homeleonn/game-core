@@ -6,24 +6,29 @@ use Closure;
 
 class Common
 {
-    public static function itemsOnKeys($items, $keys, Closure $cb = null){
-        if(!is_array($items)){
-            throw new \Exception('Argument $items not array');
-        }
-        if(!is_array($keys)){
-            throw new \Exception('Argument $keys not array');
-        }
+    public static function itemsOnKeys(array|object $items, array $keys, Closure $cb = null)
+    {
         $itemsOnKey = [];
-        foreach($items as $item){
-            foreach($keys as $k => $key){
-                if(!isset($item->{$key})){
+
+        foreach ($items as $item) {
+            foreach ($keys as $k => $key) {
+                if (is_array($item)) {
+                    $isArray = true;
+                    $item = (object)$item;
+                }
+
+                if (!isset($item->{$key})) {
                     throw new \Exception('Key \'' . $key . '\' is not exists');
                 }
-                if ($cb) $cb($item);
-                $itemsOnKey[$item->{$key}] = $item;
+
+                if ($cb) {
+                    $cb($item);
+                }
+
+                $itemsOnKey[$item->{$key}] = isset($isArray) ? (array)$item : $item;
             }
         }
-        if(empty($itemsOnKey)) return false;
+        if (empty($itemsOnKey)) return false;
         return $itemsOnKey;
     }
 

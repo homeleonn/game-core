@@ -22,6 +22,7 @@ class Session implements SessionContract
     private string $separator = '___';
     private int $lifetime;
     private array $data;
+    private $started = false;
 
     public function __construct(SessionHandlerInterface $handler)
     {
@@ -35,6 +36,7 @@ class Session implements SessionContract
 
     public function start()
     {
+        $this->started = true;
         $this->sendSessionCookieIdToUser();
         $this->handler->open($this->config['path'], '');
         $this->handler->gc($this->lifetime);
@@ -120,6 +122,8 @@ class Session implements SessionContract
 
     public function __destruct()
     {
-        $this->write();
+        if ($this->started) {
+            $this->write();
+        }
     }
 }

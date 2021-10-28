@@ -1,15 +1,17 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
-require __DIR__ . '/../../functions.php';
+// require __DIR__ . '/../../functions.php';
 
 use Core\App;
 use Core\Socket\{Server, PeriodicEventWorker, Frame};
 use App\Server\Application;
 use Core\Support\Str;
 use Core\Support\Facades\Config;
+use Core\Support\Facades\DB;
 
 $core     = new App();
+DB::setFetchMode(stdClass::class);
 
 // echo Str::random(32);exit;
 
@@ -30,6 +32,7 @@ if ($argc > 1 && $argv[1] == '-q') {
 
     exit;
 }
+
 
 $server = new Server(Config::get('host'), Config::get('port'));
 $app         = new Application($server, $core->make('redis'));

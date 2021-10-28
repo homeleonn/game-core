@@ -5,7 +5,7 @@ define('HTTP_SIDE', '');
 header("Access-Control-Allow-Origin: *");
 require '../vendor/autoload.php';
 // require '../functions.php';
-require '../Core/Support/helpers.php';
+// require '../Core/Support/helpers.php';
 
 use Core\App;
 

@@ -8,7 +8,7 @@ use Core\Support\Str;
 
 class Request
 {
-    private array $server;
+    public array $server;
     private array $request;
     private string $uri;
     private string $method;

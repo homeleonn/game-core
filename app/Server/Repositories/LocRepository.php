@@ -33,6 +33,12 @@ class LocRepository extends BaseRepository
         $this->locsFds[$to][$fd] = null;
     }
 
+    /**
+     * Remove user from location
+     *
+     * @param User $user
+     * @return bool
+     */
     public function removeUser(User $user)
     {
         [$fromLoc, $fd, $userId] = $this->getUserData($user);//d($this->getUserData($user));
@@ -46,6 +52,12 @@ class LocRepository extends BaseRepository
         }
 
         return false;
+    }
+
+    public function replaceUserFd(int $userLocation, int $oldFd, int $newFd)
+    {
+        unset($this->locsFds[$userLocation][$oldFd]);
+        $this->locsFds[$userLocation][$newFd] = null;
     }
 
     public function getUserData($user)

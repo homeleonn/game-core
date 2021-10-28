@@ -11,6 +11,7 @@ class LocationsLoader
     public function load()
     {
         $locs = DB::getAll('Select id, name, type, image, loc_coords, loc_access from locations');
+        // dd($locs);
 
         $locs = Common::itemsOnKeys($locs, ['id'], function($loc) {
             array_map(function($key) use ($loc) {

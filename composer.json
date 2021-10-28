@@ -11,7 +11,7 @@
             "App\\": "./app/",
             "Core\\": "./Core/"
         },
-        "files": ["functions.php"]
+        "files": ["Core/Support/helpers.php"]
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",

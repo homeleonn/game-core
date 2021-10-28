@@ -22,7 +22,7 @@ class UserRepository
     }
 
     public function add(int $fd, $user)
-    {d(new User($this->storage, $fd, $user));
+    {
         $this->users[$fd] = new User($this->storage, $fd, $user);
         $this->usersFdsById[$user->id] = $fd;
 
@@ -122,6 +122,7 @@ class UserRepository
         // ]]);
         // d( $user->getAll());
         $this->app->send($user->getFd(), ['me' => $user->getAll()]);
+        $this->app->send($user->getFd(), ['time' => time()]);
     }
 
 
@@ -176,6 +177,8 @@ class UserRepository
         $user->clearMarkExit();
         $user->setFd($newFd);
         $this->sendUser($user);
+        $this->app->locRepo->replaceUserFd($user->loc, $oldFd, $newFd);
+        $this->app->locRepo->sendLoc($user);
 
         return true;
     }

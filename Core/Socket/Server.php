@@ -104,7 +104,7 @@ class Server
         if (!isset($this->fds[$fd])) {
             // var_dump(debug_backtrace());
             // foreach (debug_backtrace() as $debug) { echo "{$debug['file']}/{$debug['line']}/{$debug['function']}\n"; }
-            echo "Connection null. fd: $fd. ", __FILE__, __LINE__, "\n";return;
+            echo "Connection null. fd: $fd. ", __FILE__, __LINE__, "\n message: ", print_r($message);return;
         }
         fwrite($this->fds[$fd], Frame::encode($message));
     }

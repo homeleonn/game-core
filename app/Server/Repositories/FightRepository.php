@@ -45,10 +45,10 @@ class FightRepository
 
     public function getById($user)
     {
-        if (!isset($this->fights[1])) {
-            $this->app->locRepo->attackMonster($user, 1);
-        }
-        $this->app->send($user->getFd(), ['_fight' => $this->fights[1]?->getData($user->id) ?? null]);
+        // if (!isset($this->fights[1])) {
+        //     $this->app->locRepo->attackMonster($user, 1);
+        // }
+        // $this->app->send($user->getFd(), ['_fight' => $this->fights[1]?->getData($user->id) ?? null]);
     }
 
     public function remove($fightId)

@@ -3,6 +3,7 @@
 namespace Core\DB;
 
 use Exception;
+use stdClass;
 
 class MySQL
 {
@@ -10,6 +11,7 @@ class MySQL
 	private $stats;
 	private $emode;
     private $model;
+    private $fetchMode;
 
     private $config = [
 		'host'      => '127.0.0.1',
@@ -47,6 +49,11 @@ class MySQL
 		return $this->conn;
 	}
 
+    public function setFetchMode($mode)
+    {
+        $this->fetchMode = $mode;
+    }
+
     public function setModel($modelName)
     {
         $this->model = $modelName;
@@ -61,6 +68,8 @@ class MySQL
 	{
         if ($this->model) {
             return mysqli_fetch_object($result, $this->model);
+        } elseif ($this->fetchMode == stdClass::class) {
+            return mysqli_fetch_object($result);
         }
 
         return mysqli_fetch_array($result, $mode);

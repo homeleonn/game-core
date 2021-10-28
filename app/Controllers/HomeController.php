@@ -22,6 +22,7 @@ class HomeController
 
     public function wsToken(Request $request)
     {
+        // dd($request);
         if (Config::get('env') == 'prod') usleep(500000);
         // d(Request::get('id'));
         echo generateToken((int)($request->get('id') ?? 1));

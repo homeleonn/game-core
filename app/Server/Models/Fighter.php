@@ -25,9 +25,10 @@ class Fighter
     public int $team;
     public Fight $fight;
 
-    public function __construct(User|array $user, int $team, Fight $fight)
+    public function __construct(User|stdClass $user, int $team, Fight $fight)
     {
-        $this->user = $user instanceof User ? $user : (object)$user;
+        // $this->user = $user instanceof User ? $user : (object)$user;
+        $this->user = $user;
         $this->team = $team;
         $this->super_hits = $this->isBot() ? [] : json_decode($this->user->super_hits);
         $this->fight = $fight;

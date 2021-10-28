@@ -11,7 +11,7 @@ class User
     const CLEAR_EXITERS_TIMEOUT = 10;
     const CAN_TRANSITION_YES = 1;
     const CAN_TRANSITION_NO = 0;
-    const TRANSITION_TIMEOUT = 0;
+    const TRANSITION_TIMEOUT = 20;
 
     const ITEM_REMOVE_YES = 1;
     const ITEM_REMOVE_NO = 0;
@@ -22,11 +22,10 @@ class User
 
     public function __construct(Redis $storage, int $fd, object $user)
     {
-        $this->storage     = $storage;
-        $this->fd         = $fd;
-        $this->attr     = (object)Common::toNums($user);
+        $this->storage = $storage;
+        $this->fd      = $fd;
+        $this->attr    = (object)Common::toNums($user);
         // $this->attr->fd = $fd;
-
 
         [$this->min_damage, $this->max_damage] = self::calculateDamage($this->power);
         $this->extra_min_damage = 0;
@@ -41,7 +40,8 @@ class User
     public function setLoc(int $loc): self
     {
         $this->loc = $loc;
-        $this->trans_timeout = time() + self::TRANSITION_TIMEOUT;
+        $this->trans_time = time();
+        $this->trans_timeout = $this->trans_time + self::TRANSITION_TIMEOUT;
 
         return $this;
     }
@@ -57,7 +57,7 @@ class User
         }
 
         $this->setLoc($to);
-        $app->send($this->fd, ['chloc' => static::CAN_TRANSITION_YES]);
+        $app->send($this->fd, ['chloc' => ['trans_time' => $this->trans_time, 'trans_timeout' => $this->trans_timeout]]);
         $app->send($this->fd, ['loc_users' => $app->userRepo->getAllByLoc($to)]);
         $app->locRepo->sendLoc($this);
         $this->save(); // Need to save user ?
@@ -195,12 +195,17 @@ class User
 
     public function __get($key)
     {
-        return $this->attr[$key] ?? null;
+        return $this->attr->{$key} ?? null;
     }
 
     public function __set($key, $value)
     {
         $this->attr->{$key} = $value;
+    }
+
+    public function __unset($key)
+    {
+        unset($this->attr->{$key});
     }
 
     public function __toString()
