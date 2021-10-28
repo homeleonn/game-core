@@ -2,7 +2,7 @@
 
 use Core\DB\DB;
 use Core\Auth\Auth;
-use Core\Session\Storage;
+use Core\Session\Session;
 use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase
@@ -11,7 +11,7 @@ class AuthTest extends TestCase
     {
         $db = $this->getMockBuilder(DB::class)->getMock();
 
-        $storage = $this->getMockBuilder(Storage::class)
+        $storage = $this->getMockBuilder(Session::class)
                         ->disableOriginalConstructor()
                         // ->onlyMethods(['get'])
                         ->getMock();
@@ -43,7 +43,7 @@ class AuthTest extends TestCase
            ->method('getRow')
            ->willReturn((object)['id' => 1, 'password' => $hashForDataPassword]);
 
-        $storage = $this->getMockBuilder(Storage::class)
+        $storage = $this->getMockBuilder(Session::class)
                         ->disableOriginalConstructor()
                         // ->onlyMethods(['set'])
                         ->getMock();
