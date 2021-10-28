@@ -71,7 +71,7 @@ class Model
             [$insertColumns, $preparedValues, $onDuplicate] = $this->prepareInsert($insert);
             $query = "INSERT INTO {$this->table} ({$insertColumns}) VALUES ({$preparedValues}) ON DUPLICATE KEY UPDATE {$onDuplicate}";
         }
-        // d($query);
+
         DB::query($query);
 
         if (!$isExists && $id = DB::insertId()) {

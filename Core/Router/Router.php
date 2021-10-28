@@ -144,7 +144,6 @@ class Router
     public function resolve(): mixed
     {
         $route = $this->findRoute();
-        // dd($this->request->routeResolveAction);
         $this->request->routeResolveAction = $route->getResolveAction();
         $activatedMiddlewareStack = $this->activationMiddlewareStack($route->getMiddleware());
 

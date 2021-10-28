@@ -178,26 +178,6 @@ class MySQL
 		return $this->prepareQuery(func_get_args());
 	}
 
-    /**
-     * function to implement whitelisting feature
-     * sometimes we can't allow a non-validated user-supplied data to the query even through placeholder
-     * especially if it comes down to SQL OPERATORS
-     *
-     * Example:
-     *
-     * $order = $db->whiteList($_GET['order'], array('name','price'));
-     * $dir   = $db->whiteList($_GET['dir'],   array('ASC','DESC'));
-     * if (!$order || !dir) {
-     *     throw new http404(); //non-expected values should cause 404 or similar response
-     * }
-     * $sql  = "SELECT * FROM table ORDER BY ?p ?p LIMIT ?i,?i"
-     * $data = $db->getArr($sql, $order, $dir, $start, $per_page);
-     *
-     * @param string $input   - field name to test
-     * @param  array  $allowed - an array with allowed variants
-     * @param  string|FALSE $default - optional variable to set if no match found. Default to false.
-     * @return string|FALSE    - either sanitized value or FALSE
-     */
 	public function whiteList($input, $allowed, $default = false)
 	{
 		$found = array_search($input, $allowed);
@@ -233,7 +213,6 @@ class MySQL
     	$this->stats[] = [
 			'query' => $query,
 			'start' => $start,
-			// 'timer' => round((microtime(true) - $start) * 1000, 2),
             'timer' => (microtime(true) - $start),
 		];
 		if (!$res) {

@@ -97,9 +97,6 @@ class App
             'route' => [\Core\Router\Route::class],
             'session' => [\Core\Session\Session::class, \Core\Contracts\Session\Session::class],
         ] as $alias => $services) {
-            // foreach ($services as $service) {
-            //     $this->set($service, $alias);
-            // }
             $this->set($alias, $services);
         }
     }

@@ -17,19 +17,16 @@ class Request
     private function parseRequest($fd, $server)
     {
         $line = fgets($fd);
-        // d($line);
+
         [$this->client['request_method'], $this->client['request_uri']] = strpos($line, ' ') !== false ? explode(' ', $line) : ['GET', $line];
 
         while ($line = rtrim(fgets($fd))) {
-            // d($line);
             if (preg_match('/^(\S+):\s+(.*)$/', $line, $matches)) {
                 $this->client[$matches[1]] = $matches[2];
             } else {
                 break;
             }
         }
-
-            // d(stream_socket_get_name($fd, true));
 
         [$this->client['ip'], $this->client['port']] = explode(':', stream_socket_get_name($fd, true));
 

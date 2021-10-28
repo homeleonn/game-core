@@ -166,7 +166,6 @@ class Route
             fn($matches) => '/?(' . ($this->patterns[$matches['param']] ?? '\w+') . ')' . $matches['required'],
           $this->uri
         );
-        // d($patternedUri);
 
         return rtrim($patternedUri, '/');
     }

@@ -90,10 +90,6 @@ class QueryBuilder
 
         $this->result = "SELECT {$fields} FROM {$table}{$where}{$andWhere}{$orWhere}{$orderBy}{$limit}";
 
-        // $this->result = $this->connection->query(
-        //     "SELECT {$fields} FROM {$table}{$where}{$andWhere}{$orWhere}{$orderBy}"
-        // );
-
         return $this->result;
     }
 
@@ -148,7 +144,6 @@ class QueryBuilder
 
         $s = '';
         foreach ($preparedValues as $key => $value) {
-            // $s = "{$sep}{$tableName}`{$key}` {$equals} {$value}";
             $s = "{$sep}{$key} {$equals} {$value}";
         }
 
@@ -158,7 +153,6 @@ class QueryBuilder
     public function prepareFields($fields): string
     {
         $tableName = $this->getTableName();
-        // return $fields ? "`{$tableName}`.`" . implode("`, `{$tableName}`.`", $this->builder['fields']) . '`' : '*';
         return $fields ? implode(", ", $this->builder['fields']) : (isset($this->builder['count']) ? 'count(*)' : '*');
     }
 

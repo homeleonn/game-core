@@ -30,8 +30,6 @@ class Session implements SessionContract
         $this->config = Config::get('session');
         [$this->sessionFilename, $this->sessionId] = $this->getSessionId();
         $this->lifetime = $this->config['lifetime'] ?? self::DEFAULT_LIFETIME;
-
-        // $this->start();
     }
 
     public function start()

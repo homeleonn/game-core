@@ -20,13 +20,11 @@ function dd(...$args) {
 function vd(){
     $trace = debug_backtrace()[1];
     echo '<small style="color: green;"><pre>',$trace['file'],':',$trace['line'],':</pre></small><pre>';
-    // echo $trace['file'], ':', $trace['line'], " -> ";
     call_user_func_array('var_dump', func_get_args());
 }
 
 function s($name = null, $value = false) {
     $session = App::make('session');
-    // dd($session, $name, $value );
     if (is_null($name)) {
         return $session->all();
     } elseif ($value === false) {
