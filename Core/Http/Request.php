@@ -5,18 +5,24 @@ namespace Core\Http;
 use Closure;
 use Exception;
 use Core\Support\Str;
+use Core\Validation\Validator;
+use Core\Contracts\Session\Session;
+use Core\Support\Facades\App;
 
 class Request
 {
-    public array $server;
     private array $request;
     private string $uri;
     private string $method;
     public Closure $routeResolveAction;
 
-    public function __construct(array $server, array $request)
+    public function __construct(
+        public array $server,
+        array $request,
+        private Session $session,
+        private Validator $validator
+    )
     {
-        $this->server   = $server;
         $this->method   = $this->server['REQUEST_METHOD'] ?? 'GET';
         $this->uri      = $this->parseUrl();
         $this->request  = $this->sanitizeRequest($request);
@@ -32,6 +38,16 @@ class Request
     public function getUrl(): string
     {
         return "{$this->server['REQUEST_SCHEME']}://{$this->server['SERVER_NAME']}{$this->server['REQUEST_URI']}";
+    }
+
+    public function validate(array $rules)
+    {
+        if (!empty($errors = $this->validator->validate($this->request, $rules))) {
+            $this->session->set('_errors', $errors);
+            exit(App::make(Response::class)->redirect()->back()->getContent());
+        }
+
+        return true;
     }
 
     private function sanitizeRequest(array $request): array

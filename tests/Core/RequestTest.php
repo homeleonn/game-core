@@ -2,6 +2,7 @@
 
 use PHPUnit\Framework\TestCase;
 use Core\Http\Request;
+use Core\Validation\Validator;
 
 class RequestTest extends Testcase
 {
@@ -15,9 +16,12 @@ class RequestTest extends Testcase
         'name' => 'test',
     ];
 
+    private $validator;
+
     public function setUp(): void
     {
-        $this->request = new Request($this->server, $this->requestParams);
+        $this->validator = $this->createMock(Validator::class);
+        $this->request = new Request($this->server, $this->requestParams, $this->validator);
     }
 
     public function testGetRequestParam()
@@ -28,7 +32,7 @@ class RequestTest extends Testcase
 
     public function testThatRequestParamsWereSanitized()
     {
-        $request = new Request($this->server, ["pa'ge" => '2"2<']);
+        $request = new Request($this->server, ["pa'ge" => '2"2<'], $this->validator);
         $this->assertEquals('22', $request->get('page'));
     }
 

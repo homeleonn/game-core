@@ -8,6 +8,7 @@ use Core\Contracts\Session\Session;
 class Auth
 {
     private $auth = 'email';
+    private $passwordKey = 'password';
 
     public function __construct(
         private Database $db,
@@ -21,13 +22,13 @@ class Auth
 
     public function attempt(array $data): bool
     {
-        if (!isset($data[$this->auth]) || !isset($data['password'])) {
+        if (!isset($data[$this->auth]) || !isset($data[$this->passwordKey])) {
             return false;
         }
 
         $user = $this->db->getRow('SELECT id, password FROM users WHERE email = ?s', $data[$this->auth]);
 
-        if (!$user || !$this->passwordVerify($data['password'], $user->password)) {
+        if (!$user || !$this->passwordVerify($data[$this->passwordKey], $user->password)) {
             return false;
         }
 

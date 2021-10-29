@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Http\Controllers;
 
 use Core\Http\Request;
 use Core\Support\Facades\Auth;
@@ -61,19 +61,26 @@ class HomeController
     //     return view('test');
     // }
 
-    public function registration()
+    public function registration(Request $request)
     {
+        $request->validate([
+            '_token' => 'required|minlen:20',
+            'age' => 'required|integer',
+        ]);
+        d($request->all());
         // echo 22;
     }
 
-    public function test()
+    public function test(Request $request)
     {
+
         // return view('test');
         // dd($request, $userId);
     }
 
-    public function testForm(request $request)
+    public function testForm(Request $request)
     {
+        d(\Session::all());
         return view('test');
         // dd($request, $userId);
     }

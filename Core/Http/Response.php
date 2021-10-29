@@ -37,17 +37,24 @@ class Response
         return $this;
     }
 
-    public function route(string $name): seld
+    public function route(string $name): self
     {
         $this->setRedirect(\route($name));
 
         return $this;
     }
 
-    public function back(): seld
+    public function back(): self
     {
-        $back = Session::get('_previous')['url'];
+        $back = Session::get('_previous')['url'] ?? request()->getUri();
         $this->setRedirect($back);
+
+        return $this;
+    }
+
+    public function with($key, $value)
+    {
+        Session::flash($key, $value);
 
         return $this;
     }

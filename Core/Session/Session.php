@@ -79,6 +79,11 @@ class Session implements SessionContract
         $this->data[$key] = $value;
     }
 
+    public function flash($key, $value)
+    {
+        $this->data['_flash'][$key] = $value;
+    }
+
     public function del(string $key): void
     {
         unset($this->data[$key]);

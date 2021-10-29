@@ -11,6 +11,9 @@ class StartSession implements MiddlewareInterface
 {
     public function handle(Request $request, Closure $next)
     {
+        global $errors;
+        $errors = [];
+
         $sessionStart = true;
 
         if (isset($request->server['HTTP_REFERER'])) {
@@ -22,8 +25,16 @@ class StartSession implements MiddlewareInterface
 
         if ($sessionStart) {
             Session::start();
+            $errors = Session::get('_errors');
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        if ($sessionStart) {
+            Session::del('_flash');
+            Session::del('_errors');
+        }
+
+        return $response;
     }
 }

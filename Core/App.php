@@ -96,6 +96,7 @@ class App
             'router' => [\Core\Router\Router::class],
             'route' => [\Core\Router\Route::class],
             'session' => [\Core\Session\Session::class, \Core\Contracts\Session\Session::class],
+            'validator' => [\Core\Validation\Validator::class],
         ] as $alias => $services) {
             $this->set($alias, $services);
         }

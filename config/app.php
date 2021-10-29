@@ -18,6 +18,7 @@ $app = [
         'Config' => \Core\Support\Facades\Config::class,
         'DB' => \Core\Support\Facades\DB::class,
         'Session' => \Core\Support\Facades\Session::class,
+        'Validator' => \Core\Support\Facades\Validator::class,
     ]
 ];
 
@@ -27,6 +28,7 @@ if (!defined('HTTP_SIDE')) {
 
 $app['providers'] = array_merge($app['providers'], [
     Core\Session\SessionServiceProvider::class,
+    Core\Validation\ValidationServiceProvider::class,
     Core\Http\HttpServiceProvider::class,
     Core\Auth\AuthServiceProvider::class,
     Core\Router\RouterServiceProvider::class,

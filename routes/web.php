@@ -1,7 +1,7 @@
 <?php
 
 use Core\Support\Facades\Route;
-use App\Controllers\HomeController;
+use App\Http\Controllers\HomeController;
 use App\Middleware\{AuthMiddleware};
 
 Route::group(['middleware' => [AuthMiddleware::class]], function () {
