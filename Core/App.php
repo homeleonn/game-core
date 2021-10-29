@@ -14,6 +14,10 @@ class App
 
     public function __construct()
     {
+
+        if (!defined('ROOT')) {
+            define('ROOT', __DIR__ . '/../../../..');
+        }
         $this->coreAliasesRegister();
         $config = require ROOT . '/config/app.php';
         Facade::setFacadeApplication($this, $config['aliases']);

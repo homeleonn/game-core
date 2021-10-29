@@ -17,13 +17,13 @@ abstract class Facade
     }
 
     protected static function setFacadesAutoload(array $aliases): void {
-    spl_autoload_register(function($className) use ($aliases) {
-        if (isset($aliases[$className]) && class_exists($aliases[$className])) {
-            require_once ROOT . '/' . str_replace('\\', '/', $aliases[$className]) . '.php';
-            class_alias($aliases[$className], $className);
-        }
-    });
-  }
+        spl_autoload_register(function($className) use ($aliases) {
+            if (isset($aliases[$className]) && class_exists($aliases[$className])) {
+                require_once ROOT . '/' . str_replace('\\', '/', $aliases[$className]) . '.php';
+                class_alias($aliases[$className], $className);
+            }
+        });
+    }
 
     protected static function getFacadeAccessor()
     {
