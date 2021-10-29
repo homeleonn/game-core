@@ -2,6 +2,7 @@
 
 namespace Core\Router;
 
+use App;
 use Closure;
 use Exception;
 use Core\Support\Str;
@@ -134,7 +135,9 @@ class Router
 
         if (!$isClosure) {
             [$controllerClassName, $method] = $action;
-            $controller = new $controllerClassName;
+
+            $controller = App::prepareObject($controllerClassName);
+            // $controller = new $controllerClassName;
             $route->setAction([$controller, $method]);
         }
 

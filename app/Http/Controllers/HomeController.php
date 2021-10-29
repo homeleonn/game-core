@@ -8,7 +8,7 @@ use Core\Support\Facades\Config;
 use App\Models\User;
 use Core\DB\DB;
 
-class HomeController
+class HomeController extends Controller
 {
     public function index()
     {
@@ -63,11 +63,15 @@ class HomeController
 
     public function registration(Request $request)
     {
-        $request->validate([
+        $this->validate($request->all(), [
             '_token' => 'required|minlen:20',
             'age' => 'required|integer',
         ]);
-        d($request->all());
+        // $request->validate([
+        //     '_token' => 'required|minlen:20',
+        //     'age' => 'required|integer',
+        // ]);
+        // d($request->all());
         // echo 22;
     }
 

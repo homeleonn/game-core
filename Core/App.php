@@ -6,6 +6,7 @@ use Core\Support\Facades\Facade;
 use Core\Support\Facades\Response;
 use Closure;
 use Exception;
+use ReflectionClass;
 
 class App
 {
@@ -57,8 +58,11 @@ class App
     {
         if ($name == 'app') return $this;
 
+
         if (!isset($this->container[$name])) {
             throw new Exception("Service '{$name}' not found");
+        } elseif (class_exists($name)) {
+
         }
 
         if ($this->container[$name] instanceof Closure) {
@@ -82,6 +86,18 @@ class App
         }
 
         return $this->container[$name];
+    }
+
+    public function prepareObject(string $className)
+    {
+        $dependencies = [];
+        $reflectionClass = new ReflectionClass($className);
+
+        foreach ($reflectionClass->getConstructor()->getParameters() as $param) {
+            $dependencies[] = $this->make($param->getType()->getName());
+        }
+
+        return $reflectionClass->newInstanceArgs($dependencies);
     }
 
     private function coreAliasesRegister()
