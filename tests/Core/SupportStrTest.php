@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Core\Support\Str;
+use Homeleon\Support\Str;
 
 class SupportStrTest extends TestCase
 {

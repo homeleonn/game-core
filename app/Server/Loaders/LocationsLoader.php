@@ -2,8 +2,8 @@
 
 namespace App\Server\Loaders;
 
-use Core\Support\Facades\DB;
-use Core\Support\Common;
+use Homeleon\Support\Facades\DB;
+use Homeleon\Support\Common;
 use App\Server\Application;
 
 class LocationsLoader

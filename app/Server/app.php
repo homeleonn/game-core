@@ -1,14 +1,14 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
-// require __DIR__ . '/../../functions.php';
+define('ROOT', dirname(dirname(__DIR__)));
 
-use Core\App;
-use Core\Socket\{Server, PeriodicEventWorker, Frame};
+use Homeleon\App;
+use Homeleon\Socket\{Server, PeriodicEventWorker, Frame};
 use App\Server\Application;
-use Core\Support\Str;
-use Core\Support\Facades\Config;
-use Core\Support\Facades\DB;
+use Homeleon\Support\Str;
+use Homeleon\Support\Facades\Config;
+use Homeleon\Support\Facades\DB;
 
 $core     = new App();
 DB::setFetchMode(stdClass::class);

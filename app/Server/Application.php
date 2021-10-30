@@ -2,17 +2,17 @@
 
 namespace App\Server;
 
-use Core\Socket\Server as WebSocketServer;
-use Core\Socket\Request;
-use Core\Socket\Frame;
+use Homeleon\Socket\Server as WebSocketServer;
+use Homeleon\Socket\Request;
+use Homeleon\Socket\Frame;
 use Redis;
 use App\Server\Repositories\UserRepository;
 use App\Server\Repositories\LocRepository;
 use App\Server\Repositories\ItemRepository;
 use App\Server\Repositories\FightRepository;
 use App\Server\Models\Fighter;
-use Core\Support\Facades\Config;
-use Core\Support\Facades\DB;
+use Homeleon\Support\Facades\Config;
+use Homeleon\Support\Facades\DB;
 
 class Application {
     public const DISCONNECT = '0';

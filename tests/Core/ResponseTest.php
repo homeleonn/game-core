@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Core\Http\Response;
+use Homeleon\Http\Response;
 
 class ResponseTest extends TestCase
 {

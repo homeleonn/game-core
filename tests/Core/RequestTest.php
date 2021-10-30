@@ -1,9 +1,9 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Core\Http\Request;
-use Core\Validation\Validator;
-use Core\Contracts\Session\Session;
+use Homeleon\Http\Request;
+use Homeleon\Validation\Validator;
+use Homeleon\Contracts\Session\Session;
 
 class RequestTest extends Testcase
 {

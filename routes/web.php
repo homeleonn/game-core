@@ -1,6 +1,6 @@
 <?php
 
-use Core\Support\Facades\Route;
+use Homeleon\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Middleware\{AuthMiddleware};
 

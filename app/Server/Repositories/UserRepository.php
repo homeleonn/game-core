@@ -2,10 +2,10 @@
 
 namespace App\Server\Repositories;
 
-use Core\Support\Facades\DB;
+use Homeleon\Support\Facades\DB;
 use App\Server\Models\User;
 use App\Server\Application;
-use Core\Support\Common;
+use Homeleon\Support\Common;
 
 class UserRepository
 {

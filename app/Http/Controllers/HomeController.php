@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Core\Http\Request;
-use Core\Support\Facades\Auth;
-use Core\Support\Facades\Config;
+use Homeleon\Http\Request;
+use Homeleon\Support\Facades\Auth;
+use Homeleon\Support\Facades\Config;
 use App\Models\User;
-use Core\DB\DB;
+use Homeleon\DB\DB;
 
 class HomeController extends Controller
 {

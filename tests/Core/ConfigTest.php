@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Core\Config\Config;
+use Homeleon\Config\Config;
 
 class ConfigTest extends TestCase
 {

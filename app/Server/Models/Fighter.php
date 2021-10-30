@@ -3,7 +3,7 @@
 namespace App\Server\Models;
 
 use App\Server\Helpers\HFight;
-use Core\Support\Common;
+use Homeleon\Support\Common;
 use stdClass;
 
 class Fighter

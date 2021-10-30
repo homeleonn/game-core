@@ -9,9 +9,9 @@
     "autoload": {
         "psr-4": {
             "App\\": "./app/",
-            "Core\\": "./Core/"
+            "Homeleon\\": "./Homeleon/"
         },
-        "files": ["Core/Support/helpers.php"]
+        "files": ["Homeleon/Support/helpers.php"]
     },
     "require": {
         "php" : "^8.0",

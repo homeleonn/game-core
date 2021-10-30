@@ -5,7 +5,7 @@ namespace App\Server\Repositories;
 use App\Server\Loaders\{LocationsLoader, NpcLoader};
 use App\Server\Models\{Loc, User};
 use App\Server\Application;
-use Core\Support\Facades\DB;
+use Homeleon\Support\Facades\DB;
 
 class LocRepository extends BaseRepository
 {

@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Core\Router\Route;
+use Homeleon\Router\Route;
 
 class RouteTest extends TestCase
 {

@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Core\DosProtection\DosProtection;
+use Homeleon\DosProtection\DosProtection;
 
 class DosProtectionTest extends TestCase
 {

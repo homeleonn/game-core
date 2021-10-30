@@ -2,9 +2,9 @@
 
 namespace App\Server\Models;
 
-use Core\Support\Common;
+use Homeleon\Support\Common;
 use App\Server\Helpers\HFight;
-use Core\Support\Facades\App;
+use Homeleon\Support\Facades\App;
 
 class Fight
 {

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Core\DB\Model;
+use Homeleon\DB\Model;
 
 class User extends Model
 {

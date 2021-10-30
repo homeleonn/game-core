@@ -2,9 +2,9 @@
 
 namespace App\Server\Models;
 
-use Core\Support\Common;
+use Homeleon\Support\Common;
 use Redis;
-use Core\Support\Facades\DB;
+use Homeleon\Support\Facades\DB;
 
 class User
 {

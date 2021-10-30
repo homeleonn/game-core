@@ -2,8 +2,8 @@
 
 namespace App\Http\Providers;
 
-use Core\Support\ServiceProvider;
-use Core\Router\Route;
+use Homeleon\Support\ServiceProvider;
+use Homeleon\Router\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {

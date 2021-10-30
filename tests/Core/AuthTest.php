@@ -1,8 +1,8 @@
 <?php
 
-use Core\DB\DB;
-use Core\Auth\Auth;
-use Core\Session\Session;
+use Homeleon\DB\DB;
+use Homeleon\Auth\Auth;
+use Homeleon\Session\Session;
 use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase

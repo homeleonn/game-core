@@ -2,10 +2,11 @@
 
 define('HTTP_SIDE', '');
 define('ROOT', dirname(__DIR__));
+header("Access-Control-Allow-Origin: *");
 
 require '../vendor/autoload.php';
 
-use Core\App;
+use Homeleon\App;
 
 try {
     $app = new App();

@@ -3,9 +3,9 @@
 namespace App\Middleware;
 
 use Closure;
-use Core\Http\Request;
-use Core\Support\Facades\Auth;
-use Core\Support\MiddlewareInterface;
+use Homeleon\Http\Request;
+use Homeleon\Support\Facades\Auth;
+use Homeleon\Support\MiddlewareInterface;
 
 class AuthMiddleware implements MiddlewareInterface
 {
