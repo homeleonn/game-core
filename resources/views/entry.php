@@ -12,6 +12,7 @@
     <main class="content">
 
         <form action="<?=route('login')?>" method="POST" id="login">
+            <?=csrf_field();?>
             <h2>Вход</h2>
             <div>Email</div>
             <div><input type="text" name="email"></div>

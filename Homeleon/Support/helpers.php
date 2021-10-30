@@ -33,6 +33,7 @@ function s($name = null, $value = false) {
 }
 
 function csrf_token() {
+    Session::set('_token', Config::get('csrf_token'));
     return s('_token');
 }
 

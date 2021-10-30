@@ -90,7 +90,10 @@
                 </form>
                 <div><img src="img/chat/chat_clear.gif" title="очистить чат" id="chat-clear"></div>
                 <div><img src="img/chat/chat.ico" title="Смайлы"></div>
-                <form action="/logout" method="post" id="logout"><button name="logout">Выход</button></form>
+                <form action="/logout" method="post" id="logout">
+                    <?=csrf_field();?>
+                    <button name="logout">Выход</button>
+                </form>
             </div>
         </div>
     </footer>

@@ -41,4 +41,9 @@ class Auth
     {
         return password_verify($password, $actualPassword);
     }
+
+    public function logout()
+    {
+        $this->session->del('id');
+    }
 }

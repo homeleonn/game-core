@@ -20,8 +20,6 @@ class ValidateCsrfToken implements MiddlewareInterface
             Session::set('_previous', [
                 'url' => $request->getUrl()
             ]);
-
-            Session::set('_token', Config::get('csrf_token'));
         }
 
         return $next($request);
