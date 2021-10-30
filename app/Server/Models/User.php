@@ -65,8 +65,6 @@ class User
 
     public function getBackPack($app)
     {
-        // $userItems = DB::getAll("Select * from items where owner_id = {$this->id}");
-
         $this->packItems = Common::itemsOnKeys(
             DB::getAll("Select * from items where owner_id = {$this->id}"),
             ['id'],
@@ -77,49 +75,92 @@ class User
 
         if (!$this->packItems) return;
 
-        // foreach ($this->attr->packItems as &$item) {
-        //     $item = (object)array_merge((array)$app->itemRepo->getItemById($item->item_id), (array)$item);
-        // }
-
-
         $app->send($this->getFd(),
-            ['backpack' => $this->packItems]
+            ['getBackPack' => $this->packItems]
         );
     }
 
-    private function removeItem($app, $itemId)
+    private function removeItem($itemId)
     {
-        $app->send($this->fd,
-            ['itemActionRemove' => 1]
-        );
-
-        // if ($remove) {
-            unset($this->packItems[$itemId]);
-            DB::query('DELETE from items where id = ?i', $itemId);
-        // }
+        // unset($this->packItems[$itemId]);
+        // DB::query('DELETE from items where id = ?i', $itemId);
+        return true;
     }
 
-    private function wearItem($app, $itemId)
+    private function wearItem($itemId)
     {
-        $app->send($this->fd,
-            ['itemActionWear' => 1]
-        );
+        if (!$this->isFitItem($itemId)) return false;
+        if ($this->isUsableItem($itemId)) return false;
 
-        // if ($remove) {
-            DB::query("UPDATE items SET loc = 'WEARING' where id = ?i", $itemId);
-        // }
+        $this->packItems[$itemId]->loc = 'WEARING';
+        DB::query("UPDATE items SET loc = 'WEARING' where id = ?i", $itemId);
+
+        return true;
+    }
+
+    private function takeoffItem($itemId)
+    {
+        if (!$this->isFitItem($itemId, false)) return false;
+
+        $this->packItems[$itemId]->loc = 'INVENTORY';
+        DB::query("UPDATE items SET loc = 'INVENTORY' where id = ?i", $itemId);
+
+        return true;
     }
 
     public function itemAction($app, $action, $itemId)
     {
-        if (!$this->canAction($action) || $this->fight || !$this->itemExists($itemId)) return;
+        // dd($this->packItems[$itemId]);
+        if (!$this->canAction($action)
+            || $this->fight
+            || !$this->itemExists($itemId)
+        ) return;
 
-        $this->{$action}($app, $itemId);
+        if ($this->{$action}($itemId)) {
+            $app->send($this->fd, [$action => 1]);
+        }
     }
 
     private function canAction($action)
     {
         return method_exists($this, $action);
+    }
+
+    private function isUsableItem($itemId)
+    {
+        $item = $this->packItems[$itemId];
+        $usableTypes = ['potion', 'scroll'];
+
+        if (!in_array($item->item_type, $usableTypes)) return false;
+
+        $this->use($item);
+
+        return true;
+    }
+
+    private function use($item)
+    {
+        // $result = match ($item->item_type) {
+        //     'potion' =>
+        // };
+    }
+
+    private function isWeared($itemId)
+    {
+        return $this->packItems[$itemId]->loc == 'WEARING';
+    }
+
+    private function isFitItem($itemId, $wear = true)
+    {
+        if ($wear) {
+            if ($this->isWeared($itemId)) return false;
+        } else {
+            if (!$this->isWeared($itemId)) return false;
+        }
+
+        if ($this->packItems[$itemId]->need_level > $this->level) return false;
+
+        return true;
     }
 
     private function itemExists($itemId)

@@ -72,6 +72,9 @@ class Application {
 
         $data = json_decode($frame->data, true);
         $type = array_keys($data)[0];
+
+        if (!$type) return;
+
         $payload = $data[$type];
 
         switch ($type) {
@@ -114,6 +117,10 @@ class Application {
 
         case 'wearItem':
             $user->itemAction($this, 'wearItem', $payload);
+        break;
+
+        case 'takeoffItem':
+            $user->itemAction($this, 'takeoffItem', $payload);
         break;
 
         case 'getLocMonsters':
