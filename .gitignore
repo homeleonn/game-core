@@ -2,4 +2,9 @@
 .idea
 /vendor
 .env.php
-Tasks.txt
+/node_modules
+Homestead.json
+Homestead.yaml
+/.idea
+/.vscode
+.env.js

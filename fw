@@ -3,19 +3,21 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Core\Support\Str;
+use Homeleon\Support\Str;
 
-$from = ROOT . '/.env.php.example';
-$dest = ROOT . '/.env.php';
+$from = __DIR__ . '/.env.php.example';
+$dest = __DIR__ . '/.env.php';
 
 if (!file_exists($dest)) {
-	copy($from, $dest);
+    if (!copy($from, $dest)) {
+        throw new Exception('Config file could not be create');
+    }
+
+    echo "Config file has been succesfully created.\n";
 }
 
-// $env = file_get_contents($dest);
-// $env = file($dest);dd($env);
-// $env = require($dest);
-// echo(var_export($env));
-
-// $appKey = Str::random(32);
-// file_put_contents($dest, preg_replace("~(app_key.*)=>\s*([\'\"]).*([\'\"])~m", "$1=> $2{$appKey}$3", $env));
+echo "Generating token...\n";
+$appKey = Str::random(32);
+$env = file_get_contents($dest);
+file_put_contents($dest, preg_replace("~(app_key.*)=>\s*'.*'~m", "$1=> '{$appKey}'", $env));
+echo "Success\n";

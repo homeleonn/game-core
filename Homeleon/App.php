@@ -17,7 +17,7 @@ class App
     {
         $this->setProjectDir();
         $this->coreAliasesRegister();
-        $config = require  __DIR__ . '/../config/app.php';
+        $config = require  ROOT . '/config/app.php';
         Facade::setFacadeApplication($this, $config['aliases']);
         $servicesInstances = $this->loadServices($config['providers']);
         $this->bootServices($servicesInstances);

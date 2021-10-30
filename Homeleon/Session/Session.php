@@ -103,6 +103,7 @@ class Session implements SessionContract
     {
         $key = Config::get('app_key');
         $crypter = new Crypter($key);
+        $isNeedToGenerateToken = true;
 
         if (isset($_COOKIE[$this->sessionName])) {
             try {
@@ -111,9 +112,15 @@ class Session implements SessionContract
                 exit('wrong session');
             }
 
+            if ($sessionValue !== false) {
+                $isNeedToGenerateToken = false;
+            }
+
             [$token, $sessionFilename] = explode($this->separator, $sessionValue);
             Config::set('_token', $token);
-        } else {
+        }
+
+        if ($isNeedToGenerateToken) {
             $sessionFilename = Str::random(32);
         }
 
