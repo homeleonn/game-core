@@ -1,7 +1,7 @@
 <?php
 
 define('HTTP_SIDE', '');
-// define('ROOT', dirname(__DIR__));
+define('ROOT', dirname(__DIR__));
 
 require '../vendor/autoload.php';
 

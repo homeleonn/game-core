@@ -11,15 +11,13 @@ use ReflectionClass;
 class App
 {
     protected array $container = [];
+    private string $projectDir;
 
     public function __construct()
     {
-
-        if (!defined('ROOT')) {
-            define('ROOT', __DIR__ . '/../../../..');
-        }
+        $this->setProjectDir();
         $this->coreAliasesRegister();
-        $config = require ROOT . '/config/app.php';
+        $config = require  __DIR__ . '/../config/app.php';
         Facade::setFacadeApplication($this, $config['aliases']);
         $servicesInstances = $this->loadServices($config['providers']);
         $this->bootServices($servicesInstances);
@@ -43,6 +41,30 @@ class App
     {
         foreach ($services as $service) {
             $service->boot();
+        }
+    }
+
+    private function setProjectDir()
+    {
+        if (defined('ROOT')) return;
+
+        $find = false;
+        $maxDeep = 10;
+        $dir = __DIR__;
+
+        do {
+            $dir = dirname($dir);
+            if (file_exists($dir . '/composer.json')) {
+                $find = true;
+                break;
+            }
+            if (!$maxDeep--) break;
+        } while (!$find);
+
+        if ($find) {
+            define('ROOT', $dir);
+        } else {
+            throw new Exception('Where is project root directory?');
         }
     }
 
