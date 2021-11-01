@@ -2,11 +2,11 @@
 
 namespace App\Server\Models;
 
-use Homeleon\Support\Common;
 use Redis;
+use Homeleon\Support\Common;
 use Homeleon\Support\Facades\DB;
 
-class User
+class User extends AppModel
 {
     const CLEAR_EXITERS_TIMEOUT = 10;
     const CAN_TRANSITION_YES = 1;
@@ -16,20 +16,32 @@ class User
     const ITEM_REMOVE_YES = 1;
     const ITEM_REMOVE_NO = 0;
 
-    private Redis $storage;
     private int $fd;
-    public object $attr;
+    private array $packItems;
+    public int $min_damage;
+    public int $max_damage;
+    public int $extra_min_damage;
+    public int $extra_max_damage;
 
-    public function __construct(Redis $storage, int $fd, object $user)
+    public function __construct()
     {
-        $this->storage = $storage;
-        $this->fd      = $fd;
-        $this->attr    = (object)Common::toNums($user);
-        // $this->attr->fd = $fd;
+        parent::__construct();
 
         [$this->min_damage, $this->max_damage] = self::calculateDamage($this->power);
         $this->extra_min_damage = 0;
         $this->extra_max_damage = 0;
+    }
+
+    public function getExtra()
+    {
+        $fields = ['min_damage', 'max_damage', 'extra_min_damage', 'extra_max_damage'];
+        $extra = [];
+
+        foreach ($fields as $field) {
+            $extra[$field] = $this->{$field};
+        }
+
+        return $extra;
     }
 
     public function isAdmin()
@@ -66,10 +78,10 @@ class User
     public function getBackPack($app)
     {
         $this->packItems = Common::itemsOnKeys(
-            DB::getAll("Select * from items where owner_id = {$this->id}"),
+            Item::where('owner_id', $this->id)->all(),
             ['id'],
             function (&$item) use ($app) {
-                $item = (object)array_merge((array)$app->itemRepo->getItemById($item->item_id), (array)$item);
+                $item->setAttrs((array)$app->itemRepo->getItemById($item->item_id));
             }
         );
 
@@ -168,10 +180,10 @@ class User
         return isset($this->packItems[$itemId]);
     }
 
-    public function save()
-    {
-        // DB::query("UPDATE users SET loc = ".$this->loc." WHERE id = ?i", $this->id);
-    }
+    // public function save()
+    // {
+    //     DB::query("UPDATE users SET loc = ".$this->loc." WHERE id = ?i", $this->id);
+    // }
 
     public function canTransition()
     {
@@ -181,15 +193,15 @@ class User
     public function locProps()
     {
         return (object)[
-            'id'     => $this->getId(),
-            'login' => $this->getLogin(),
-            'level' => $this->getLevel(),
+            'id'    => $this->id,
+            'login' => $this->login,
+            'level' => $this->level,
         ];
     }
 
     public function getAll()
     {
-        return $this->attr;
+        return array_merge($this->attr, $this->getExtra());
     }
 
     public function getFd()
@@ -209,7 +221,7 @@ class User
 
     public function getDataForLocation()
     {
-        return [$this->getLoc(), $this->getFd(), $this->getId()];
+        return [$this->loc, $this->fd, $this->id];
     }
 
     public function clearMarkExit()
@@ -225,28 +237,6 @@ class User
     public function isExit()
     {
         return isset($this->exit);
-    }
-
-    public function __call($method, $args)
-    {
-        if (preg_match('/^get(.+)/', $method, $matches)) {
-            return $this->attr->{lcfirst($matches[1])} ?? null;
-        }
-    }
-
-    public function __get($key)
-    {
-        return $this->attr->{$key} ?? null;
-    }
-
-    public function __set($key, $value)
-    {
-        $this->attr->{$key} = $value;
-    }
-
-    public function __unset($key)
-    {
-        unset($this->attr->{$key});
     }
 
     public function __toString()

@@ -212,9 +212,9 @@ class Application {
 
     private function messageToLoc($user, $text)
     {
-        $this->sendToLoc($user->getLoc(), [
+        $this->sendToLoc($user->loc, [
             'message' => [
-                'from' => $user->getLogin(),
+                'from' => $user->login,
                 'to' => null,
                 'text' => $text
             ]

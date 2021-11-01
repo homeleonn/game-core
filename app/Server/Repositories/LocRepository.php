@@ -46,7 +46,7 @@ class LocRepository extends BaseRepository
         if (isset($this->locsFds[$fromLoc]) && array_key_exists($fd, $this->locsFds[$fromLoc])) {
             unset($this->locsFds[$fromLoc][$fd]);
 
-            $this->app->sendToLoc($fromLoc, ['leaveLocUser' => ['id' => $user->getId()]]);
+            $this->app->sendToLoc($fromLoc, ['leaveLocUser' => ['id' => $user->id]]);
 
             return true;
         }
@@ -73,7 +73,7 @@ class LocRepository extends BaseRepository
     // current loc data
     public function sendLoc($user)
     {
-        if ($loc = $this->locs[$user->getLoc()] ?? null) {
+        if ($loc = $this->locs[$user->loc] ?? null) {
             $this->app->send($user->getFd(), ['loc' => (object)[
                 'loc'             => $loc,
                 'closestLocs'     => $this->closestLocs[$loc->id],
@@ -84,7 +84,7 @@ class LocRepository extends BaseRepository
 
     public function chloc(User $user, int $to)
     {
-        $from     = $user->getLoc();
+        $from       = $user->loc;
         $fd         = $user->getFd();
 
         if (!$this->checkChangeLoc($from, $to)) {
@@ -117,7 +117,10 @@ class LocRepository extends BaseRepository
                  $this->npcByLocation[$npcProtoList->loc_id] = [];
             }
 
-            $this->npcByLocation[$npcProtoList->loc_id][$npcProtoList->id] = $this->npcProtoList[$npcProtoList->npc_id];
+            $npc = $this->npcProtoList[$npcProtoList->npc_id];
+            $npc->id = $npcProtoList->id;
+            $npc->npc_id = $npcProtoList->npc_id;
+            $this->npcByLocation[$npcProtoList->loc_id][$npcProtoList->id] = $npc;
         }
     }
 
@@ -142,6 +145,7 @@ class LocRepository extends BaseRepository
             d("Monster with id '{$monsterId}' doesn't exists in location id '{$user->loc}'");
             return;
         }
+        $this->app->send($user->getFd(), ['attackMonster' => 1]);
         $this->app->fightRepo->init($user, $this->npcByLocation[$user->loc][$monsterId]);
     }
 }

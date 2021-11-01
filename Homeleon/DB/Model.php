@@ -9,7 +9,7 @@ class Model
 {
     protected string $table = '';
     protected string $primaryKey = 'id';
-    protected $attr;
+    protected $attr = [];
     protected $original = [];
 
     public function __construct(?array $attr = null)
@@ -104,6 +104,17 @@ class Model
         return [$insertColumns, $preparedValues, $onDuplicate];
     }
 
+    public function only(...$fields)
+    {
+        $only = [];
+
+        foreach ($fields as $key) {
+            $only[$key] = $this->attr[$key];
+        }
+
+        return $only;
+    }
+
     public function __get($key)
     {
         return $this->attr[$key] ?? null;
@@ -111,14 +122,20 @@ class Model
 
     public function __set($key, $value)
     {
-        if (is_null($this->attr)) {
-            $this->attr = [];
-        }
-
-        return $this->attr[$key] = Str::toNum($value);
+        return $this->attr[$key] = $value;
     }
 
-    public function __call(string $method, array $args)
+    public function __isset($key)
+    {
+        return isset($this->attr[$key]);
+    }
+
+    public function __unset($key)
+    {
+        unset($this->attr[$key]);
+    }
+
+    public function __call($method, $args)
     {
         return DB::table($this->table, $this::class)->$method(...$args);
     }

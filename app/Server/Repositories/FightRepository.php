@@ -22,6 +22,7 @@ class FightRepository
 
         $fighterProto1->curhp = $fighterProto1->maxhp = 200;
         $fight->addFighter($fighterProto1, 1);
+        $fighterProto2->curhp = 1;
         $this->createBots($fighterProto2, 1, $this->fightId, 4);
         $this->createBots($fighterProto2, 0, $this->fightId, 4);
         // $this->createBots($fighterProto2, 0, $this->fightId, 1);
@@ -45,15 +46,21 @@ class FightRepository
 
     public function getById($user)
     {
-        // if (!isset($this->fights[1])) {
-        //     $this->app->locRepo->attackMonster($user, 1);
-        // }
-        // $this->app->send($user->getFd(), ['_fight' => $this->fights[1]?->getData($user->id) ?? null]);
+        if (!isset($this->fights[1])) {
+            // $this->app->locRepo->attackMonster($user, 1);
+        } else {
+            $this->app->send($user->getFd(), ['_fight' => $this->fights[1]?->getData($user->id) ?? null]);
+        }
     }
 
     public function remove($fightId)
     {
         // echo "Remove Fight: $fightId";
+        foreach ($this->fights[$fightId]->fighters as $fighter) {
+            if (isset($fighter->user->aggr)) continue;
+            $fighter->user->fight = 0;
+            $this->app->userRepo->sendUser($fighter->user);
+        }
         unset($this->fights[$fightId]);
     }
 

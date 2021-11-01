@@ -23,7 +23,7 @@ class UserRepository
 
     public function add(int $fd, $user)
     {
-        $this->users[$fd] = new User($this->storage, $fd, $user);
+        $this->users[$fd] = $user;
         $this->usersFdsById[$user->id] = $fd;
 
         return $this->users[$fd];
@@ -54,13 +54,13 @@ class UserRepository
 
     public function remove($user)
     {
-        unset($this->usersFdsById[$user->getId()]);
+        unset($this->usersFdsById[$user->id]);
         unset($this->users[$user->getFd()]);
     }
 
     public function init(int $fd, string $userId)
     {
-        $user = $this->getUser($userId);
+        $user = $this->getUser($userId, $fd);
 
         $this->checkDuplicateConnection($userId);
 
@@ -70,9 +70,12 @@ class UserRepository
         return $user;
     }
 
-    private function getUser($userId)
+    private function getUser($userId, $fd)
     {
-        return DB::getRow('SELECT id, login, level, power, critical, evasion, defence, stamina, last_restore, sex, clan, gold, exp, win, defeat, draw, request, fight, image, title, color, curhp, maxhp, team, loc, trans_time, trans_timeout, super_hits FROM users WHERE id = ?i', $userId);
+        // return DB::getRow('SELECT id, login, level, power, critical, evasion, defence, stamina, last_restore, sex, clan, gold, exp, win, defeat, draw, request, fight, image, title, color, curhp, maxhp, team, loc, trans_time, trans_timeout, super_hits FROM users WHERE id = ?i', $userId);
+        $user = User::select('id', 'login', 'level', 'power', 'critical', 'evasion', 'defence', 'stamina', 'last_restore', 'sex', 'clan', 'gold', 'exp', 'win', 'defeat', 'draw', 'request', 'fight', 'image', 'title', 'color', 'curhp', 'maxhp', 'team', 'loc', 'trans_time', 'trans_timeout', 'super_hits')->find($userId);
+        $user->setFd($fd);
+        return $user;
     }
 
     public function getAll()
@@ -101,26 +104,16 @@ class UserRepository
     public function sendLocUsers($user)
     {
         // users online by location
-        $this->app->send($user->getFd(), ['loc_users' => array_values($this->getAllByLoc($user->getLoc()))]);
+        $this->app->send($user->getFd(), ['loc_users' => array_values($this->getAllByLoc($user->loc))]);
     }
 
     public function getLocUsers($user)
     {
-        return array_values($this->getAllByLoc($user->getLoc()));
+        return array_values($this->getAllByLoc($user->loc));
     }
 
     public function sendUser($user)
     {
-        // $this->app->send($user->getFd(), ['me' => (object)[
-        //     'id'                 => $user->id,
-        //     'login'             => $user->login,
-        //     'level'             => $user->level,
-        //     'curhp'             => $user->curhp,
-        //     'maxhp'             => $user->maxhp,
-        //     'loc'                 => $user->loc,
-        //     'trans_timeout'     => $user->trans_timeout,
-        // ]]);
-        // d( $user->getAll());
         $this->app->send($user->getFd(), ['me' => $user->getAll()]);
         $this->app->send($user->getFd(), ['time' => time()]);
     }

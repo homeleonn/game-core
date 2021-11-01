@@ -107,7 +107,7 @@ class Fighter
             $this->swap[self::HIT_TURN] = $turn;
             $this->swap[self::TURN_TIME] = time();
             $this->fight->handleBot($this->getEnemy());
-            // HFight::send('swap', $this);
+            HFight::send('swap', $this);
         }
     }
 

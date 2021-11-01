@@ -19,7 +19,8 @@ abstract class Facade
     protected static function setFacadesAutoload(array $aliases): void {
         spl_autoload_register(function($className) use ($aliases) {
             if (isset($aliases[$className]) && class_exists($aliases[$className])) {
-                require_once __DIR__ . '/' . basename($aliases[$className]) . '.php';
+                $explodedNamespace = explode('\\', $aliases[$className]);
+                require_once __DIR__ . '/' . end($explodedNamespace) . '.php';
                 class_alias($aliases[$className], $className);
             }
         });
