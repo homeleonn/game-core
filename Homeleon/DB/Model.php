@@ -14,10 +14,12 @@ class Model
 
     public function __construct(?array $attr = null)
     {
+        if (!empty($attr)) {
+            $this->attr = $attr;
+        }
+
         if ($this->attr) {
-            $this->original = $this->attr;
-        } else {
-            $this->attr = $attr ?? [];
+            $this->fillOriginalValues();
         }
 
         if (!$this->table) {
@@ -25,8 +27,25 @@ class Model
         }
     }
 
+    public function fillOriginalValues()
+    {
+        foreach ($this->attr as $k => &$v) {
+            $this->original[$k] = &$v;
+        }
+    }
+
+    protected function getTableName()
+    {
+        return $this->table;
+    }
+
     public static function identifyTableName(): string
     {
+        $defaultTableName = (new \ReflectionProperty(static::class, 'table'))->getDefaultValue();
+        if ($defaultTableName) {
+            return $defaultTableName;
+        }
+
         $caller = strtolower(Str::lastPart(static::class, '\\'));
 
         return Str::plural($caller);
@@ -122,6 +141,7 @@ class Model
 
     public function __set($key, $value)
     {
+        if (isset($this->attr[$key])) unset($this->attr[$key]);
         return $this->attr[$key] = $value;
     }
 

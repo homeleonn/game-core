@@ -112,13 +112,22 @@ class QueryBuilder
         return $this->first();
     }
 
+    public function by($column)
+    {
+        $this->builder['by'] = $column;
+
+        return $this;
+    }
+
     public function query(string $type)
     {
         $this->connection->setModel($this->model);
 
-        $result = $this->connection->{"get{$type}"}($this->getResult());
+        if (isset($this->builder['by'])) {
+            return $this->connection->{"getInd"}($this->builder['by'], $this->getResult());
+        }
 
-        return $result;
+        return $this->connection->{"get{$type}"}($this->getResult());
     }
 
     public function getResult()

@@ -13,7 +13,7 @@ class Fighter
     const TURN_TIME               = 4;
     const TURN_TIME_TIMEOUT       = 10;
 
-    public User|stdClass $user;
+    public User|Npc $user;
     public int $lastEnemyfId      = 0;
     public int $turn              = 0;
     public int $damage            = 0;
@@ -25,7 +25,7 @@ class Fighter
     public int $team;
     public Fight $fight;
 
-    public function __construct(User|stdClass $user, int $team, Fight $fight)
+    public function __construct(User|Npc $user, int $team, Fight $fight)
     {
         // $this->user = $user instanceof User ? $user : (object)$user;
         $this->user = $user;

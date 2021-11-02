@@ -63,4 +63,15 @@ class Common
 
         return preg_replace(['/[\n]/m', '/(\t|\s)+/'], ' ', $content);
     }
+
+    public static function exportJsonFields(object|array $ctx, array $fields)
+    {
+        if (!is_array($ctx)) $ctx = [$ctx];
+
+        foreach ($ctx as $c) {
+            foreach ($fields as $field) {
+                $c->{$field} = json_decode($c->{$field});
+            }
+        }
+    }
 }

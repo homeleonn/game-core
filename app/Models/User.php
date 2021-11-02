@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Homeleon\DB\Model;
+use App\Server\AppModel;
 
-class User extends Model
+class User extends AppModel
 {
-
 }

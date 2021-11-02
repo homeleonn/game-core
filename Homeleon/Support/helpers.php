@@ -47,7 +47,7 @@ function generatePasswordHash($password): string {
 }
 
 function view(string $view, array $args = []) {
-    $view = ROOT . '/' . 'resources/views/' . $view . '.php';
+    $view = ROOT . '/' . 'resources/views/' . str_replace('.', '/', $view) . '.php';
     if (!file_exists($view)) {
         throw new Exception("View file `{$view}` not exists.");
     }

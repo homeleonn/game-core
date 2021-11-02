@@ -35,7 +35,7 @@ if ($argc > 1 && $argv[1] == '-q') {
 
 
 $server = new Server(Config::get('host'), Config::get('port'));
-$app         = new Application($server, $core->make('redis'));
+$app    = new Application($server, $core->make('redis'));
 $core->set('game', $app);
 
 $server->setDosProtection($core->make('dosprotection'));
