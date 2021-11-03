@@ -51,8 +51,8 @@ class Fight
 
     public function addFighter($fighterProto, $team): self
     {
+        $fighterProto->fight = $this->fightId;
         $fighter = new Fighter($fighterProto, $team, $this);
-        $fighter->user->fight = $this->fightId;
         if (!$fighter->isBot()) {
             $this->fightersById[$fighter->id] = $fighter;
             $this->app->send($fighter->user->getFd(), ['fight' => 'start']);
@@ -162,6 +162,20 @@ class Fight
             foreach ($team as $fighter) {
                 $teamsStatisticts[$idx][$fighter->fId] = Common::propsOnly($fighter, $needProps);
                 $teamsStatisticts[$idx][$fighter->fId]['fightExp'] = $isWinner ? $fighter->damage * 2 : 0;
+                $fighter->user->fight = 0;
+
+                if (!$fighter->isBot()) {
+                    if ($isWinner) {
+                        $fighter->win += 1;
+                    } else {
+                        $fighter->defeat += 1;
+                    }
+
+                    $fighter->save();
+                    $fighter->sendChars($this->app, ['curhp', 'maxhp', 'win', 'defeat']);
+                } else {
+                    $fighter->curhp = $fighter->maxhp;
+                }
             }
         }
 

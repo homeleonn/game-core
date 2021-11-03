@@ -15,7 +15,7 @@ class HFight
             $block = self::checkChance(self::damageCalculate($u1, $u2, 'defence', 'critical', 'evasion')[1]);
         }
 
-        if ($superHitLevel && self::cancelDefenceBySuperHit($u1->level, $superHitLevel)) {
+        if ($superHitLevel && ($evasion || $block) && self::cancelDefenceBySuperHit($u1->level, $superHitLevel)) {
             $evasion = $block = false;
         }
 
@@ -37,7 +37,7 @@ class HFight
             $chance = 10;
         }
 
-        return checkChance($chance);
+        return self::checkChance($chance);
     }
 
 

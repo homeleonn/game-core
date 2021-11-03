@@ -112,15 +112,15 @@ class Application {
         break;
 
         case 'removeItem':
-            $user->itemAction($this, 'removeItem', $payload);
+            $user->itemAction($this, $type, $payload);
         break;
 
         case 'wearItem':
-            $user->itemAction($this, 'wearItem', $payload);
+            $user->itemAction($this, $type, $payload);
         break;
 
         case 'takeoffItem':
-            $user->itemAction($this, 'takeoffItem', $payload);
+            $user->itemAction($this, $type, $payload);
         break;
 
         case 'getLocMonsters':

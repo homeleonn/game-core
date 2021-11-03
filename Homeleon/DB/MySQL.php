@@ -260,6 +260,16 @@ class MySQL
 		return $query;
 	}
 
+    public function beginTransaction(?string $name = null, int $flags = 0): bool
+    {
+        return mysqli_begin_transaction($this->conn, $flags, $name);
+    }
+
+    public function commit(?string $name = null, int $flags = 0): bool
+    {
+        return mysqli_commit($this->conn, $flags, $name);
+    }
+
     private function escapeInt($value)
 	{
 		if ($value === null) {

@@ -5,8 +5,9 @@ namespace App\Server\Models;
 use Redis;
 use Homeleon\Support\Common;
 use Homeleon\Support\Facades\DB;
+use Exception;
 
-class User extends AppModel
+class User extends Unit
 {
     const CLEAR_EXITERS_TIMEOUT = 10;
     const CAN_TRANSITION_YES = 1;
@@ -16,20 +17,24 @@ class User extends AppModel
     const ITEM_REMOVE_YES = 1;
     const ITEM_REMOVE_NO = 0;
 
-    private int $fd;
-    private array $packItems;
-    public int $min_damage;
-    public int $max_damage;
-    public int $extra_min_damage;
-    public int $extra_max_damage;
+    const ITEM_WEARING = 'wearItem';
+    const ITEM_TAKEOFF = 'takeoffItem';
+
+    protected int $fd;
+    protected array $items = [];
+    public int $extra_min_damage = 0;
+    public int $extra_max_damage = 0;
+    private $needUpdateChars = ['power', 'critical', 'evasion', 'stamina', 'hp' => 'curhp', 'hp' => 'maxhp', 'min_damage', 'max_damage'];
 
     public function __construct()
     {
         parent::__construct();
+        try {
+            $this->loadItems(\App::make('game'));
+        } catch (Exception) {}
 
-        [$this->min_damage, $this->max_damage] = self::calculateDamage($this->power);
-        $this->extra_min_damage = 0;
-        $this->extra_max_damage = 0;
+
+        $this->calculateFullDamage();
     }
 
     public function getExtra()
@@ -72,31 +77,58 @@ class User extends AppModel
         $app->send($this->fd, ['chloc' => ['trans_time' => $this->trans_time, 'trans_timeout' => $this->trans_timeout]]);
         $app->send($this->fd, ['loc_users' => $app->userRepo->getAllByLoc($to)]);
         $app->locRepo->sendLoc($this);
-        $this->save(); // Need to save user ?
+        $this->save();
     }
 
     public function getBackPack($app)
     {
-        $this->packItems = Common::itemsOnKeys(
-            Item::where('owner_id', $this->id)->all(),
-            ['id'],
-            function (&$item) use ($app) {
-                $item->setAttrs((array)$app->itemRepo->getItemById($item->item_id));
-            }
-        );
-
-        if (!$this->packItems) return;
+        if (!$this->items) return;
 
         $app->send($this->getFd(),
-            ['getBackPack' => $this->packItems]
+            ['getBackPack' => $this->items]
         );
+    }
+
+    private function loadItems($app)
+    {
+        $this->items = Item::where('owner_id', $this->id)->by('id')->all() ?? [];
+        array_walk(
+            $this->items,
+            fn ($item) => $item->setAttrs((array)$app->itemRepo->getItemById($item->item_id))
+        );
+    }
+
+    private function processingChars($item, $action)
+    {
+        $isOn = $action == self::ITEM_WEARING;
+
+        foreach ($this->needUpdateChars as $itemChar => $userChar) {
+            if (is_int($itemChar)) {
+                $itemChar = $userChar;
+            }
+
+            $this->{$userChar} += ($isOn ? $item->{$itemChar} : -$item->{$itemChar});
+        }
+
+        $this->calculateFullDamage();
+
+        $this->save();
+    }
+
+    private function deleteItem($itemId)
+    {
+        if (!isset($this->items[$itemId])) return;
+        $this->items[$itemId]->delete();
+        unset($this->items[$itemId]);
+
+        return true;
     }
 
     private function removeItem($itemId)
     {
-        // unset($this->packItems[$itemId]);
-        // DB::query('DELETE from items where id = ?i', $itemId);
-        return true;
+        if ($this->isWeared($itemId)) return;
+
+        return $this->deleteItem($itemId);
     }
 
     private function wearItem($itemId)
@@ -104,7 +136,7 @@ class User extends AppModel
         if (!$this->isFitItem($itemId)) return false;
         if ($this->isUsableItem($itemId)) return false;
 
-        $this->packItems[$itemId]->loc = 'WEARING';
+        $this->items[$itemId]->loc = 'WEARING';
         DB::query("UPDATE items SET loc = 'WEARING' where id = ?i", $itemId);
 
         return true;
@@ -114,7 +146,7 @@ class User extends AppModel
     {
         if (!$this->isFitItem($itemId, false)) return false;
 
-        $this->packItems[$itemId]->loc = 'INVENTORY';
+        $this->items[$itemId]->loc = 'INVENTORY';
         DB::query("UPDATE items SET loc = 'INVENTORY' where id = ?i", $itemId);
 
         return true;
@@ -122,15 +154,26 @@ class User extends AppModel
 
     public function itemAction($app, $action, $itemId)
     {
-        // dd($this->packItems[$itemId]);
+        // dd($this->items[$itemId]);
         if (!$this->canAction($action)
             || $this->fight
             || !$this->itemExists($itemId)
         ) return;
 
+        DB::beginTransaction();
         if ($this->{$action}($itemId)) {
-            $app->send($this->fd, [$action => 1]);
+            if (in_array($action, [self::ITEM_WEARING, self::ITEM_TAKEOFF])) {
+                $this->processingChars($this->items[$itemId], $action);
+            }
+            $app->send($this->fd, [$action => $itemId]);
+            $this->sendChars($app, $this->needUpdateChars);
         }
+        DB::commit();
+    }
+
+    public function sendChars($app, $chars)
+    {
+        $app->send($this->fd, ['me' => Common::propsOnly($this, $chars)]);
     }
 
     private function canAction($action)
@@ -140,7 +183,7 @@ class User extends AppModel
 
     private function isUsableItem($itemId)
     {
-        $item = $this->packItems[$itemId];
+        $item = $this->items[$itemId];
         $usableTypes = ['potion', 'scroll'];
 
         if (!in_array($item->item_type, $usableTypes)) return false;
@@ -159,7 +202,7 @@ class User extends AppModel
 
     private function isWeared($itemId)
     {
-        return $this->packItems[$itemId]->loc == 'WEARING';
+        return $this->items[$itemId]->loc == 'WEARING';
     }
 
     private function isFitItem($itemId, $wear = true)
@@ -170,14 +213,14 @@ class User extends AppModel
             if (!$this->isWeared($itemId)) return false;
         }
 
-        if ($this->packItems[$itemId]->need_level > $this->level) return false;
+        if ($this->items[$itemId]->need_level > $this->level) return false;
 
         return true;
     }
 
     private function itemExists($itemId)
     {
-        return isset($this->packItems[$itemId]);
+        return isset($this->items[$itemId]);
     }
 
     // public function save()
@@ -212,11 +255,6 @@ class User extends AppModel
     public function setFd($fd)
     {
         $this->fd = $fd;
-    }
-
-    public static function calculateDamage($power)
-    {
-        return [floor($power / 2), $power + ceil($power / 2)];
     }
 
     public function getDataForLocation()

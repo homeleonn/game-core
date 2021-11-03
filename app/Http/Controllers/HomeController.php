@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Homeleon\Http\Request;
 use Homeleon\Support\Facades\Auth;
 use Homeleon\Support\Facades\Config;
-use App\Models\User;
-use Homeleon\DB\DB;
+use Homeleon\Support\Facades\DB;
+use App\Server\Models\User;
 
 class HomeController extends Controller
 {
@@ -85,9 +85,15 @@ class HomeController extends Controller
 
     public function testForm(Request $request)
     {
-        d(\Session::all());
-        return view('test');
+        User::find(1)->update(['fight' => 0]);
+        // User::find(1)->update(['level' => 4]);
+        // DB::query('UPDATE users SET curhp = 18, maxhp = 18, power = 5, critical = 5 where id = 1');
+        // DB::query('UPDATE items SET loc = "INVENTORY"');
+        // d(\Session::all());
+        // return view('test');
         // dd($request, $userId);
+        // dd(\DB::getAll('SELECT * FROM spawnlist'));
+        // dd(\App\Server\Models\Npc::all());
     }
 
     public function test1(int $userId = 1)

@@ -43,6 +43,22 @@ class Common
         return $likeObject ? (object)$resultArray : $resultArray;
     }
 
+    public static function arrayPropsOnly(array $objects, array $keys): array|object
+    {
+        $resultArray = [];
+
+        foreach ($objects as $obj) {
+            $onlyProps = [];
+            foreach ($keys as $key) {
+                $onlyProps[$key] = $obj->{$key} ?? null;
+            }
+
+            $resultArray[] = $onlyProps;
+        }
+
+        return $resultArray;
+    }
+
     public static function toNums($arr)
     {
         return array_map(function ($item) {

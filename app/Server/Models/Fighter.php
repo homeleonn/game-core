@@ -4,7 +4,6 @@ namespace App\Server\Models;
 
 use App\Server\Helpers\HFight;
 use Homeleon\Support\Common;
-use stdClass;
 
 class Fighter
 {
@@ -22,6 +21,9 @@ class Fighter
     public int $timeoutTicks      = 0;
     public array|null $swap       = [];
     private bool $delay           = false;
+    private $super_hits;
+    public $fId;
+    public $enemyfId;
     public int $team;
     public Fight $fight;
 
@@ -261,8 +263,13 @@ class Fighter
         return $this->user->{$key} ?? null;
     }
 
+    public function __set($key, $value)
+    {
+        $this->user->{$key} = $value;
+    }
+
     public function __call($method, $args)
     {
-        return $this->user->{$method}($args);
+        return $this->user->{$method}(...$args);
     }
 }

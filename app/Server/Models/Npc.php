@@ -2,7 +2,7 @@
 
 namespace App\Server\Models;
 
-class Npc extends AppModel
+class Npc extends Unit
 {
     protected string $table = 'npc';
 
@@ -10,7 +10,7 @@ class Npc extends AppModel
     {
         parent::__construct(...$args);
 
-        [$this->min_damage, $this->max_damage] = User::calculateDamage($this->power);
+        $this->calculateFullDamage();
         $this->login = $this->name;
     }
 }

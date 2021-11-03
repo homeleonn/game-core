@@ -27,10 +27,10 @@ class Model
         }
     }
 
-    public function fillOriginalValues()
+    private function fillOriginalValues(?array $values = null)
     {
-        foreach ($this->attr as $k => &$v) {
-            $this->original[$k] = &$v;
+        foreach ($values ?? $this->attr as $k => $v) {
+            $this->original[$k] = &$this->attr[$k];
         }
     }
 
@@ -66,7 +66,7 @@ class Model
     public function delete()
     {
         if ($id = $this->getId()) {
-            return DB::query("DELETE FROM {$this->table} WHERE {$this->primaryKey} = {$id}");
+            return DB::query("DELETE FROM {$this->table} WHERE {$this->primaryKey} = {$id} LIMIT 1");
         }
 
         return false;
@@ -74,12 +74,14 @@ class Model
 
     public function save(): ?static
     {
+        // dd($this->attr, $this->original);
         $insert = array_diff_assoc($this->attr, $this->original);
 
         if (empty($insert)) {
             return null;
         }
 
+        $this->fillOriginalValues($insert);
         $id         = $this->getId();
         $isExists   = $id ? static::count()->where($this->primaryKey, $id)->first() : false;
 

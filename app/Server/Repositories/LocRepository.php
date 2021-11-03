@@ -6,6 +6,7 @@ use App\Server\Loaders\{LocationsLoader, NpcLoader};
 use App\Server\Models\{Loc, User};
 use App\Server\Application;
 use Homeleon\Support\Facades\DB;
+use Homeleon\Support\Common;
 
 class LocRepository extends BaseRepository
 {
@@ -111,22 +112,25 @@ class LocRepository extends BaseRepository
 
     private function spawnNpc()
     {
-        $spawnlist = DB::getAll('SELECT id, npc_id, loc_id, respawn_delay FROM spawnlist');
-        foreach ($spawnlist as $npcProtoList) {
-            if (!isset($this->npcByLocation[$npcProtoList->loc_id])) {
-                 $this->npcByLocation[$npcProtoList->loc_id] = [];
+        $spawns = DB::getAll('SELECT id, npc_id, loc_id, respawn_delay FROM spawnlist');
+
+        foreach ($spawns as $spawn) {
+            if (!isset($this->npcByLocation[$spawn->loc_id])) {
+                 $this->npcByLocation[$spawn->loc_id] = [];
             }
 
-            $npc = $this->npcProtoList[$npcProtoList->npc_id];
-            $npc->id = $npcProtoList->id;
-            $npc->npc_id = $npcProtoList->npc_id;
-            $this->npcByLocation[$npcProtoList->loc_id][$npcProtoList->id] = $npc;
+            $npc = clone($this->npcProtoList[$spawn->npc_id]);
+            $npc->npc_id = $npc->id;
+            $npc->id     = $spawn->id;
+            $this->npcByLocation[$spawn->loc_id][$spawn->id] = $npc;
         }
     }
 
     public function getMonsters($user)
     {
-        $this->app->send($user->getFd(), ['locMonsters' => $this->npcByLocation[$user->loc] ?? []]);
+        $this->app->send($user->getFd(), ['locMonsters' => Common::arrayPropsOnly($this->npcByLocation[$user->loc] ?? [], [
+            'aggr', 'level', 'image', 'id', 'name', 'is_undead', 'fight'
+        ])]);
     }
 
     public function getNpcById($npcId)
@@ -141,11 +145,18 @@ class LocRepository extends BaseRepository
 
     public function attackMonster($user, $monsterId)
     {
-        if (!isset($this->npcByLocation[$user->loc][$monsterId])) {
+        $monster = $this->npcByLocation[$user->loc][$monsterId] ?? null;
+        if (!$monster) {
             d("Monster with id '{$monsterId}' doesn't exists in location id '{$user->loc}'");
             return;
         }
         $this->app->send($user->getFd(), ['attackMonster' => 1]);
-        $this->app->fightRepo->init($user, $this->npcByLocation[$user->loc][$monsterId]);
+        $this->app->fightRepo->init($user, $monster);
+        $this->informingUsersForAttackedMonster($user->loc, $monsterId);
+    }
+
+    private function informingUsersForAttackedMonster($loc, $monsterId)
+    {
+        $this->app->sendToLoc($loc, ['monsterAttacked' => $monsterId]);
     }
 }

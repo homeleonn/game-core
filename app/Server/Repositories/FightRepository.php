@@ -20,11 +20,12 @@ class FightRepository
         $fight = new Fight($this->fightId, $this->app);
         $this->fights[$this->fightId] = $fight;
 
-        $fighterProto1->curhp = $fighterProto1->maxhp = 200;
-        $fight->addFighter($fighterProto1, 1);
-        $fighterProto2->curhp = 1;
-        $this->createBots($fighterProto2, 1, $this->fightId, 4);
-        $this->createBots($fighterProto2, 0, $this->fightId, 4);
+        // $fighterProto1->curhp = $fighterProto1->maxhp = 200;
+        $fight->addFighter($fighterProto1, 0);
+        $fight->addFighter($fighterProto2, 1);
+        // $fighterProto2->curhp = 1;
+        // $this->createBots($fighterProto2, 1, $this->fightId, 4);
+        // $this->createBots($fighterProto2, 0, $this->fightId, 4);
         // $this->createBots($fighterProto2, 0, $this->fightId, 1);
         $fight->setPairs();
     }
