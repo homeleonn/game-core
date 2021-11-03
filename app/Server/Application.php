@@ -13,6 +13,7 @@ use App\Server\Repositories\FightRepository;
 use App\Server\Models\Fighter;
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
+use Homeleon\Support\OS;
 
 class Application {
     public const DISCONNECT = '0';
@@ -50,7 +51,7 @@ class Application {
     public function start(WebSocketServer $server)
     {
         cli_set_process_title('FightWorld daemon - php');
-        system('echo "\033]0;"FightWorld"\007"');
+        if (!OS::isWin()) system('echo "\033]0;"FightWorld"\007"');
         echo "App start on {$server->getIp()}:{$server->getPort()}. PID: ", getmypid(), "\n";
         // file_put_contents(__DIR__ . '/resources/app.pid', getmypid());
     }
@@ -252,7 +253,7 @@ class Application {
 
     public function periodicEvent($eventName)
     {
-        // echo "\n", $eventName, " ", time(), " | ";
+        echo "\n", $eventName, " ", time(), " | ";
 
         match ($eventName) {
             'clear_exited_users' => $this->userRepo->clearExited(),

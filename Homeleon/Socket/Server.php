@@ -57,9 +57,13 @@ class Server
             $read = $this->fds;
             $read[-1] = $this->socket;
 
-            if (stream_select($read, $write, $except, $this->periodicEventWorker->getTimeout()) === false) break;
+            $periodicTimeout = $this->periodicEventWorker->getTimeout();
+            if (stream_select($read, $write, $except, $periodicTimeout) === false) break;
 
-            $this->periodicEventWorker->execute();
+            if (!isset($time) || time() >= $time + $periodicTimeout) {
+                $time = time();
+                $this->periodicEventWorker->execute();
+            }
 
             if (isset($read[-1])) {
                 $this->open(stream_socket_accept($this->socket, -1));

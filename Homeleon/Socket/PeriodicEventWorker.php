@@ -17,7 +17,8 @@ class PeriodicEventWorker implements PeriodicEvent
 
     public function getTimeout(): int
     {
-        return $this->timeout - time();
+        return 2;
+        // return $this->timeout - time();
     }
 
     public function execute(): void
@@ -56,7 +57,7 @@ class PeriodicEventWorker implements PeriodicEvent
         $event['time'] = $time ?? time();
         $event['time'] += $period;
 
-        $this->updateTimeout($event);
+        // $this->updateTimeout($event);
 
         $event['period'] = $period;
         $this->events[] = $event;
