@@ -85,9 +85,13 @@ class HomeController extends Controller
 
     public function testForm(Request $request)
     {
-        User::find(1)->update(['fight' => 0]);
+        // dd(DB::getAll('SELECT n.*, s.* FROM npc n LEFT JOIN spawnlist s ON n.id = s.npc_id'));
+        // echo 1;
+        // User::find(1)->update(['fight' => 0]);
         // User::find(1)->update(['level' => 4]);
         // DB::query('UPDATE users SET curhp = 18, maxhp = 18, power = 5, critical = 5 where id = 1');
+        $time = time();
+        DB::query("UPDATE users SET curhp = 18, last_restore = {$time} where id = 1");
         // DB::query('UPDATE items SET loc = "INVENTORY"');
         // d(\Session::all());
         // return view('test');

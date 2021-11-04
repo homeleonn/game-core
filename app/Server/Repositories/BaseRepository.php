@@ -6,10 +6,12 @@ use App\Server\Application;
 
 abstract class BaseRepository
 {
-    protected Application $app;
+    public function __construct(
+        protected Application $app
+    ) {}
 
-    public function __construct(Application $app)
+    protected function repo($repoName)
     {
-        $this->app = $app;
+        return $this->app->{$repoName};
     }
 }

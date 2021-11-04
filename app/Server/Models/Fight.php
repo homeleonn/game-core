@@ -5,6 +5,7 @@ namespace App\Server\Models;
 use Homeleon\Support\Common;
 use App\Server\Helpers\HFight;
 use Homeleon\Support\Facades\App;
+use App\Server\Models\Fight\EndFightHandler;
 
 class Fight
 {
@@ -20,15 +21,18 @@ class Fight
     private int $fighterIdCounter = 1;
     private int $startTime;
     private $app;
+    private EndFightHandler $endFightHandler;
 
     private int $activeTeam = 0;
     private int $passiveTeam = 1;
 
-    public function __construct($fightId, $app)
+    public function __construct($fightId, $app, EndFightHandler $endFightHandler)
     {
         $this->app = $app;
         $this->fightId = $fightId;
         $this->startTime = time();
+
+        $this->endFightHandler = $endFightHandler;
     }
 
     public function cicle()
@@ -52,6 +56,7 @@ class Fight
     public function addFighter($fighterProto, $team): self
     {
         $fighterProto->fight = $this->fightId;
+        $fighterProto->restore();
         $fighter = new Fighter($fighterProto, $team, $this);
         if (!$fighter->isBot()) {
             $this->fightersById[$fighter->id] = $fighter;
@@ -162,20 +167,8 @@ class Fight
             foreach ($team as $fighter) {
                 $teamsStatisticts[$idx][$fighter->fId] = Common::propsOnly($fighter, $needProps);
                 $teamsStatisticts[$idx][$fighter->fId]['fightExp'] = $isWinner ? $fighter->damage * 2 : 0;
-                $fighter->user->fight = 0;
 
-                if (!$fighter->isBot()) {
-                    if ($isWinner) {
-                        $fighter->win += 1;
-                    } else {
-                        $fighter->defeat += 1;
-                    }
-
-                    $fighter->save();
-                    $fighter->sendChars($this->app, ['curhp', 'maxhp', 'win', 'defeat']);
-                } else {
-                    $fighter->curhp = $fighter->maxhp;
-                }
+                $this->endFightHandler->processFighter($fighter, $isWinner);
             }
         }
 

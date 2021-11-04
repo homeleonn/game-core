@@ -2,18 +2,23 @@
 
 namespace App\Server;
 
-use Homeleon\Socket\Server as WebSocketServer;
-use Homeleon\Socket\Request;
-use Homeleon\Socket\Frame;
 use Redis;
-use App\Server\Repositories\UserRepository;
-use App\Server\Repositories\LocRepository;
-use App\Server\Repositories\ItemRepository;
-use App\Server\Repositories\FightRepository;
-use App\Server\Models\Fighter;
+use Homeleon\Socket\{
+    Server as WebSocketServer,
+    Request,
+    Frame,
+};
+use App\Server\Repositories\{
+    UserRepository,
+    LocRepository,
+    ItemRepository,
+    FightRepository,
+    NpcRepository,
+};
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
 use Homeleon\Support\OS;
+use App\Server\Models\Fighter;
 
 class Application {
     public const DISCONNECT = '0';
@@ -37,6 +42,7 @@ class Application {
         $this->locRepo        = new LocRepository($this);
         $this->itemRepo       = new ItemRepository($this);
         $this->fightRepo      = new FightRepository($this);
+        $this->npcRepo        = new NpcRepository($this);
     }
 
     public static function getInstance(WebSocketServer $server, Redis $storage)
@@ -258,6 +264,7 @@ class Application {
         match ($eventName) {
             'clear_exited_users' => $this->userRepo->clearExited(),
             'fight_worker' => $this->fightRepo->cicle(),
+            'respawn_npc' => $this->npcRepo->respawn(),
             default => null,
         };
     }

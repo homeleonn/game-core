@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/helpers.php';
 define('ROOT', dirname(dirname(__DIR__)));
 
 use Homeleon\App;
@@ -13,9 +14,6 @@ use Homeleon\Support\Facades\DB;
 $core     = new App();
 DB::setFetchMode(stdClass::class);
 
-// echo Str::random(32);exit;
-
-// var_dump(Config::get('host'));
 
 if ($argc > 1 && $argv[1] == '-q') {
     $fp = stream_socket_client("tcp://" . Config::get('host') . ':' . Config::get('port'), $errno, $errstr);
@@ -43,6 +41,7 @@ $server->setDosProtection($core->make('dosprotection'));
 $pe = new PeriodicEventWorker($app);
 $pe->addEvent('clear_exited_users', 60);
 $pe->addEvent('fight_worker', 3);
+$pe->addEvent('respawn_npc', 10);
 
 $server->setPeriodicEventWorker($pe);
 

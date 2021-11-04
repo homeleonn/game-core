@@ -40,4 +40,28 @@ class Unit extends AppModel
     {
         return isset($this->aggr);
     }
+
+    public function percentOfHp()
+    {
+        return $this->curhp / $this->maxhp * 100;
+    }
+
+    public function send($message)
+    {
+        \App::make('game')->send($this->getFd(), $message);
+    }
+
+    public function restore()
+    {
+        if ($this->isBot() || $this->curhp >= $this->maxhp) return;
+
+        $minutesToMaxHp = 1;
+        $restoreSpeed = 1;
+        $restoreOneSecond = $this->maxhp / ($minutesToMaxHp / $restoreSpeed) / 60;
+
+        $this->curhp = $this->curhp + (time() - $this->last_restore) * $restoreOneSecond;
+        $this->last_restore = time();
+
+        if ($this->curhp >= $this->maxhp) $this->curhp = $this->maxhp;
+    }
 }

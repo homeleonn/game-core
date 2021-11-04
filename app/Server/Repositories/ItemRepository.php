@@ -6,14 +6,14 @@ use Homeleon\Support\Facades\DB;
 use Homeleon\Support\Common;
 use App\Server\Application;
 
-class ItemRepository
+class ItemRepository extends BaseRepository
 {
-    private Application $app;
     private array $items;
 
     public function __construct(Application $app)
     {
-        $this->app = $app;
+        parent::__construct($app);
+
         $this->items = Common::itemsOnKeys(
             DB::getAll('Select * from allitems'),
             ['item_id'],

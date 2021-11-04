@@ -2,6 +2,7 @@
 
 namespace App\Server\Repositories;
 
+use App\Server\Exceptions\MonsterNotExists;
 use App\Server\Loaders\{LocationsLoader, NpcLoader};
 use App\Server\Models\{Loc, User};
 use App\Server\Application;
@@ -14,15 +15,11 @@ class LocRepository extends BaseRepository
     public array $locsFds;
     public array $locs = [];
     public array $closestLocs = [];
-    public array $npcProtoList = [];
-    public array $npcByLocation = [];
 
     public function __construct(Application $app)
     {
         parent::__construct($app);
         [$this->locs, $this->closestLocs] = (new LocationsLoader)->load();
-        $this->npcProtoList = (new NpcLoader)->load();
-        $this->spawnNpc();
     }
 
     public function addUser($user, $to = null)
@@ -78,7 +75,7 @@ class LocRepository extends BaseRepository
             $this->app->send($user->getFd(), ['loc' => (object)[
                 'loc'             => $loc,
                 'closestLocs'     => $this->closestLocs[$loc->id],
-                'locUsers'        => $this->app->userRepo->getLocUsers($user)
+                'locUsers'        => repo('user')->getLocUsers($user)
             ]]);
         }
     }
@@ -110,27 +107,12 @@ class LocRepository extends BaseRepository
         }
     }
 
-    private function spawnNpc()
-    {
-        $spawns = DB::getAll('SELECT id, npc_id, loc_id, respawn_delay FROM spawnlist');
-
-        foreach ($spawns as $spawn) {
-            if (!isset($this->npcByLocation[$spawn->loc_id])) {
-                 $this->npcByLocation[$spawn->loc_id] = [];
-            }
-
-            $npc = clone($this->npcProtoList[$spawn->npc_id]);
-            $npc->npc_id = $npc->id;
-            $npc->id     = $spawn->id;
-            $this->npcByLocation[$spawn->loc_id][$spawn->id] = $npc;
-        }
-    }
-
     public function getMonsters($user)
     {
-        $this->app->send($user->getFd(), ['locMonsters' => Common::arrayPropsOnly($this->npcByLocation[$user->loc] ?? [], [
-            'aggr', 'level', 'image', 'id', 'name', 'is_undead', 'fight'
-        ])]);
+        $this->app->send(
+            $user->getFd(),
+            ['locMonsters' => Common::arrayPropsOnly(repo('npc')->getByLoc($user->loc) ?? [], repo('npc')->publicProps)]
+        );
     }
 
     public function getNpcById($npcId)
@@ -140,19 +122,27 @@ class LocRepository extends BaseRepository
 
     public function getEnemy($user, $enemyId)
     {
-        $this->app->send($user->getFd(), ['_enemy' => $this->npcProtoList[$enemyId]]);
+        $this->app->send($user->getFd(), ['_enemy' => repo('npc')->get($enemyId)]);
     }
 
     public function attackMonster($user, $monsterId)
     {
-        $monster = $this->npcByLocation[$user->loc][$monsterId] ?? null;
-        if (!$monster) {
-            d("Monster with id '{$monsterId}' doesn't exists in location id '{$user->loc}'");
-            return;
+        if ($user->percentOfHp() < 33) {
+            return $user->send(['error' => 'Hit points are too few']);
         }
+
+        if (!$monster = repo('npc')->getByLoc($user->loc, $monsterId)) {
+            // throw new MonsterNotExists("Monster with id '{$monsterId}' doesn't exists in location id '{$user->loc}'");
+            $user->send(['error' => "Monster with id '{$monsterId}' doesn't exists in location id '{$user->loc}'"]);
+        }
+
+        $isNewFight = repo('fight')->init($user, $monster);
         $this->app->send($user->getFd(), ['attackMonster' => 1]);
-        $this->app->fightRepo->init($user, $monster);
-        $this->informingUsersForAttackedMonster($user->loc, $monsterId);
+
+        if ($isNewFight) {
+            $this->app->sendToLoc($user->loc, ['monsterAttacked' => $monsterId]);
+        }
+        // $this->informingUsersForAttackedMonster($user->loc, $monsterId);
     }
 
     private function informingUsersForAttackedMonster($loc, $monsterId)

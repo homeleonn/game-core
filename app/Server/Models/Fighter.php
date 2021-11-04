@@ -272,4 +272,14 @@ class Fighter
     {
         return $this->user->{$method}(...$args);
     }
+
+    public function __toString()
+    {
+        return $this->user->attr;
+    }
+
+    public function __debugInfo()
+    {
+        return [$this->user];
+    }
 }

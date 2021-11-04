@@ -7,17 +7,16 @@ use App\Server\Models\User;
 use App\Server\Application;
 use Homeleon\Support\Common;
 
-class UserRepository
+class UserRepository extends BaseRepository
 {
     private $storage;
-    private $app;
-    public $users;
-    public $usersFdsById;
+    private $users;
+    private $usersFdsById;
     private $marked = []; // Candidates for remove from app
 
     public function __construct($app)
     {
-        $this->app     = $app;
+        parent::__construct($app);
         $this->storage = $app->storage;
     }
 
@@ -148,6 +147,7 @@ class UserRepository
         foreach ($this->marked as $id => $fd) {
             $user = $this->findById($id);
             if ($time > $user->exit) {
+                $user->save();
                 echo "Remove: fd: {$fd}, login: {$user->login} | ";
                 $this->app->removeFromApp($fd);
                 unset($this->marked[$id]);

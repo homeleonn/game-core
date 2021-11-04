@@ -21,6 +21,7 @@ class User extends Unit
     const ITEM_TAKEOFF = 'takeoffItem';
 
     protected int $fd;
+    protected ?int $exit = null;
     protected array $items = [];
     public int $extra_min_damage = 0;
     public int $extra_max_damage = 0;
@@ -31,7 +32,7 @@ class User extends Unit
         parent::__construct();
         try {
             $this->loadItems(\App::make('game'));
-        } catch (Exception) {}
+        } catch (Exception $e) {}
 
 
         $this->calculateFullDamage();
@@ -111,6 +112,7 @@ class User extends Unit
         }
 
         $this->calculateFullDamage();
+        $this->restore();
 
         $this->save();
     }
@@ -173,6 +175,7 @@ class User extends Unit
 
     public function sendChars($app, $chars)
     {
+        $this->restore();
         $app->send($this->fd, ['me' => Common::propsOnly($this, $chars)]);
     }
 
@@ -223,11 +226,6 @@ class User extends Unit
         return isset($this->items[$itemId]);
     }
 
-    // public function save()
-    // {
-    //     DB::query("UPDATE users SET loc = ".$this->loc." WHERE id = ?i", $this->id);
-    // }
-
     public function canTransition()
     {
         return $this->trans_timeout <= time();
@@ -244,6 +242,7 @@ class User extends Unit
 
     public function getAll()
     {
+        $this->restore();
         return array_merge($this->attr, $this->getExtra());
     }
 
@@ -264,7 +263,7 @@ class User extends Unit
 
     public function clearMarkExit()
     {
-        unset($this->exit);
+        $this->exit = null;
     }
 
     public function markExit()
@@ -274,7 +273,7 @@ class User extends Unit
 
     public function isExit()
     {
-        return isset($this->exit);
+        return $this->exit;
     }
 
     public function __toString()
@@ -289,6 +288,6 @@ class User extends Unit
 
     public function __debugInfo()
     {
-        return [$this->asString()];
+        return $this->attr;
     }
 }
