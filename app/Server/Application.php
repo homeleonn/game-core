@@ -14,6 +14,7 @@ use App\Server\Repositories\{
     ItemRepository,
     FightRepository,
     NpcRepository,
+    QuestRepository,
 };
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
@@ -33,6 +34,7 @@ class Application {
     public LocRepository $locRepo;
     public ItemRepository $itemRepo;
     public FightRepository $fightRepo;
+    public QuestRepository $questRepo;
 
     public function __construct(WebSocketServer $server, Redis $storage)
     {
@@ -43,6 +45,7 @@ class Application {
         $this->itemRepo       = new ItemRepository($this);
         $this->fightRepo      = new FightRepository($this);
         $this->npcRepo        = new NpcRepository($this);
+        $this->questRepo      = new QuestRepository($this);
     }
 
     public static function getInstance(WebSocketServer $server, Redis $storage)
@@ -148,6 +151,18 @@ class Application {
 
         case 'hit':
             $this->fightRepo->hit($user, $payload);
+        break;
+
+        case 'talkToNpc':
+            $this->questRepo->talkToNpc($user, $payload);
+        break;
+
+        case 'showQuest':
+            $this->questRepo->showQuest($user, ...$payload);
+        break;
+
+        case 'questAnswer':
+            $this->questRepo->answer($user, ...$payload);
         break;
         }
     }
@@ -259,7 +274,7 @@ class Application {
 
     public function periodicEvent($eventName)
     {
-        echo "\n", $eventName, " ", time(), " | ";
+        // echo "\n", $eventName, " ", time(), " | ";
 
         match ($eventName) {
             'clear_exited_users' => $this->userRepo->clearExited(),

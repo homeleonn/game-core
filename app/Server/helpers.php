@@ -12,3 +12,14 @@ function repo($repo) {
 
     return $app->{$repo . 'Repo'};
 }
+
+function error($fd, $message = 'Возникла неизвестная ошибка.') {
+    global $app;
+    $app->send($fd, ['error' => $message]);
+}
+
+function send($fd, $message) {
+    global $app;
+    $app->send($fd, $message);
+}
+

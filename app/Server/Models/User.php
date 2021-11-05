@@ -12,7 +12,7 @@ class User extends Unit
     const CLEAR_EXITERS_TIMEOUT = 10;
     const CAN_TRANSITION_YES = 1;
     const CAN_TRANSITION_NO = 0;
-    const TRANSITION_TIMEOUT = 20;
+    const TRANSITION_TIMEOUT = 5;
 
     const ITEM_REMOVE_YES = 1;
     const ITEM_REMOVE_NO = 0;
@@ -25,18 +25,8 @@ class User extends Unit
     protected array $items = [];
     public int $extra_min_damage = 0;
     public int $extra_max_damage = 0;
-    private $needUpdateChars = ['power', 'critical', 'evasion', 'stamina', 'hp' => 'curhp', 'hp' => 'maxhp', 'min_damage', 'max_damage'];
+    private $needUpdateChars = ['power', 'critical', 'evasion', 'stamina', 'curhp', 'maxhp', 'min_damage', 'max_damage'];
 
-    public function __construct()
-    {
-        parent::__construct();
-        try {
-            $this->loadItems(\App::make('game'));
-        } catch (Exception $e) {}
-
-
-        $this->calculateFullDamage();
-    }
 
     public function getExtra()
     {
@@ -90,7 +80,7 @@ class User extends Unit
         );
     }
 
-    private function loadItems($app)
+    protected function loadItems($app)
     {
         $this->items = Item::where('owner_id', $this->id)->by('id')->all() ?? [];
         array_walk(
@@ -99,14 +89,19 @@ class User extends Unit
         );
     }
 
+    public function getItems()
+    {
+        return $this->items;
+    }
+
     private function processingChars($item, $action)
     {
         $isOn = $action == self::ITEM_WEARING;
 
-        foreach ($this->needUpdateChars as $itemChar => $userChar) {
-            if (is_int($itemChar)) {
-                $itemChar = $userChar;
-            }
+        foreach ($this->needUpdateChars as $userChar) {
+            $itemChar = in_array($userChar, ['curhp', 'maxhp'])
+                      ? 'hp'
+                      : $userChar;
 
             $this->{$userChar} += ($isOn ? $item->{$itemChar} : -$item->{$itemChar});
         }
@@ -166,9 +161,9 @@ class User extends Unit
         if ($this->{$action}($itemId)) {
             if (in_array($action, [self::ITEM_WEARING, self::ITEM_TAKEOFF])) {
                 $this->processingChars($this->items[$itemId], $action);
+                $this->sendChars($app, $this->needUpdateChars);
             }
             $app->send($this->fd, [$action => $itemId]);
-            $this->sendChars($app, $this->needUpdateChars);
         }
         DB::commit();
     }
@@ -176,6 +171,7 @@ class User extends Unit
     public function sendChars($app, $chars)
     {
         $this->restore();
+        d($chars);
         $app->send($this->fd, ['me' => Common::propsOnly($this, $chars)]);
     }
 
@@ -233,11 +229,11 @@ class User extends Unit
 
     public function locProps()
     {
-        return (object)[
-            'id'    => $this->id,
-            'login' => $this->login,
-            'level' => $this->level,
-        ];
+        $props = (int)$this->clan
+               ? ['id', 'login', 'level', 'clan_name', 'clan_img', 'tendency_name', 'tendency_img']
+               : ['id', 'login', 'level'];
+
+        return Common::propsOnly($this, $props);
     }
 
     public function getAll()
@@ -254,6 +250,11 @@ class User extends Unit
     public function setFd($fd)
     {
         $this->fd = $fd;
+    }
+
+    public function send($message)
+    {
+        send($this->fd, $message);
     }
 
     public function getDataForLocation()

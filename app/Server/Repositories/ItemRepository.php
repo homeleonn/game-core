@@ -22,6 +22,7 @@ class ItemRepository extends BaseRepository
                     case 'gift': $img = 'gifts'; break;
                     case 'fish': $img = 'fishing'; break;
                     case 'trash': $img = 'other'; break;
+                    case 'quest': $img = 'quest'; break;
 
                     default: $img = 'items';
                 }

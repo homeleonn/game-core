@@ -7,6 +7,21 @@ class Unit extends AppModel
     public int $min_damage = 0;
     public int $max_damage = 0;
 
+    public function __construct(?array $attr = null)
+    {
+        parent::__construct($attr);
+
+        if ($this instanceof (User::class)) {
+            try {
+                $this->loadItems(\App::make('game'));
+            } catch (Exception $e) {}
+        } else if ($this instanceof (Npc::class)) {
+            $this->login = $this->name;
+        }
+
+        $this->calculateFullDamage();
+    }
+
     protected function calculateFullDamage()
     {
         $this->calculateDamageByPower();
@@ -53,7 +68,10 @@ class Unit extends AppModel
 
     public function restore()
     {
-        if ($this->isBot() || $this->curhp >= $this->maxhp) return;
+        if ($this->isBot()) return;
+        if ($this->curhp >= $this->maxhp) {
+            return $this->curhp = $this->maxhp;
+        }
 
         $minutesToMaxHp = 1;
         $restoreSpeed = 1;

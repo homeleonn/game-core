@@ -68,6 +68,11 @@ class LocRepository extends BaseRepository
         return $this->locsFds[$locId] ?? [];
     }
 
+    public function get($locId)
+    {
+        return $this->locs[$locId] ?? null;
+    }
+
     // current loc data
     public function sendLoc($user)
     {
@@ -127,6 +132,7 @@ class LocRepository extends BaseRepository
 
     public function attackMonster($user, $monsterId)
     {
+        $user->restore();
         if ($user->percentOfHp() < 33) {
             return $user->send(['error' => 'Hit points are too few']);
         }
