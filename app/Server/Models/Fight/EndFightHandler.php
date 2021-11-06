@@ -3,12 +3,16 @@
 namespace App\Server\Models\Fight;
 
 use App\Server\Models\User;
+use App\Server\Models\Unit;
 use Homeleon\Support\Common;
 use Homeleon\Support\Facades\DB;
 use App\Server\Models\Quest\UserQuest;
 
 class EndFightHandler
 {
+    private $fighter;
+    private bool $isWinner;
+
     public function __construct()
     {
         $this->questItems = repo('quest')->questItems;
@@ -16,36 +20,38 @@ class EndFightHandler
 
     public function processFighter($fighter, $isWinner)
     {
-        $fighter->user->fight = 0;
+        $this->fighter = $fighter;
+        $this->fighter->user->fight = 0;
+        $this->isWinner = $isWinner;
 
-        return $fighter->isBot()
-             ? $this->processBot($fighter, $isWinner)
-             : $this->processUser($fighter, $isWinner);
+        return $this->fighter->isBot()
+             ? $this->processBot()
+             : $this->processUser();
     }
 
-    public function processUser($fighter, $isWinner)
+    public function processUser()
     {
-        if ($isWinner) {
-            $fighter->win += 1;
+        if ($this->isWinner) {
+            $this->fighter->win += 1;
         } else {
-            $fighter->defeat += 1;
+            $this->fighter->defeat += 1;
         }
 
-        $fighter->last_restore = time();
-        // $fighter->sendChars(\App::make('game'), ['curhp', 'maxhp', 'win', 'defeat', 'fight']);
-        $fighter->save();
-        $fighter->send(['message' => "<b>Ваш бой \"{$fighter->fight->name}\" завершился.</b>"]);
+        $this->fighter->last_restore = time();
+        // $this->fighter->sendChars(\App::make('game'), ['curhp', 'maxhp', 'win', 'defeat', 'fight']);
+        $this->fighter->save();
+        $this->fighter->send(['message' => "<b>Ваш бой \"{$this->fighter->fight->name}\" завершился.</b>"]);
 
-        $this->drop($fighter, $isWinner);
+        $this->drop($this->isWinner, $this->isWinner);
     }
 
-    public function processBot($fighter)
+    public function processBot()
     {
-        if ($fighter->curhp <= 0) {
-            repo('npc')->kill($fighter);
+        if ($this->fighter->curhp <= 0) {
+            repo('npc')->kill($this->fighter);
         } else {
-            $fighter->curhp = $fighter->maxhp;
-            \App::make('game')->sendToLoc($fighter->loc_id, ['monsterGotFree' => $fighter->id]);
+            $this->fighter->curhp = $this->fighter->maxhp;
+            \App::make('game')->sendToLoc($this->fighter->loc_id, ['monsterGotFree' => $this->fighter->id]);
         }
     }
 
@@ -55,12 +61,12 @@ class EndFightHandler
         // что бы считать по тому кто нанес больше урона
         // в бою нужно каждому участнику боя записывать кто и насколько его ударил,
         // затем сравнивать
-        if (!$isWinner || empty($fighter->kill['npc'])) return;
+        if (!$this->isWinner || empty($this->fighter->kill['npc'])) return;
 
-        $userQuests = $this->getUserQuests($fighter->id);
-        $userItems = $fighter->user->itemsByItemId;
+        $userQuests = $this->getUserQuests($this->fighter->id);
+        $userItems = $this->fighter->user->itemsByItemId;
 
-        foreach ($fighter->kill['npc'] as $npcId => $count) {
+        foreach ($this->fighter->kill['npc'] as $npcId => $count) {
             $npcDrop = repo('drop')->getByNpc($npcId);
             $userDrop = [];
 
@@ -80,7 +86,7 @@ class EndFightHandler
             }
         }
 
-        $this->sendDropToUser($fighter->user, $userDrop);
+        $this->sendDropToUser($this->fighter->user, $userDrop);
     }
 
     private function getUserQuests($userId)
@@ -110,7 +116,7 @@ class EndFightHandler
 
     private function alreadyCollects($itemId, $userItems, $questItem)
     {
-        return count($userItems[$itemId] ?? []) >= $questItem['count'];
+        return $this->fighter->countOfItems($itemId) >= $questItem['count'];
     }
 
     public function isQuestItem($item_id)
@@ -120,18 +126,8 @@ class EndFightHandler
 
     private function sendDropToUser(User $user, array $userDrop)
     {
-        if (empty($userDrop)) return;
-
-        $update = $insert = $dropMessage = [];
-        foreach ($userDrop as $drop) {
-            // If exists stackable item then update count else insert new item
-            $userItem = $user->getItemByItemId($drop['item_id']);
-            if ($userItem && $userItem->stackable) {
-                $update[$userItem->id] = ($update[$userItem->id] ?? 0) + $drop['count'];
-            } else {
-                $insert[$drop['item_id']] = ($insert[$drop['item_id']] ?? 0) + $drop['count'];
-            }
-
+        $dropMessage = [];
+        repo('item')->addToUser($user, $userDrop, function ($drop) use (&$dropMessage) {
             $dropMessage[] = [
                 'item_id'   => $drop['item_id'],
                 'npc_id'    => $drop['npc_id'],
@@ -139,42 +135,10 @@ class EndFightHandler
                 'name'      => repo('item')->getItemById($drop['item_id'])->name,
                 'count'     => $drop['count']
             ];
+        });
+
+        if (!empty($dropMessage)) {
+            $user->send(['drop' => $dropMessage]);
         }
-
-        $this->updateUserItemsByDrop($update);
-        $this->insertUserItemsByDrop($user->id, $insert);
-
-        $user->send(['drop' => $dropMessage]);
-        $user->loadItems();
-    }
-
-    private function updateUserItemsByDrop($update)
-    {
-        if (empty($update)) return;
-
-        $in = [];
-        $case = '';
-        foreach ($update as $userItemId => $count) {
-            $in[] = $userItemId;
-            $case .= "WHEN id = {$userItemId} THEN count + {$count} ";
-        }
-        $in = implode(',', $in);
-        $q = "UPDATE items SET count = CASE $case END WHERE id IN({$in})";
-        DB::query($q);
-    }
-
-    private function insertUserItemsByDrop($userId, $insert)
-    {
-        if (empty($insert)) return;
-
-        $inserStrings = [];
-        foreach ($insert as $itemId => $count) {
-            $inserStrings[] = [
-                'owner_id' => $userId,
-                'item_id' => $itemId,
-                'count' => $count,
-            ];
-        }
-        DB::table('items')->insert($inserStrings);
     }
 }

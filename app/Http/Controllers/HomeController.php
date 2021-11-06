@@ -85,11 +85,19 @@ class HomeController extends Controller
 
     public function testForm(Request $request)
     {
+
+        DB::table('user_quests')
+                  ->where('user_id', 1)
+                  ->andWhere('quest_id', 1)
+                  ->update(['completed' => 1]);
+
+
+
         // echo 1;
-        DB::table('tendencies')->insert([
-            ['name' => 'qwe', 'img' => 'img1'],
-            ['name' => 'qwe111', 'img' => 'img1111'],
-        ]);
+        // DB::table('tendencies')->insert([
+        //     ['name' => 'qwe', 'img' => 'img1'],
+        //     ['name' => 'qwe111', 'img' => 'img1111'],
+        // ]);
 
         // dd(DB::getAll('SELECT n.*, s.* FROM npc n LEFT JOIN spawnlist s ON n.id = s.npc_id'));
         // echo 1;

@@ -27,3 +27,7 @@ function send($fd, $message) {
 function isDrop($chance) {
     return mt_rand(0, 1000) < $chance;
 }
+
+function inc(&$arr, $index, $count) {
+    return $arr[$index] = ($arr[$index] ?? 0) + $count;
+}

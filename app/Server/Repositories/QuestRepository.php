@@ -6,6 +6,7 @@ use Homeleon\Support\Facades\DB;
 use Homeleon\Support\{Common, Obj};
 use App\Server\Application;
 use App\Server\Models\Quest\UserQuest;
+use App\Server\Models\User;
 
 class QuestRepository extends BaseRepository
 {
@@ -64,9 +65,8 @@ class QuestRepository extends BaseRepository
 
     public function showQuest($user, int $npcId, int $questId)
     {
-        [$npcQuests, $userQuests] = $this->showQuests($user, $npcId);
-
-        if (!$showQuest = $this->get($user, $npcQuests, $questId)) return;
+        if (!$quests = $this->getQuests($user, $npcId, $questId)) return;
+        [$npcQuests, $userQuests, $showQuest] = $quests;
 
         $showQuest = $this->resolveQuest($user, $showQuest, $userQuests, $questId);
     }
@@ -82,9 +82,9 @@ class QuestRepository extends BaseRepository
 
     public function answer($user, int $npcId, int $questId, $answerId)
     {
-        [$npcQuests, $userQuests] = $this->showQuests($user, $npcId);
+        if (!$quests = $this->getQuests($user, $npcId, $questId)) return;
+        [$npcQuests, $userQuests, $showQuest] = $quests;
 
-        if (!$showQuest = $this->get($user, $npcQuests, $questId)) return;
         $step = $userQuests[$questId]->step ?? 0;
         if (!$this->checkCorrectAnswer($showQuest, $answerId, $step)) return error($user->getFd(), 'Некорректный ответ');
 
@@ -116,12 +116,25 @@ class QuestRepository extends BaseRepository
         // $showQuest = $this->resolveQuest($user, $showQuest, $userQuests, $questId);
     }
 
-    private function resolveQuest($user, $showQuest, $userQuests, $questId)
+    /**
+     * Check step of user quest:
+     *     being done
+     *     has done
+     *     on step of dialog
+     *
+     * @param  User   $user
+     * @param  object $showQuest  current dialog quest
+     * @param  array  $userQuests
+     * @param  int    $questId
+     * @return void
+     */
+    private function resolveQuest(User $user, object $showQuest, array $userQuests, int $questId): void
     {
         if (isset($userQuests[$questId])) {
+            $action = '';
             // Quest had been taken, check if done
             if (!$userQuests[$questId]->step) {
-                $action = $this->checkDone($user, $showQuest->data['condition']['done']) ? 'done' : 'do';
+                $action = $this->checkDone($user, $showQuest) ? 'done' : 'do';
                 $showQuest->data = $showQuest->data[$action];
             } else {
                 $userQuestStep = $userQuests[$questId]->step;
@@ -134,14 +147,72 @@ class QuestRepository extends BaseRepository
             $showQuest->data = $showQuest->data['steps'][$userQuestStep];
         }
 
+        if (isset($showQuest->data['reward'])) {
+            $showQuest->data['reward'] = $this->rewardItems($showQuest->data['reward']);
+        }
+
         $user->send(['showQuest' => $showQuest]);
 
         // return $showQuest;
     }
 
+    private function getQuests($user, $npcId, $questId)
+    {
+        [$npcQuests, $userQuests] = $this->showQuests($user, $npcId);
+
+        if (!$showQuest = $this->get($user, $npcQuests, $questId)) return;
+
+        return [$npcQuests, $userQuests, $showQuest];
+    }
+
+    public function takeReward($user, $npcId, $questId)
+    {
+        if (!$quests = $this->getQuests($user, $npcId, $questId)) return;
+        [,,$showQuest] = $quests;
+
+        if (!$this->checkDone($user, $showQuest)) return;
+
+        $rewardMessage = [];
+        repo('item')->addToUser(
+            $user,
+            $showQuest->data['done']['reward'],
+            function ($drop) use (&$rewardMessage) {
+                $rewardMessage[] = [
+                    'item_id'   => $drop['id'],
+                    'name'      => repo('item')->getItemById($drop['id'])->name,
+                    'count'     => $drop['count']
+                ];
+            },
+            function () use ($user, $questId) {
+                DB::table('user_quests')
+                  ->where('user_id', $user->id)
+                  ->andWhere('quest_id', $questId)
+                  ->update(['completed' => 1]);
+            },
+            'id');
+
+        if (!empty($rewardMessage)) {
+            $user->send(['questReward' => $rewardMessage]);
+        }
+    }
+
     private function checkCorrectAnswer($showQuest, $answer, $step)
     {
         return isset($showQuest->data['steps'][$step]["answers"][$answer]);
+    }
+
+    private function rewardItems(array $rewards): array
+    {
+        // if (!isset($showQuest->data['reward'])) return [];
+
+        $rewardItems = [];
+        foreach ($rewards as $reward) {
+            $item = Common::propsOnly(repo('item')->getItemById($reward['id']), ['name', 'image'], true);
+            $item->count = $reward['count'] ?? 1;
+            $rewardItems[] = $item;
+        }
+
+        return $rewardItems;
     }
 
     private function get($user, $npcQuests, $questId)
@@ -154,20 +225,10 @@ class QuestRepository extends BaseRepository
         return clone($npcQuests[$questId]);
     }
 
-    private function checkDone($user, $condition)
+    private function checkDone($user, $showQuest)
     {
-        $userQuestItemsCount = 0;
-        foreach ($user->getItems() as $item) {
-            if ($item->item_id == $condition['id']) {
-                $userQuestItemsCount++;
-            }
-
-            if ($userQuestItemsCount >= $condition['count']) {
-                return true;
-            }
-        }
-
-        return false;
+        $cond = $showQuest->data['condition']['done'];
+        return $user->countOfItems($cond['id']) >= $cond['count'];
     }
 
     private function removeCompletedQuests($userQuests, $npcQuests)

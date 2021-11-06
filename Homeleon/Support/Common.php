@@ -46,6 +46,24 @@ class Common
         return $itemsOnKey;
     }
 
+    public static function itemsOnKeys2(array $items, array $keys, Closure $cb = null)
+    {
+        $itemsOnKey = [];
+
+        foreach ($items as $item) {
+            if ($cb) $cb($item);
+            foreach ($keys as $k => $key) {
+                if (is_int($k)) {
+                    $itemsOnKey[$key][$item->{$key}] = $item;
+                } else {
+                    $itemsOnKey[$k][$item->{$k}][] = $item;
+                }
+            }
+        }
+
+        return $itemsOnKey;
+    }
+
     public static function propsOnly(object $obj, array $keys, bool $likeObject = false): array|object
     {
         $resultArray = [];

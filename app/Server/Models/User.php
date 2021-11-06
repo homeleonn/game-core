@@ -23,7 +23,7 @@ class User extends Unit
     protected int $fd;
     protected ?int $exit = null;
     protected array $items = [];
-    protected array $itemsByItemId = [];
+    public array $itemsByItemId = [];
     public int $extra_min_damage = 0;
     public int $extra_max_damage = 0;
     private $needUpdateChars = ['power', 'critical', 'evasion', 'stamina', 'curhp', 'maxhp', 'min_damage', 'max_damage'];
@@ -77,14 +77,17 @@ class User extends Unit
         if (!$this->items) return;
 
         $app->send($this->getFd(),
-            ['getBackPack' => $this->items]
+            ['getBackPack' => array_values($this->items)]
         );
     }
 
     public function loadItems()
     {
-        if (!$this->items = Item::where('owner_id', $this->id)->by('id')->all() ?? []) return;
-        $this->itemsByItemId = Common::itemsOnKeys($this->items, ['item_id']);
+        if (!$items = Item::where('owner_id', $this->id)->all() ?? []) return;
+        $items = Common::itemsOnKeys2($items, ['id', 'item_id' => null]);
+        // dd($items);
+        $this->items = $items['id'];
+        $this->itemsByItemId = $items['item_id'];
 
         array_walk(
             $this->items,
@@ -97,9 +100,28 @@ class User extends Unit
         return $this->items;
     }
 
-    public function getItemByItemId($itemId)
+    public function getItemsByItemId($itemId)
     {
         return $this->itemsByItemId[$itemId] ?? null;
+    }
+
+    public function getItemByItemId($itemId)
+    {
+        return $this->itemsByItemId[$itemId][0] ?? null;
+    }
+
+    public function countOfItems(int $itemId): int
+    {
+        if (!isset($this->itemsByItemId[$itemId])) return 0;
+
+        return $this->itemsByItemId[$itemId][0]->stackable
+                    ? $this->itemsByItemId[$itemId][0]->count
+                    : count($this->itemsByItemId[$itemId]);
+    }
+
+    public function addItem($itemId, $count = 1)
+    {
+        repo('item')->addToUser($this->id, $itemId, $count, $userItems);
     }
 
     private function processingChars($item, $action)

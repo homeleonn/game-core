@@ -82,9 +82,9 @@ class QueryBuilder
                     ? "{$this->builder['table']} as {$this->builder['table_alias']}"
                     : "{$this->builder['table']}";
         $fields     = $this->prepareFields($this->builder['fields'] ?? ($fields ?: null));
-        $where      = $this->join($this->builder['where'] ?? null, ' WHERE ');
-        $andWhere   = $this->join($this->builder['and_where'] ?? null, ' AND ');
-        $orWhere    = $this->join($this->builder['or_where'] ?? null, ' OR ');
+        $where      = $this->join('where', ' WHERE ');
+        $andWhere   = $this->join('and_where', ' AND ');
+        $orWhere    = $this->join('or_where', ' OR ');
         $orderBy    = $this->prepareOrderBy($this->builder['order_by'] ?? null);
         $limit      = $this->builder['limit'] ?? '';
 
@@ -138,6 +138,19 @@ class QueryBuilder
         // dd($query);
     }
 
+    public function update(array $values)
+    {
+        $where      = $this->join('where', ' WHERE ');
+        $andWhere   = $this->join('and_where', ' AND ');
+        $orWhere    = $this->join('or_where', ' OR ');
+        $set        = substr($this->join($values, ', '), 1);
+        $q = "UPDATE {$this->builder['table']} SET
+                {$set}
+            {$where}{$andWhere}{$orWhere}";
+        // dd($q);
+        $this->connection->query($q);
+    }
+
     public function query(string $type)
     {
         $this->connection->setModel($this->model);
@@ -163,9 +176,10 @@ class QueryBuilder
         return $result;
     }
 
-    public function join($values, $sep = '', $equals = '=', $tableName = true): string
+    public function join($builderKey, $sep = '', $equals = '=', $tableName = true): string
     {
-        if (is_null($values)) return '';
+        $values = is_string($builderKey) ? ($this->builder[$builderKey] ?? null) : $builderKey;
+        if (!isset($values)) return '';
 
         $preparedValues = $this->escapeArr($values);
         $tableName = $tableName ? '`' . $this->getTableName() . '`.' : '';

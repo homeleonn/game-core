@@ -167,6 +167,10 @@ class Application {
         case 'questAnswer':
             $this->questRepo->answer($user, ...$payload);
         break;
+
+        case 'takeReward':
+            $this->questRepo->takeReward($user, ...$payload);
+        break;
         }
     }
 
