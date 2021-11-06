@@ -15,6 +15,7 @@ use App\Server\Repositories\{
     FightRepository,
     NpcRepository,
     QuestRepository,
+    DropRepository,
 };
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
@@ -35,6 +36,7 @@ class Application {
     public ItemRepository $itemRepo;
     public FightRepository $fightRepo;
     public QuestRepository $questRepo;
+    public DropRepository $dropRepo;
 
     public function __construct(WebSocketServer $server, Redis $storage)
     {
@@ -46,6 +48,7 @@ class Application {
         $this->fightRepo      = new FightRepository($this);
         $this->npcRepo        = new NpcRepository($this);
         $this->questRepo      = new QuestRepository($this);
+        $this->dropRepo       = new DropRepository($this);
     }
 
     public static function getInstance(WebSocketServer $server, Redis $storage)
@@ -238,7 +241,7 @@ class Application {
             'message' => [
                 'from' => $user->login,
                 'to' => null,
-                'text' => $text
+                'text' => htmlspecialchars(strip_tags($text))
             ]
         ]);
     }

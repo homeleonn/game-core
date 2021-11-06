@@ -119,6 +119,25 @@ class QueryBuilder
         return $this;
     }
 
+    public function insert(array $strings)
+    {
+        $fields = implode(', ', array_keys($strings[0]));
+
+        $values = [];
+        foreach ($strings as $string) {
+            $values[] = implode(', ', array_map(
+                fn ($value) => $this->connection->escapeString($value),
+                array_values($string)
+            ));
+        }
+        $values = implode('), (', $values);
+
+        $query = "INSERT INTO {$this->builder['table']} ({$fields}) VALUES ({$values})";
+        $this->connection->query($query);
+
+        // dd($query);
+    }
+
     public function query(string $type)
     {
         $this->connection->setModel($this->model);

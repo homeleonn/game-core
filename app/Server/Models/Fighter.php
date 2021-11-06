@@ -18,6 +18,7 @@ class Fighter
     public int $damage            = 0;
     public int $fightExp          = 0;
     public int $kills             = 0;
+    public array $kill            = [];
     public int $timeoutTicks      = 0;
     public array|null $swap       = [];
     private bool $delay           = false;
@@ -170,6 +171,7 @@ class Fighter
     {
         $fighter = $this->getEnemy();
         if ($fighter->curhp <= 0) {
+            $this->saveKill();
             $this->kills += 1;
             $fighter->kill();
 
@@ -177,6 +179,17 @@ class Fighter
         }
 
         return false;
+    }
+
+    private function saveKill()
+    {
+        $victim = $this->getEnemy();
+
+        if ($victim->isBot()) {
+            $this->kill['npc'][$victim->npc_id] = ($this->kill['npc'][$victim->npc_id] ?? 0) + 1;
+        } else {
+            $this->kill[$victimType]['human'][$victim->id] = null;
+        }
     }
 
     public function kill()

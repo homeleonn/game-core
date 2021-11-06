@@ -3,13 +3,21 @@
 namespace App\Server\Repositories;
 
 use Homeleon\Support\Facades\DB;
-use Homeleon\Support\Common;
+use Homeleon\Support\{Common, Obj};
 use App\Server\Application;
 use App\Server\Models\Quest\UserQuest;
 
 class QuestRepository extends BaseRepository
 {
     private array $quests;
+    // hard code list quest items for quests
+    // item id => quest ids
+    public array $questItems = [
+        29 => [
+            'quest_id' => 1,
+            'count' => 5
+        ],
+    ];
 
     public function __construct(Application $app)
     {
@@ -19,13 +27,24 @@ class QuestRepository extends BaseRepository
         $this->quests = Common::itemsOnKeys1($quests, ['id', 'npc_id'], fn ($quest) => $quest->data = json_decode($quest->data, true));
     }
 
+    public function isQuestItem($item_id)
+    {
+        return isset($this->questItems[$itemId]);
+    }
+
     private function showQuests($user, int $npcId)
     {
         if (!repo('loc')->checkChangeLoc($user->loc, $npcId) || !isset($this->quests['npc_id'][$npcId])) {
             return error($user->getFd(), 'Поговорить не удалось');
         }
 
-        $npcQuests = array_filter($this->quests['npc_id'][$npcId], fn ($quest) => $quest->level <= $user->level);
+        $npcQuests = array_map(
+            fn ($quest) => clone($quest),
+            array_filter(
+                $this->quests['npc_id'][$npcId],
+                fn ($quest) => $quest->level <= $user->level
+            )
+        );
         $npcQuests = Common::itemsOnKeys($npcQuests, ['id']);
         $userQuests = DB::getInd('quest_id',
             "SELECT u.* FROM user_quests u
@@ -35,7 +54,9 @@ class QuestRepository extends BaseRepository
                 q.npc_id = {$npcId} AND u.user_id = {$user->id}"
         );
 
-        if ($userQuests) $userQuests = array_map(fn ($quest) => new UserQuest((array)$quest));
+        if ($userQuests) {
+            $userQuests = array_map(fn ($quest) => new UserQuest((array)$quest), $userQuests);
+        }
         $npcQuests = $this->removeCompletedQuests($userQuests, $npcQuests);
 
         return [$npcQuests, $userQuests];
@@ -53,6 +74,7 @@ class QuestRepository extends BaseRepository
     public function talkToNpc($user, int $npcId)
     {
         [$npcQuests] = $this->showQuests($user, $npcId);
+        array_walk($npcQuests, function ($quest) { Obj::only($quest, ['name', 'id']); });
 
         send($user->getFd(), ['talkToNpc' => repo('loc')->get($npcId)]);
         send($user->getFd(), ['quests' => $npcQuests]);
@@ -66,20 +88,32 @@ class QuestRepository extends BaseRepository
         $step = $userQuests[$questId]->step ?? 0;
         if (!$this->checkCorrectAnswer($showQuest, $answerId, $step)) return error($user->getFd(), 'Некорректный ответ');
 
-        if ($step == 'abort') return;
+        if ($answerId == 'abort') {
+            if (isset($userQuests[$questId])) {
+                $userQuests[$questId]->delete();
+            }
+            $showQuest->data = $showQuest->data['steps'][$answerId];
+            return $user->send(['showQuest' => $showQuest]);
+        }
 
         if (!isset($userQuests[$questId])) {
             $userQuests[$questId] = new UserQuest();
             $userQuests[$questId]->user_id = $user->id;
             $userQuests[$questId]->quest_id = $questId;
-            $userQuests[$questId]->step = $step;
-        } else {
-            $userQuests[$questId]->step = $step;
+        }
+
+        // User has accepted the quest
+        if (!isset($showQuest->data['steps'][$answerId]['answers'])) {
+            $userQuests[$questId]->step = 0;
+        } else { // User has continued quest dialog
+            $userQuests[$questId]->step = $answerId;
         }
 
         $userQuests[$questId]->save();
+        $showQuest->data = $showQuest->data['steps'][$answerId];
+        $user->send(['showQuest' => $showQuest]);
 
-        $showQuest = $this->resolveQuest($user, $showQuest, $userQuests, $questId);
+        // $showQuest = $this->resolveQuest($user, $showQuest, $userQuests, $questId);
     }
 
     private function resolveQuest($user, $showQuest, $userQuests, $questId)

@@ -10,4 +10,13 @@ class Obj
             $obj1->{$key} = $value;
         }
     }
+
+    public static function only(object &$obj, array $only)
+    {
+        foreach ($obj as $key => $value) {
+            if (!in_array($key, $only)) {
+                unset($obj->{$key});
+            }
+        }
+    }
 }

@@ -9,6 +9,7 @@ use App\Server\Models\Fight\EndFightHandler;
 
 class Fight
 {
+    public string $name;
     public int $fightId;
     public array $fighters = [];
     public array $fightersById = [];
@@ -116,7 +117,6 @@ class Fight
     {
         // f - fighter
         foreach ($this->teams[$this->activeTeam] as $f) {
-            // echo ($f->getTimeTurnLeft() ?? null);
             if (!$f->swap || $f->getTimeTurnLeft() > 1) continue;
 
             $passFighter = $f->isHitter() ? $f : $f->getEnemy();
@@ -141,7 +141,7 @@ class Fight
 
     private function monsterDamageTime()
     {
-        return time() + mt_rand(2, 5);
+        return time() + mt_rand(2, 4);
         // return time() + 3;
     }
 

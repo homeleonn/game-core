@@ -13,7 +13,7 @@ class Unit extends AppModel
 
         if ($this instanceof (User::class)) {
             try {
-                $this->loadItems(\App::make('game'));
+                $this->loadItems();
             } catch (Exception $e) {}
         } else if ($this instanceof (Npc::class)) {
             $this->login = $this->name;

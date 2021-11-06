@@ -23,3 +23,7 @@ function send($fd, $message) {
     $app->send($fd, $message);
 }
 
+
+function isDrop($chance) {
+    return mt_rand(0, 1000) < $chance;
+}

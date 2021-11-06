@@ -17,11 +17,16 @@ class FightRepository extends BaseRepository
             $fight = $this->fights[$fighterProto2->fight];
             $fight->addFighter($fighterProto1, 0);
 
+            if (!$fighterProto1->isBot()) {
+                $fighterProto1->send(['message' => "<b>Вы присоединились к бою \"{$fight->name}\"</b>"]);
+            }
+
             return false;
         }
 
 
         $fight = new Fight($this->fightId, $this->app, new EndFightHandler);
+        $fight->name = "Нападение на {$fighterProto2->login}";
         $this->fights[$this->fightId] = $fight;
 
         // $fighterProto1->curhp = $fighterProto1->maxhp = 200;
@@ -30,6 +35,11 @@ class FightRepository extends BaseRepository
         // $fighterProto2->curhp = 1;
         $fight->setPairs();
         $this->fightId++;
+
+        foreach ([$fighterProto1, $fighterProto2] as $f) {
+            if ($f->isBot()) continue;
+            $f->send(['message' => "<b>Ваш бой \"{$fight->name}\" начался.</b>"]);
+        }
 
         return true;
     }

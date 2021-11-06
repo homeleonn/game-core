@@ -23,6 +23,7 @@ class User extends Unit
     protected int $fd;
     protected ?int $exit = null;
     protected array $items = [];
+    protected array $itemsByItemId = [];
     public int $extra_min_damage = 0;
     public int $extra_max_damage = 0;
     private $needUpdateChars = ['power', 'critical', 'evasion', 'stamina', 'curhp', 'maxhp', 'min_damage', 'max_damage'];
@@ -80,18 +81,25 @@ class User extends Unit
         );
     }
 
-    protected function loadItems($app)
+    public function loadItems()
     {
-        $this->items = Item::where('owner_id', $this->id)->by('id')->all() ?? [];
+        if (!$this->items = Item::where('owner_id', $this->id)->by('id')->all() ?? []) return;
+        $this->itemsByItemId = Common::itemsOnKeys($this->items, ['item_id']);
+
         array_walk(
             $this->items,
-            fn ($item) => $item->setAttrs((array)$app->itemRepo->getItemById($item->item_id))
+            fn ($item) => $item->setAttrs((array)repo('item')->getItemById($item->item_id))
         );
     }
 
     public function getItems()
     {
         return $this->items;
+    }
+
+    public function getItemByItemId($itemId)
+    {
+        return $this->itemsByItemId[$itemId] ?? null;
     }
 
     private function processingChars($item, $action)
@@ -171,7 +179,7 @@ class User extends Unit
     public function sendChars($app, $chars)
     {
         $this->restore();
-        d($chars);
+
         $app->send($this->fd, ['me' => Common::propsOnly($this, $chars)]);
     }
 
