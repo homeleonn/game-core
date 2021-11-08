@@ -210,10 +210,13 @@ class MySQL
 	{
 		$start = microtime(true);
 		$res   = mysqli_query($this->conn, $query);
+        // $res   = 1;
+        $timer = (microtime(true) - $start);
+        $this->debug("$query:$timer\n");
     	$this->stats[] = [
 			'query' => $query,
 			'start' => $start,
-            'timer' => (microtime(true) - $start),
+            'timer' => $timer,
 		];
 		if (!$res) {
 			$error = mysqli_error($this->conn);
@@ -224,6 +227,28 @@ class MySQL
 
 		return $res;
 	}
+
+    private function debug($string)
+    {
+        if (isProd()) return;
+
+        $startBack  = 7;
+        $end        = 3;
+        $length     = $startBack - $end;
+        $dbg        = debug_backtrace();
+        $trc        = [];
+        while ($length--) {
+            if (!isset($dbg[$startBack]['file'])) {
+                $startBack--;
+                continue;
+            }
+            $trc[] = $dbg[$startBack]['file'].':'.$dbg[$startBack]['line'];
+            $startBack--;
+        }
+        // $dbg = debug_backtrace()[4];
+        d($trc, $string);
+        // echo ($string);
+    }
 
     public function prepareQuery($args)
 	{

@@ -83,7 +83,7 @@ class Model
 
         $this->fillOriginalValues($insert);
         $id         = $this->getId();
-        $isExists   = $id ? static::count()->where($this->primaryKey, $id)->first() : false;
+        $isExists   = $id ? DB::table($this->table)->count()->where($this->primaryKey, $id)->first() : false;
 
         if ($isExists) {
             $set = $this->prepareSet($insert);

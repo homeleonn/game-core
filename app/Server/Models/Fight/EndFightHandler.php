@@ -127,7 +127,7 @@ class EndFightHandler
     private function sendDropToUser(User $user, array $userDrop)
     {
         $dropMessage = [];
-        repo('item')->addToUser($user, $userDrop, function ($drop) use (&$dropMessage) {
+        repo('item')->exchangeWithUser($user, $userDrop, function ($drop) use (&$dropMessage) {
             $dropMessage[] = [
                 'item_id'   => $drop['item_id'],
                 'npc_id'    => $drop['npc_id'],

@@ -31,3 +31,6 @@ function isDrop($chance) {
 function inc(&$arr, $index, $count) {
     return $arr[$index] = ($arr[$index] ?? 0) + $count;
 }
+function dec(&$arr, $index, $count) {
+    return $arr[$index] = ($arr[$index] ?? 0) - $count;
+}

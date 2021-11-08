@@ -11,10 +11,28 @@ function dd(...$args) {
     exit;
 }
 
-function vd(){
+function vd(...$args) {
     $trace = debug_backtrace()[1];
-    echo '<small style="color: green;"><pre>',$trace['file'],':',$trace['line'],':</pre></small><pre>';
-    call_user_func_array('var_dump', func_get_args());
+    $file = explode('\\', $trace['file']);
+    $fileLine = end($file) . ':' . $trace['line'];
+    if (isCli()) {
+        echo "{$fileLine}\n";
+    } else {
+        echo '<small style="color: green;"><pre>',$fileLine,':</pre></small><pre>';
+    }
+    call_user_func_array('print_r', $args);
+}
+
+function isCli() {
+    return (php_sapi_name() === 'cli');
+}
+
+function isProd() {
+    return Config::get('env') === 'prod';
+}
+
+function isDev() {
+    return Config::get('env') === 'dev';
 }
 
 function s($name = null, $value = false) {

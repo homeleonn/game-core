@@ -86,12 +86,18 @@ class HomeController extends Controller
     public function testForm(Request $request)
     {
 
-        DB::table('user_quests')
-                  ->where('user_id', 1)
-                  ->andWhere('quest_id', 1)
-                  ->update(['completed' => 1]);
+        // DB::table('user_quests')
+        //           ->where('user_id', 1)
+        //           ->andWhere('quest_id', 1)
+        //           ->update(['completed' => 1]);
 
-
+        // dd(DB::table('items')->whereIn('item_id', [1,2,3])->delete());
+        // dd(DB::table('users')->count()->first());
+            // dd(DB::table('quests')
+            //   ->where('npc_id', 6)
+            //   ->whereIn('level', [1,2,3])
+            //   ->limit(33)
+            //   ->all());
 
         // echo 1;
         // DB::table('tendencies')->insert([

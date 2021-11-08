@@ -11,7 +11,7 @@ class Unit extends AppModel
     {
         parent::__construct($attr);
 
-        if ($this instanceof (User::class)) {
+        if ($this instanceof (User::class) && isset($this->id)) {
             try {
                 $this->loadItems();
             } catch (Exception $e) {}
@@ -19,7 +19,7 @@ class Unit extends AppModel
             $this->login = $this->name;
         }
 
-        $this->calculateFullDamage();
+        if (isset($this->id)) $this->calculateFullDamage();
     }
 
     protected function calculateFullDamage()

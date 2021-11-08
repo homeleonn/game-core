@@ -55,6 +55,13 @@ class QueryBuilder
         return $this;
     }
 
+    public function whereIn(string $field, array $values)
+    {
+        $this->builder['where_in'][$field] = $values;
+
+        return $this;
+    }
+
     public function orderBy($field, $order = 'ASC'): self
     {
         $this->builder['order_by'][$field] = $order;
@@ -64,9 +71,9 @@ class QueryBuilder
 
     public function limit($offset, $count = null): self
     {
-       $this->builder['limit'] = " LIMIT {$offset}" . ($count ? ", {$count}" : '');
+        $this->builder['limit'] = " LIMIT {$offset}" . ($count ? ", {$count}" : '');
 
-       return $this;
+        return $this;
     }
 
     public function select(...$fields): self
@@ -82,15 +89,16 @@ class QueryBuilder
                     ? "{$this->builder['table']} as {$this->builder['table_alias']}"
                     : "{$this->builder['table']}";
         $fields     = $this->prepareFields($this->builder['fields'] ?? ($fields ?: null));
-        $where      = $this->join('where', ' WHERE ');
-        $andWhere   = $this->join('and_where', ' AND ');
-        $orWhere    = $this->join('or_where', ' OR ');
-        $orderBy    = $this->prepareOrderBy($this->builder['order_by'] ?? null);
-        $limit      = $this->builder['limit'] ?? '';
+        $where      = $this->prepareConditions();
 
-        $this->result = "SELECT {$fields} FROM {$table}{$where}{$andWhere}{$orWhere}{$orderBy}{$limit}";
+        $this->result = "SELECT {$fields} FROM {$table}{$where}";
 
         return $this->result;
+    }
+
+    private function getLimit()
+    {
+        return $this->builder['limit'] ?? '';
     }
 
     public function first()
@@ -140,15 +148,44 @@ class QueryBuilder
 
     public function update(array $values)
     {
-        $where      = $this->join('where', ' WHERE ');
-        $andWhere   = $this->join('and_where', ' AND ');
-        $orWhere    = $this->join('or_where', ' OR ');
-        $set        = substr($this->join($values, ', '), 1);
-        $q = "UPDATE {$this->builder['table']} SET
+        $where = $this->prepareConditions();
+        $set  = substr($this->join($values, ', '), 1);
+        $q    = "UPDATE {$this->builder['table']} SET
                 {$set}
-            {$where}{$andWhere}{$orWhere}";
+            $where";
         // dd($q);
         $this->connection->query($q);
+    }
+
+    public function delete()
+    {
+        $where = $this->prepareConditions();
+        $q = "DELETE FROM {$this->builder['table']}{$where}";
+        $this->connection->query($q);
+    }
+
+    private function prepareConditions(): string
+    {
+        return $this->join('where', ' WHERE ')
+             . $this->join('and_where', ' AND ')
+             . $this->join('or_where', ' OR ')
+             . $this->in()
+             . $this->prepareOrderBy($this->builder['order_by'] ?? null)
+             . $this->getLimit();
+    }
+
+    private function in()
+    {
+        if (!isset($this->builder['where_in'])) return '';
+
+        $where = isset($this->builder['where']) ? ' AND ' : ' WHERE ';
+        $s = '';
+        foreach ($this->builder['where_in'] as $field => $values) {
+            $values = implode(', ', $this->escapeArr($values));
+            $s .= "{$where}{$field} IN({$values})";
+        }
+
+        return $s;
     }
 
     public function query(string $type)

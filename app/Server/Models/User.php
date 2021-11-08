@@ -3,7 +3,7 @@
 namespace App\Server\Models;
 
 use Redis;
-use Homeleon\Support\Common;
+use Homeleon\Support\{Common, Obj};
 use Homeleon\Support\Facades\DB;
 use Exception;
 
@@ -89,10 +89,14 @@ class User extends Unit
         $this->items = $items['id'];
         $this->itemsByItemId = $items['item_id'];
 
-        array_walk(
-            $this->items,
-            fn ($item) => $item->setAttrs((array)repo('item')->getItemById($item->item_id))
-        );
+        foreach ($this->items as $key => $item) {
+            if ($item->count <= 0) {
+                unset($this->items[$key]);
+                $item->delete();
+                continue;
+            }
+            $item->setAttrs((array)repo('item')->getItemById($item->item_id));
+        }
     }
 
     public function getItems()
@@ -119,9 +123,19 @@ class User extends Unit
                     : count($this->itemsByItemId[$itemId]);
     }
 
-    public function addItem($itemId, $count = 1)
+    public function getQuests()
     {
-        repo('item')->addToUser($this->id, $itemId, $count, $userItems);
+        $userQuests = DB::getAll("SELECT quest_id, completed FROM user_quests WHERE user_id = {$this->id} AND step = 0");
+        array_walk(
+            $userQuests,
+            function ($q) {
+                Obj::merge($q, Common::propsOnly((object)repo('quest')->getById($q->quest_id), ['name', 'data'], true));
+                $q->data = $q->data['description'];
+            }
+        );
+        $this->send([
+            'getQuests' => $userQuests
+        ]);
     }
 
     private function processingChars($item, $action)

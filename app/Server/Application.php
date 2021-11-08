@@ -171,6 +171,10 @@ class Application {
         case 'takeReward':
             $this->questRepo->takeReward($user, ...$payload);
         break;
+
+        case 'getQuests':
+            $user->getQuests();
+        break;
         }
     }
 

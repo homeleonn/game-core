@@ -14,9 +14,15 @@ class QuestRepository extends BaseRepository
     // hard code list quest items for quests
     // item id => quest ids
     public array $questItems = [
-        29 => [
-            'quest_id' => 1,
-            'count' => 5
+        29 => 1,
+    ];
+    public array $questItemsByQuestId = [
+        1 => [
+            29 => [
+                'quest_id' => 1,
+                'item_id' => 29,
+                'count' => 5
+            ],
         ],
     ];
 
@@ -24,8 +30,21 @@ class QuestRepository extends BaseRepository
     {
         parent::__construct($app);
 
+        $this->fillQuestItemsConditions();
         $quests = DB::getAll('SELECT * from quests');
         $this->quests = Common::itemsOnKeys1($quests, ['id', 'npc_id'], fn ($quest) => $quest->data = json_decode($quest->data, true));
+    }
+
+    public function getById($id)
+    {
+        return $this->quests['id'][$id][0] ?? null;
+    }
+
+    public function fillQuestItemsConditions()
+    {
+        foreach ($this->questItems as $itemId => $questId) {
+            $this->questItems[$itemId] = $this->questItemsByQuestId[$questId][$itemId];
+        }
     }
 
     public function isQuestItem($item_id)
@@ -173,14 +192,14 @@ class QuestRepository extends BaseRepository
         if (!$this->checkDone($user, $showQuest)) return;
 
         $rewardMessage = [];
-        repo('item')->addToUser(
+        repo('item')->exchangeWithUser(
             $user,
             $showQuest->data['done']['reward'],
-            function ($drop) use (&$rewardMessage) {
+            function ($rewardItem) use (&$rewardMessage) {
                 $rewardMessage[] = [
-                    'item_id'   => $drop['id'],
-                    'name'      => repo('item')->getItemById($drop['id'])->name,
-                    'count'     => $drop['count']
+                    'item_id'   => $rewardItem['id'],
+                    'name'      => repo('item')->getItemById($rewardItem['id'])->name,
+                    'count'     => $rewardItem['count']
                 ];
             },
             function () use ($user, $questId) {
@@ -188,6 +207,13 @@ class QuestRepository extends BaseRepository
                   ->where('user_id', $user->id)
                   ->andWhere('quest_id', $questId)
                   ->update(['completed' => 1]);
+
+                repo('item')->exchangeWithUser(
+                    $user,
+                    $this->getNeededQuestItemsByQuestId($questId),
+                    isAdd: false,
+                    needTransaction: false
+                );
             },
             'id');
 
@@ -227,8 +253,21 @@ class QuestRepository extends BaseRepository
 
     private function checkDone($user, $showQuest)
     {
-        $cond = $showQuest->data['condition']['done'];
-        return $user->countOfItems($cond['id']) >= $cond['count'];
+        $neededItems = $this->getNeededQuestItemsByQuestId($showQuest->id);
+        $isDone = true;
+        foreach ($neededItems as $item) {
+            if ($user->countOfItems($item['item_id']) < $item['count']) {
+                $isDone = false;
+                break;
+            }
+        }
+
+        return $isDone;
+    }
+
+    public function getNeededQuestItemsByQuestId($questId)
+    {
+        return $this->questItemsByQuestId[$questId];
     }
 
     private function removeCompletedQuests($userQuests, $npcQuests)

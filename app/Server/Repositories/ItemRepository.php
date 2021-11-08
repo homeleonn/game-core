@@ -39,38 +39,58 @@ class ItemRepository extends BaseRepository
         return $this->items[$itemId] ?? null;
     }
 
-    public function addToUser(
-        User $user,
-        array $items,
-        Closure $cbEach = null,
-        Closure $cbCommit = null,
-        string $itemIdAlias = 'item_id'
+    public function isStackable($itemId)
+    {
+        return $this->has($itemId) && $this->getItemById($itemId)->stackable;
+    }
+
+    public function has($itemId)
+    {
+        return isset($this->items[$itemId]);
+    }
+
+    public function exchangeWithUser(
+        User    $user,
+        array   $items,
+        Closure $cbEach          = null,
+        Closure $cbCommit        = null,
+        string  $itemIdAlias     = 'item_id',
+        bool    $isAdd           = true,
+        bool    $needTransaction = true,
     ): void
     {
         if (empty($items)) return;
 
-        $update = $insert = [];
+        $update = $insert = $delete = [];
+        if ($isAdd) {
+            $dbAction = 'insert';
+            $countAction = 'inc';
+        } else {
+            $dbAction = 'delete';
+            $countAction = 'dec';
+        }
         foreach ($items as $item) {
             // If exists stackable item then update count else insert new item
             $userItem = $user->getItemByItemId($item[$itemIdAlias]);
             $action = $userItem && $userItem->stackable
                     ? 'update'
-                    : 'insert';
-            inc($$action, $item[$itemIdAlias], $item['count']);
+                    : $dbAction;
+            $countAction($$action, $item[$itemIdAlias], $item['count']);
             if ($cbEach) $cbEach($item);
         }
 
-        dd($update, $insert);
-        DB::beginTransaction();
-        $this->updateUserItemsByDrop($update);
-        $this->insertUserItemsByDrop($user->id, $insert);
+        // dd($update, $insert);
+        if ($needTransaction) DB::beginTransaction();
+        $this->updateUserItems($user->id, $update);
+        $this->insertUserItems($user->id, $insert);
+        $this->deleteUserItems($user->id, $delete);
         if ($cbCommit) $cbCommit();
-        DB::commit();
+        if ($needTransaction) DB::commit();
 
         $user->loadItems();
     }
 
-    private function updateUserItemsByDrop($update)
+    private function updateUserItems($userId, $update)
     {
         if (empty($update)) return;
 
@@ -78,14 +98,14 @@ class ItemRepository extends BaseRepository
         $case = '';
         foreach ($update as $userItemId => $count) {
             $in[] = $userItemId;
-            $case .= "WHEN id = {$userItemId} THEN count + {$count} ";
+            $case .= "WHEN item_id = {$userItemId} THEN count + {$count} ";
         }
         $in = implode(',', $in);
-        $q = "UPDATE items SET count = CASE $case END WHERE id IN({$in})";
+        $q = "UPDATE items SET count = CASE $case END WHERE owner_id = {$userId} AND item_id IN({$in})";
         DB::query($q);
     }
 
-    private function insertUserItemsByDrop($userId, $insert)
+    private function insertUserItems($userId, $insert)
     {
         if (empty($insert)) return;
 
@@ -98,5 +118,16 @@ class ItemRepository extends BaseRepository
             ];
         }
         DB::table('items')->insert($inserStrings);
+    }
+
+    private function deleteUserItems($userId, $delete)
+    {
+        foreach ($delete as $itemId => $count) {
+            DB::table('items')
+              ->where('owner_id', $userId)
+              ->andWhere('item_id', $itemId)
+              ->limit($count)
+              ->delete();
+        }
     }
 }
