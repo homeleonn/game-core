@@ -86,7 +86,7 @@ class NpcRepository extends BaseRepository
             if ($spawn->respawn_time > $time) continue;
             $spawnedNpc = $this->spawn($spawn);
             $this->app->sendToLoc($spawn->loc_id, ['spawnMonster' => Common::propsOnly($spawnedNpc, $this->publicProps)]);
-            unset($this->respawn);
+            unset($this->respawn[$key]);
         }
     }
 }

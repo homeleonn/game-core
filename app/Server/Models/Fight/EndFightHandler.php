@@ -66,9 +66,9 @@ class EndFightHandler
         $userQuests = $this->getUserQuests($this->fighter->id);
         $userItems = $this->fighter->user->itemsByItemId;
 
+        $userDrop = [];
         foreach ($this->fighter->kill['npc'] as $npcId => $count) {
-            $npcDrop = repo('drop')->getByNpc($npcId);
-            $userDrop = [];
+            if (!$npcDrop = repo('drop')->getByNpc($npcId)) continue;
 
             while ($count--) {
                 foreach ($npcDrop as $drop) {
@@ -86,7 +86,7 @@ class EndFightHandler
             }
         }
 
-        $this->sendDropToUser($this->fighter->user, $userDrop);
+        if ($userDrop) $this->sendDropToUser($this->fighter->user, $userDrop);
     }
 
     private function getUserQuests($userId)

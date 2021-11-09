@@ -21,7 +21,7 @@ class DropRepository extends BaseRepository
 
     public function getByNpc($npcId)
     {
-        return $this->drops['npc_id'][$npcId];
+        return $this->drops['npc_id'][$npcId] ?? null;
     }
 
     public function getByItemId($itemId)

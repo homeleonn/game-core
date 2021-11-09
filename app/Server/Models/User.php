@@ -78,6 +78,7 @@ class User extends Unit
 
         $app->send($this->getFd(),
             ['getBackPack' => array_values($this->items)]
+            // ['getBackPack' => $this->items]
         );
     }
 
