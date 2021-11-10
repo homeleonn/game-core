@@ -19,4 +19,4 @@ require routes('web.php');
 
 $app->run();
 
-d($app->db->getStats());
+// d($app->db->getStats());

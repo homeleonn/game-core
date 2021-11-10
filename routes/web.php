@@ -20,6 +20,7 @@ Route::group(['middleware' => 'guest'], function () {
     Route::post('login', [HomeController::class, 'login'])->name('login');
     Route::get('test', [HomeController::class, 'testForm']);
     Route::post('test', [HomeController::class, 'test']);
+    Route::get('registration', [HomeController::class, 'registrationform']);
     Route::post('registration', [HomeController::class, 'registration']);
 });
 

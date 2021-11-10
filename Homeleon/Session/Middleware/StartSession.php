@@ -33,6 +33,7 @@ class StartSession implements MiddlewareInterface
         if ($sessionStart) {
             Session::del('_flash');
             Session::del('_errors');
+            Session::del('_old');
         }
 
         return $response;

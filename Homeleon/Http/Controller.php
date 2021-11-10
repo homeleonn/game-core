@@ -17,7 +17,8 @@ class Controller
     {
         if (!empty($errors = $this->validator->validate($data, $rules))) {
             $this->session->set('_errors', $errors);
-            exit($this->response->redirect()->back()->getContent());
+            $this->session->set('_old', \Request::all());
+            $this->response->redirect()->back()->getContent();
         }
 
         return true;

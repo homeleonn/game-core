@@ -23,6 +23,7 @@ class Validator
     {
         // d($data, $rules);
         $isValid = true;
+        global $errors;
         $errors = [];
 
         foreach ($rules as $dataKey => $ruleString) {
@@ -58,6 +59,12 @@ class Validator
         }
 
         return [$rule, $values];
+    }
+
+
+    protected function emailRule(&$data, $key): bool
+    {
+        return !filter_var($data[$key], FILTER_VALIDATE_EMAIL);
     }
 
     protected function requiredRule(&$data, $key): bool

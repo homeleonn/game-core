@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-use App\Server\AppModel;
+use Homeleon\Support\Facades\DB;
 
 class User extends AppModel
 {
+    public static function create()
+    {
+
+    }
 }

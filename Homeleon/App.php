@@ -150,7 +150,15 @@ class App
 
         $className = \Homeleon\Http\Response::class;
 
-        echo $response instanceof $className ? $response->getContent() : $response;
+        if ($response instanceof $className) {
+            if ($response->isRedirect()) {
+                $response->setRedirect();
+            } else {
+                echo $response->getContent();
+            }
+        } else {
+            echo $response;
+        }
     }
 
     public function __get($key)

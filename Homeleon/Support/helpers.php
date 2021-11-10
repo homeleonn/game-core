@@ -50,6 +50,14 @@ function s($name = null, $value = false) {
     return $session->get($name);
 }
 
+function old($field) {
+    return s('_old')[$field] ?? null;
+}
+
+function flash($field) {
+    return s('_flash')[$field] ?? null;
+}
+
 function csrf_token() {
     Session::set('_token', Config::get('csrf_token'));
     return s('_token');
@@ -75,6 +83,7 @@ function view(string $view, array $args = []) {
 }
 
 function viewBuffer($viewPath, $args) {
+    global $errors;
     extract($args);
     ob_start();
     include $viewPath;

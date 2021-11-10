@@ -28,7 +28,7 @@
                     <a href="#">Забыли пароль?</a>
                 </div>
             </div>
-            <div><a href="registration.html" class="btn">Регистрация</a></div>
+            <div><a href="registration" class="btn">Регистрация</a></div>
         </form>
         <div class="progressbar-circle2-wrapper">
             <defs>

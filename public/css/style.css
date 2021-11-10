@@ -138,14 +138,14 @@ a.btn:active {
 }
 
 .progressbar-circle2 > circle.first {
-    stroke-dasharray: 20 1000; 
+    stroke-dasharray: 20 1000;
 
 }
 
 .progressbar-circle2 > circle.second {
-    transform: rotate(-80deg);  
+    transform: rotate(-80deg);
     stroke-linecap: round;
-    stroke-dasharray: 20 1000; 
+    stroke-dasharray: 20 1000;
 }
 
 .progressbar-circle2-wrapper .serverName {
@@ -168,26 +168,26 @@ a.btn:active {
 
 
 @keyframes load {
-    0% {  
+    0% {
         stroke-dasharray: 0 1000;
         transform: rotate(0deg);
     }
-    50% { 
-        stroke-dasharray: 600 1000; 
+    50% {
+        stroke-dasharray: 600 1000;
         transform: rotate(360deg);
     }
-    100% { 
-        stroke-dasharray: 0 1000; 
+    100% {
+        stroke-dasharray: 0 1000;
         transform: rotate(720deg);
     }
 }
 
 @keyframes workload {
-     from {  
-        stroke-dasharray: 20 1000; 
+     from {
+        stroke-dasharray: 20 1000;
     }
-     to { 
-        stroke-dasharray: 400 1000; 
+     to {
+        stroke-dasharray: 400 1000;
     }
 }
 main {

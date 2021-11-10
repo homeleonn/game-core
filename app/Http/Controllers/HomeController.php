@@ -62,18 +62,24 @@ class HomeController extends Controller
     //     return view('test');
     // }
 
+    public function registrationForm()
+    {
+        return view('registration');
+    }
+
     public function registration(Request $request)
     {
         $this->validate($request->all(), [
-            '_token' => 'required|minlen:20',
-            'age' => 'required|integer',
+            'email' => 'required|email',
+            'login' => 'required|minlen:3',
+            'password' => 'required|minlen:6',
         ]);
-        // $request->validate([
-        //     '_token' => 'required|minlen:20',
-        //     'age' => 'required|integer',
-        // ]);
-        // d($request->all());
-        // echo 22;
+
+        if (DB::table('users')->where('email', $request->get('email'))->first()) {
+            return redirect()->back()->with('error', 'Данный email уже занят');
+        }
+
+        dd($request->all());
     }
 
     public function test(Request $request)
