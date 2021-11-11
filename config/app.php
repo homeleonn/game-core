@@ -32,6 +32,7 @@ $app['providers'] = array_merge($app['providers'], [
     Homeleon\Http\HttpServiceProvider::class,
     Homeleon\Auth\AuthServiceProvider::class,
     Homeleon\Router\RouterServiceProvider::class,
+    Homeleon\Captcha\CaptchaServiceProvider::class,
     App\Http\Providers\RouteServiceProvider::class,
     App\Http\Providers\AppServiceProvider::class,
 ]);

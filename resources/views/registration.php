@@ -12,8 +12,6 @@
     <?php if (!empty($errors)): foreach ($errors as $e): ?>
     <div class="errors"><?=$e?></div>
     <?php endforeach; endif; ?>
-    <?=d(s());?>
-    <?=(flash('error') ?? '')?>
     <form class="form" method="post" action="registration">
         <?=csrf_field()?>
         <table>
@@ -30,8 +28,13 @@
                 <td><input type="password" name="password"></td>
             </tr>
             <tr>
+                <td><img src="/captcha" alt=""></td>
+                <td><input type="text" name="captcha" placeholder="type the captcha..."></td>
+            </tr>
+            <tr>
                 <td colspan="2">
-            <button>Зарегистрироваться</button></td>
+                    <button>Зарегистрироваться</button>
+                </td>
             </tr>
         </table>
         <div></div>

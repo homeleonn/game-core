@@ -62,6 +62,11 @@ class HomeController extends Controller
     //     return view('test');
     // }
 
+    public function getCaptcha()
+    {
+        \App::make(\Homeleon\Captcha\Captcha::class)->set();
+    }
+
     public function registrationForm()
     {
         return view('registration');
