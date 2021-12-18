@@ -17,7 +17,7 @@ class HomeController extends Controller
 
     public function main()
     {
-        return view('main');
+        return view('game');
     }
 
     public function wsToken(Request $request)

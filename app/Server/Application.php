@@ -207,10 +207,12 @@ class Application {
 
     public function removeFromApp($fd, $user = null)
     {
-        if ($user || $user = $this->userRepo->findByFd($fd)) {
-            $this->userRepo->remove($user);
-            $this->locRepo->removeUser($user);
-        }
+        try {
+            if ($user || $user = $this->userRepo->findByFd($fd)) {
+                $this->userRepo->remove($user);
+                $this->locRepo->removeUser($user);
+            }
+        } catch (\Exception) {}
     }
 
     public function disconnectUndefinedUser($userFd)

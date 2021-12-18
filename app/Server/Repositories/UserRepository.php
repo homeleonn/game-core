@@ -36,6 +36,8 @@ class UserRepository extends BaseRepository
 
         $this->app->disconnectUndefinedUser($fd);
         // $this->app->removeFromApp($fd);
+
+        throw new \Exception('User not found');
     }
 
     public function findById(int $id)
@@ -145,9 +147,13 @@ class UserRepository extends BaseRepository
 
     public function markExit($fd)
     {
-        $user = $this->findByFd($fd);
-        $this->marked[$user->id] = $fd;
-        $user->markExit();
+        try {
+            $user = $this->findByFd($fd);
+            $this->marked[$user->id] = $fd;
+            $user->markExit();
+        } catch (\Exception $e) {
+            print_r($fd);
+        }
     }
 
     public function clearExited()

@@ -54,7 +54,6 @@ class Response
     public function back(): self
     {
         $back = Session::get('_previous')['url'] ?? request()->getUri();
-        $this->isRedirect = $back;
         $this->setRedirect($back);
 
         return $this;
@@ -67,10 +66,10 @@ class Response
         return $this;
     }
 
-    public function setRedirect(): void
+    public function setRedirect($url = null): void
     {
 
-        header('Location: ' . $this->isRedirect);
+        header('Location: ' . ($url ?? $this->isRedirect));
 //         $this->setContent('<!DOCTYPE html>
 // <html lang="en">
 // <head>

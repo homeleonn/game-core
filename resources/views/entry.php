@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="css/bootstrap-grid.min.css">
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" href="login_/css/bootstrap-grid.min.css">
+    <link rel="stylesheet" type="text/css" href="login_/css/style.css">
 </head>
 <body>
     <header></header>
@@ -25,10 +25,10 @@
                     <input type="checkbox" id="remember_me" name="remember_me">
                 </div>
                 <div class="col-md-6">
-                    <a href="#">Забыли пароль?</a>
+                    <a href="login_/#">Забыли пароль?</a>
                 </div>
             </div>
-            <div><a href="registration" class="btn">Регистрация</a></div>
+            <div><a href="login_/registration" class="btn">Регистрация</a></div>
         </form>
         <div class="progressbar-circle2-wrapper">
             <defs>
@@ -47,9 +47,9 @@
     </main>
     <footer></footer>
 
-    <script src="js/common.js"></script>
+    <script src="login_/js/common.js"></script>
     <!-- <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'></script> -->
     <script>let $ = _;</script>
-    <script src="js/index.js"></script>
+    <script src="login_/js/index.js"></script>
 </body>
 </html>
