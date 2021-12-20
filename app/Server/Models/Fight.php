@@ -166,8 +166,10 @@ class Fight
         foreach ($this->teams as $idx => $team) {
             $isWinner = $idx == $this->winTeam;
             foreach ($team as $fighter) {
+                $additionExp = $isWinner ? $fighter->damage * 2 : 0;
+                $fighter->exp += $additionExp;
                 $teamsStatisticts[$idx][$fighter->fId] = Common::propsOnly($fighter, $needProps);
-                $teamsStatisticts[$idx][$fighter->fId]['fightExp'] = $isWinner ? $fighter->damage * 2 : 0;
+                $teamsStatisticts[$idx][$fighter->fId]['fightExp'] = $additionExp;
 
                 $this->endFightHandler->processFighter($fighter, $isWinner);
             }

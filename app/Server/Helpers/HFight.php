@@ -128,9 +128,8 @@ class HFight
         return $r;
     }
 
-    public static function generateSuperHit($existingSuperHits, $level)
+    public static function generateSuperHit($existingSuperHits = [], $level = 1)
     {
-        if (!$existingSuperHits) $existingSuperHits = [];
         $superHitSteps = [
             1 => 2,
             2 => 3,
@@ -179,7 +178,12 @@ class HFight
 
         } while ($duplicate);
 
-        return $generatedSuperHit;
+        $existingSuperHits[$level] = [
+            'hit' => $generatedSuperHit,
+            'open' => false
+        ];
+
+        return json_encode($existingSuperHits);
     }
 
     public static function send($messageType, ...$args)
