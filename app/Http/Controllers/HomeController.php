@@ -6,7 +6,9 @@ use Homeleon\Http\Request;
 use Homeleon\Support\Facades\Auth;
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
+use Homeleon\Captcha\Captcha;
 use App\Server\Models\User;
+use App\Models\User as User_;
 
 class HomeController extends Controller
 {
@@ -22,15 +24,22 @@ class HomeController extends Controller
 
     public function wsToken(Request $request)
     {
-        // dd($request);
-        if (Config::get('env') == 'prod') usleep(500000);
-        // d(Request::get('id'));
-        echo generateToken((int)($request->get('id') ?? 1));
-        exit;
+        // dd(s());
+        if (isProd()) {
+            if (!s('id')) return;
+            usleep(500000);
+            echo generateToken((int)s('id'));
+        } else {
+            echo generateToken((int)($request->get('id') ?? 1));
+        }
     }
 
-    public function entry()
+    public function entry(Request $request)
     {
+        // if ($user = User_::find((int)($request->get('id') ?? 1))) {
+        //     Auth::login($user);
+        //     return redirect()->route('main');
+        // }
         return view('entry');
     }
 
@@ -50,21 +59,20 @@ class HomeController extends Controller
         return redirect()->route('entry');
     }
 
-    // public function test(int $userId = 1)
-    // {
-    //     dd($userId);
-    // }
+    public function forcedLogin(Request $request, Captcha $captcha)
+    {
+        // dd($_POST, $request->all(), s(), $captcha->isValid(), s('captcha_code'));
+        // if (!$captcha->isValid()) return redirect()->route('entry');
+        if (!$captcha->isValid()) return redirect()->route('entry')->with('error', 'Неверный ввод проверочного слова');
 
-    // public function test(User $user = null)
-    // {
-    //     // if ($user)
-    //     // dd($user->login, $user);
-    //     return view('test');
-    // }
+        User_::create();
+
+        return redirect()->route('main');
+    }
 
     public function getCaptcha()
     {
-        \App::make(\Homeleon\Captcha\Captcha::class)->set();
+        \App::make(Captcha::class)->set();
     }
 
     public function registrationForm()
@@ -74,61 +82,22 @@ class HomeController extends Controller
 
     public function registration(Request $request)
     {
-        $this->validate($request->all(), [
-            'email' => 'required|email',
-            'login' => 'required|minlen:3',
-            'password' => 'required|minlen:6',
-        ]);
+        return redirect()->route('registration');
+        // $this->validate($request->all(), [
+        //     'email' => 'required|email',
+        //     'login' => 'required|minlen:3',
+        //     'password' => 'required|minlen:6',
+        // ]);
 
-        if (DB::table('users')->where('email', $request->get('email'))->first()) {
-            return redirect()->back()->with('error', 'Данный email уже занят');
-        }
+        // if (DB::table('users')->where('email', $request->get('email'))->first()) {
+        //     return redirect()->back()->with('error', 'Данный email уже занят');
+        // }
 
-        dd($request->all());
-    }
-
-    public function test(Request $request)
-    {
-
-        // return view('test');
-        // dd($request, $userId);
+        // dd($request->all());
     }
 
     public function testForm(Request $request)
     {
-
-        // DB::table('user_quests')
-        //           ->where('user_id', 1)
-        //           ->andWhere('quest_id', 1)
-        //           ->update(['completed' => 1]);
-
-        // dd(DB::table('items')->whereIn('item_id', [1,2,3])->delete());
-        // dd(DB::table('users')->count()->first());
-            // dd(DB::table('quests')
-            //   ->where('npc_id', 6)
-            //   ->whereIn('level', [1,2,3])
-            //   ->limit(33)
-            //   ->all());
-
-        // echo 1;
-        // DB::table('tendencies')->insert([
-        //     ['name' => 'qwe', 'img' => 'img1'],
-        //     ['name' => 'qwe111', 'img' => 'img1111'],
-        // ]);
-
-        // dd(DB::getAll('SELECT n.*, s.* FROM npc n LEFT JOIN spawnlist s ON n.id = s.npc_id'));
-        // echo 1;
-        // User::find(1)->update(['fight' => 0]);
-        // User::find(1)->update(['level' => 4]);
-        // DB::query('UPDATE users SET curhp = 18, maxhp = 18, power = 5, critical = 5 where id = 1');
-        // $time = time();
-        // DB::query("UPDATE users SET curhp = 18, last_restore = {$time} where id = 1");
-        // DB::query('UPDATE items SET loc = "INVENTORY"');
-        // d(\Session::all());
-        // return view('test');
-        // dd($request, $userId);
-        // dd(\DB::getAll('SELECT * FROM spawnlist'));
-        // dd(\App\Server\Models\Npc::all());
     }
 
     public function test1(int $userId = 1)

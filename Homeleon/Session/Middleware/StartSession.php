@@ -5,6 +5,7 @@ namespace Homeleon\Session\Middleware;
 use Closure;
 use Homeleon\Support\Facades\Session;
 use Homeleon\Http\Request;
+use Homeleon\Http\Response;
 use Homeleon\Support\MiddlewareInterface;
 
 class StartSession implements MiddlewareInterface
@@ -27,10 +28,11 @@ class StartSession implements MiddlewareInterface
             Session::start();
             $errors = Session::get('_errors');
         }
-
+        // echo 22;
         $response = $next($request);
-
-        if ($sessionStart) {
+        // dd($response instanceof (Response::class), $sessionStart && !($response instanceof (Response::class) && $response->isRedirect()));
+        // dd(s(), $response);
+        if ($sessionStart && !($response instanceof (Response::class) && $response->isRedirect())) {
             Session::del('_flash');
             Session::del('_errors');
             Session::del('_old');

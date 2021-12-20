@@ -212,7 +212,7 @@ class MySQL
 		$res   = mysqli_query($this->conn, $query);
         // $res   = 1;
         $timer = (microtime(true) - $start);
-        $this->debug("$query:$timer\n");
+        // $this->debug("$query:$timer\n");
     	$this->stats[] = [
 			'query' => $query,
 			'start' => $start,

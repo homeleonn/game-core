@@ -96,7 +96,7 @@ class Model
         DB::query($query);
 
         if (!$isExists && $id = DB::insertId()) {
-            return static::find($id);
+            $this->setAttributes(static::find($id)->getAttributes());
         }
 
         return $this;
@@ -134,6 +134,17 @@ class Model
         }
 
         return $only;
+    }
+
+    public function getAttributes()
+    {
+        return $this->attr;
+    }
+
+    public function setAttributes($attr)
+    {
+        $this->attr = $attr;
+        $this->fillOriginalValues();
     }
 
     public function __get($key)

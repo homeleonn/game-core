@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация в игре FightWorld</title>
-    <link rel="stylesheet" href="css/bootstrap-grid.min.css">
-    <link rel="stylesheet/less" href="css/style.less">
+    <link rel="stylesheet" href="login_/css/bootstrap-grid.min.css">
+    <link rel="stylesheet/less" href="login_/css/style.less">
 </head>
 <body class="reg">
-    <h1 class="center">Регистрация</h1>
+    <h1 class="center">Регистрация(Закрыта)</h1>
     <?php if (!empty($errors)): foreach ($errors as $e): ?>
     <div class="errors"><?=$e?></div>
     <?php endforeach; endif; ?>
-    <form class="form" method="post" action="registration">
+    <form class="form" method="post" action="/registration">
         <?=csrf_field()?>
         <table>
             <tr>
@@ -39,7 +39,9 @@
         </table>
         <div></div>
     </form>
+    <br>
+    <a class="btn center" href="/">Вернуться на главную страницу</a>
 
-    <script src="js/less.min.js"></script>
+    <script src="login_/js/less.min.js"></script>
 </body>
 </html>

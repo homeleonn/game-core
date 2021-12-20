@@ -20,7 +20,7 @@ function vd(...$args) {
     } else {
         echo '<small style="color: green;"><pre>',$fileLine,':</pre></small><pre>';
     }
-    call_user_func_array('print_r', $args);
+    call_user_func_array('var_dump', $args);
 }
 
 function isCli() {

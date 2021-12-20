@@ -116,11 +116,14 @@ class Captcha
 		imageTTFText($img, $font_size, $angle,$font_size*$i+30, ($height+$font_size)/2, $text_color, __DIR__ . '/' . $fonts[2], $char); // рисуем символ на холсте
 		}
 
-		$this->session->set('captcha_code', implode("",$chars)); // передаем в сессию значение капчи для последующей проверки
+		$this->session->flash('captcha_code', implode("",$chars)); // передаем в сессию значение капчи для последующей проверки
 		imagepng($img); exit;// создаем изображение (png)
 	}
 
-	public static function validation(){
-		return isset($_POST['captcha_code']) && $this->session->get('captcha_code') == $_POST['captcha_code'];
+	public function isValid(){
+		return
+            isset($_POST['captcha_code']) &&
+            $_POST['captcha_code'] != ''  &&
+            strtoupper($this->session->get('captcha_code')) == strtoupper($_POST['captcha_code']);
 	}
 }

@@ -20,6 +20,11 @@ class Auth
         return $this->session->get('id');
     }
 
+    public function login($user)
+    {
+        $this->session->set('id', $user->id);
+    }
+
     public function attempt(array $data): bool
     {
         if (!isset($data[$this->auth]) || !isset($data[$this->passwordKey])) {

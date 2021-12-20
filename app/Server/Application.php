@@ -212,7 +212,7 @@ class Application {
                 $this->userRepo->remove($user);
                 $this->locRepo->removeUser($user);
             }
-        } catch (\Exception) {}
+        } catch (\Exception $e) {}
     }
 
     public function disconnectUndefinedUser($userFd)

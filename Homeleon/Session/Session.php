@@ -71,7 +71,7 @@ class Session implements SessionContract
 
     public function get(?string $key = null)
     {
-        return is_null($key) ? $this->data : ($this->data[$key] ?? null);
+        return is_null($key) ? $this->data : ($this->data[$key] ?? $this->data['_flash'][$key] ?? null);
     }
 
     public function set(string $key, $value): void
@@ -96,7 +96,11 @@ class Session implements SessionContract
 
     private function generateCsrfToken()
     {
-        return Str::random(32);
+        if (explode(',', $_SERVER['HTTP_ACCEPT'])[0] == 'text/html') {
+            return Str::random(32);
+        } else {
+            return Config::get('_token') ?? Str::random(32);
+        }
     }
 
     private function getSessionId()

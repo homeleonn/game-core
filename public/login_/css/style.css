@@ -15,6 +15,14 @@ body {
     color: red;
 }
 
+.block {
+    display: block;
+}
+
+.none {
+    display: none;
+}
+
 .errors-wrapper {
     padding: 10px;
     background: rgba(255, 255, 255, 0.5);
@@ -56,6 +64,10 @@ a.btn {
 a.btn:active {
     top: 1px;
     left: 1px;
+}
+
+.inactive {
+    opacity: .4;
 }
 
 .progressbar-circle {

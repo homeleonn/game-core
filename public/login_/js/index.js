@@ -28,3 +28,22 @@ function counter(selector, num, time, miltiplier = 2) {
 		buffNum += miltiplier;
 	};f();
 }
+
+$('.inactive input').each(function(i, item) {
+    if (['email', 'password', 'remember_me'].includes(item.name)) {
+      $(item).attr('disabled', 'disabled');
+    }
+});
+
+let entryClick = false;
+$('.entry-button').on('click', (e) => {
+  e.preventDefault();
+  if (!entryClick) {
+    entryClick = true;
+    $('.captcha-image').attr('src', '/captcha');
+    $('.captcha').toggleClass('none');
+    // $('.captcha-image').attr('src', '/captcha').toggleClass('none');
+  } else {
+    $('form#login').trigger('submit');
+  }
+})

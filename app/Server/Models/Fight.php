@@ -58,6 +58,7 @@ class Fight
     {
         $fighterProto->fight = $this->fightId;
         $fighterProto->restore();
+        $fighterProto->curhp = floor($fighterProto->curhp);
         $fighter = new Fighter($fighterProto, $team, $this);
         if (!$fighter->isBot()) {
             $this->fightersById[$fighter->id] = $fighter;

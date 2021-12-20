@@ -10,25 +10,37 @@
 <body>
     <header></header>
     <main class="content">
-
-        <form action="<?=route('login')?>" method="POST" id="login">
-            <?=csrf_field();?>
+        <?php
+            // print_r(s());
+        ?>
+        <form action="<?=route('forced-login')?>" method="POST" id="login">
             <h2>Вход</h2>
-            <div>Email</div>
-            <div><input type="text" name="email"></div>
-            <div>Пароль</div>
-            <div><input type="password" name="password"></div>
-            <div><button>Войти</button></div>
-            <div class="row">
-                <div class="col-md-6">
-                    <label for="remember_me">Запомнить меня</label>
-                    <input type="checkbox" id="remember_me" name="remember_me">
-                </div>
-                <div class="col-md-6">
-                    <a href="login_/#">Забыли пароль?</a>
-                </div>
+            <?php if (s('error')):?><div class="red"><?=s('error')?></div><?php endif;?>
+            <div class="captcha none">
+                <hr>
+                <img src="#" class="captcha-image">
+                <br>
+                <input type="text" name="captcha_code" placeholder="Введите капчу сюда...">
             </div>
-            <div><a href="login_/registration" class="btn">Регистрация</a></div>
+            <a class="btn center entry-button" href="#">Войти</a>
+            <div class="inactive">
+                <div>Email</div>
+                <div><input type="text" name="email"></div>
+                <div>Пароль</div>
+                <div><input type="password" name="password"></div>
+                <div><button>Войти</button></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="remember_me">Запомнить меня</label>
+                        <input type="checkbox" id="remember_me" name="remember_me">
+                    </div>
+                    <div class="col-md-6">
+                        <a href="#">Забыли пароль?</a>
+                    </div>
+                </div>
+                <div><a href="registration" class="btn">Регистрация</a></div>
+                <?=csrf_field();?>
+            </div>
         </form>
         <div class="progressbar-circle2-wrapper">
             <defs>

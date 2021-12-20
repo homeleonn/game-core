@@ -9,7 +9,7 @@ use Homeleon\Support\Facades\Session;
 class Response
 {
     private $content;
-    private $isRedirect = false;
+    private $redirectPath = false;
 
     public function setStatusCode(int $code)
     {
@@ -18,7 +18,7 @@ class Response
 
     public function isRedirect()
     {
-        return $this->isRedirect;
+        return $this->redirectPath;
     }
 
     public function getContent(): string
@@ -38,7 +38,7 @@ class Response
 
     public function redirect($uri = null, int $statusCode = 302): self
     {
-        $this->isRedirect = $uri;
+        $this->redirectPath = $uri;
         $this->setStatusCode($statusCode);
 
         return $this;
@@ -46,7 +46,8 @@ class Response
 
     public function route(string $name): self
     {
-        $this->setRedirect(\route($name));
+        $this->redirectPath = \route($name);
+        // $this->setRedirect(\route($name));
 
         return $this;
     }
@@ -54,14 +55,16 @@ class Response
     public function back(): self
     {
         $back = Session::get('_previous')['url'] ?? request()->getUri();
-        $this->setRedirect($back);
+        $this->redirectPath = $back;
+
+        // $this->setRedirect($back);
 
         return $this;
     }
 
     public function with($key, $value)
     {
-        Session::set('_flash', [$key => $value]);
+        Session::flash($key, $value);
 
         return $this;
     }
@@ -69,7 +72,7 @@ class Response
     public function setRedirect($url = null): void
     {
 
-        header('Location: ' . ($url ?? $this->isRedirect));
+        header('Location: ' . ($url ?? $this->redirectPath));
 //         $this->setContent('<!DOCTYPE html>
 // <html lang="en">
 // <head>
@@ -79,6 +82,6 @@ class Response
 // </head>
 // <body></body>
 // </html>');
-        // exit;
+        exit;
     }
 }
