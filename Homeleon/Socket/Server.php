@@ -103,14 +103,14 @@ class Server
         fclose($fd);
     }
 
-    public function push($fd, $message)
+    public function push($fd, $message, $type = 'text')
     {
         if (!isset($this->fds[$fd])) {
             // var_dump(debug_backtrace());
             // foreach (debug_backtrace() as $debug) { echo "{$debug['file']}/{$debug['line']}/{$debug['function']}\n"; }
             echo "Connection null. fd: $fd. ", __FILE__, __LINE__, "\n message: ", print_r($message);return;
         }
-        fwrite($this->fds[$fd], Frame::encode($message));
+        fwrite($this->fds[$fd], Frame::encode($message, $type));
     }
 
     public function applyEventHandler(string $handlerName, array $arguments = [])

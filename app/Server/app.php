@@ -42,6 +42,7 @@ $pe = new PeriodicEventWorker($app);
 $pe->addEvent('clear_exited_users', 60);
 $pe->addEvent('fight_worker', 3);
 $pe->addEvent('respawn_npc', 10);
+$pe->addEvent('ping', 50);
 
 $server->setPeriodicEventWorker($pe);
 

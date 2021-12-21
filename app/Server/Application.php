@@ -178,7 +178,7 @@ class Application {
         }
     }
 
-    public function send($fd, $message)
+    public function send($fd, $message, $type = 'text')
     {
         if ($fd instanceof Fighter) {
             if (isset($fd->user->aggr) || $fd->isExit()) return;
@@ -186,7 +186,8 @@ class Application {
         }
         $this->server->push(
             $fd,
-            is_array($message) ? json_encode($message) : $message
+            is_array($message) ? json_encode($message) : $message,
+            $type
         );
     }
 
@@ -223,6 +224,7 @@ class Application {
 
     public function isAppManagersMessage(Frame $frame)
     {
+        // d($frame);
         if ($frame->fd == $this->eventManager) {
             if ($frame->data == 'CLOSE') {
                 echo 'i am terminate';
@@ -231,6 +233,8 @@ class Application {
         } elseif ($frame->data == 'PING') {
             var_dump(date('H:i:s'), $frame->getPong(), $frame->data);
             $this->send($frame->fd, $frame->getPong());return true;
+        } elseif ($frame->type == 'pong') {
+            return true;
         }
     }
 
@@ -285,6 +289,13 @@ class Application {
         return $userId;
     }
 
+    public function pingToAll()
+    {
+        foreach ($this->userRepo->getAll() as $user) {
+            $this->send($user->getFd(), 'ping', 'ping');
+        }
+    }
+
     public function periodicEvent($eventName)
     {
         // echo "\n", $eventName, " ", time(), " | ";
@@ -293,6 +304,7 @@ class Application {
             'clear_exited_users' => $this->userRepo->clearExited(),
             'fight_worker' => $this->fightRepo->cicle(),
             'respawn_npc' => $this->npcRepo->respawn(),
+            'ping' => $this->pingToAll(),
             default => null,
         };
     }
