@@ -291,7 +291,13 @@ class Application {
 
     public function pingToAll()
     {
-        foreach ($this->userRepo->getAll() as $user) {
+        $users = $this->userRepo->getAll();
+
+        if (empty($users)) {
+            return;
+        }
+
+        foreach ($users as $user) {
             $this->send($user->getFd(), 'ping', 'ping');
         }
     }
