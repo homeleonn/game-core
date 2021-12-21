@@ -31,8 +31,11 @@ if ($argc > 1 && $argv[1] == '-q') {
     exit;
 }
 
-
-$server = new Server(Config::get('host'), Config::get('port'));
+$server = new Server(
+    Config::get('host'),
+    Config::get('port'),
+    Config::get('ssl') ? __DIR__ . 'resources/ssl/cert.pem' : null
+);
 $app    = new Application($server, $core->make('redis'));
 $core->set('game', $app);
 

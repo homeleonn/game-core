@@ -22,11 +22,13 @@ class Server
     private $eventsHandlers = [];
     private $dosProtection;
     private $periodicEventWorker;
+    private $ssl;
 
-    public function __construct($ip = "127.0.0.1", $port = '8080')
+    public function __construct($ip = "127.0.0.1", $port = '8080', $ssl = null)
     {
-        $this->ip     = $ip;
+        $this->ip   = $ip;
         $this->port = $port;
+        $this->ssl  = $ssl;
     }
 
     public function setDosProtection(DosProtectionInterface $dosProtection)
@@ -50,7 +52,19 @@ class Server
 
     public function start()
     {
-        $this->socket = stream_socket_server(sprintf('tcp://%s:%s', $this->ip, $this->port), $errno, $errstr);
+        if ($this->ssl) {
+            $context = stream_context_create();
+            stream_context_set_option($context, 'ssl', 'local_cert', $this->ssl);
+            stream_context_set_option($context, 'ssl', 'passphrase', '');
+            stream_context_set_option($context, 'ssl', 'allow_self_signed', true);
+            stream_context_set_option($context, 'ssl', 'verify_peer', false);
+            stream_context_set_option($context, 'ssl', 'verify_peer_name', false);
+
+            $this->socket = stream_socket_server(sprintf('ssl://%s:%s', $this->ip, $this->port), $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $context);
+        } else {
+            $this->socket = stream_socket_server(sprintf('tcp://%s:%s', $this->ip, $this->port), $errno, $errstr);
+        }
+
         $this->applyEventHandler('start');
 
         while (true) {
