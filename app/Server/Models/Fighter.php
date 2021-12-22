@@ -188,7 +188,7 @@ class Fighter
         if ($victim->isBot()) {
             $this->kill['npc'][$victim->npc_id] = ($this->kill['npc'][$victim->npc_id] ?? 0) + 1;
         } else {
-            $this->kill[$victimType]['human'][$victim->id] = null;
+            $this->kill['human'][$victim->id] = null;
         }
     }
 

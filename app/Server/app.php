@@ -1,36 +1,21 @@
 <?php
+ini_set('date.timezone', 'Europe/Kiev');
 
 require __DIR__ . '/../../vendor/autoload.php';
 require __DIR__ . '/helpers.php';
 define('ROOT', dirname(dirname(__DIR__)));
 
 use Homeleon\App;
-use Homeleon\Socket\{Server, PeriodicEventWorker, Frame};
+use Homeleon\Socket\{Server, PeriodicEventWorker};
 use App\Server\Application;
-use Homeleon\Support\Str;
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
 
-$core     = new App();
+$core = new App();
+
+checkAppTerminate();
+
 DB::setFetchMode(stdClass::class);
-
-
-if ($argc > 1 && $argv[1] == '-q') {
-    $fp = stream_socket_client("tcp://" . Config::get('host') . ':' . Config::get('port'), $errno, $errstr);
-    if (!$fp) {
-        echo "Error: $errno - $errstr\n";
-    } else {
-        fwrite($fp,
-        "GET / HTTP/1.1\n" .
-        "Sec-WebSocket-Key: ".Str::random(16)."\r\n" .
-        "event-key: ".Config::get('key')."\r\n\r\n"
-        );
-        fwrite($fp, Frame::encode('CLOSE', 'text', true));
-    }
-
-    exit;
-}
-
 $server = new Server(
     Config::get('host'),
     Config::get('port'),

@@ -19,33 +19,18 @@ class User extends AppModel
         $user->sex = 0;
         $user->super_hits = HFight::generateSuperHit();
         $user->save();
-        DB::table('items')->insert([
-            [
-                'owner_id' => $user->id,
-                'item_id' => 20,
-            ],[
-                'owner_id' => $user->id,
-                'item_id' => 21,
-            ],[
-                'owner_id' => $user->id,
-                'item_id' => 22,
-            ],[
-                'owner_id' => $user->id,
-                'item_id' => 23,
-            ],[
-                'owner_id' => $user->id,
-                'item_id' => 24,
-            ],[
-                'owner_id' => $user->id,
-                'item_id' => 25,
-            ],[
-                'owner_id' => $user->id,
-                'item_id' => 26,
-            ],[
-                'owner_id' => $user->id,
-                'item_id' => 27,
-            ],
-        ]);
+        self::giveItems($user->id);
+        \Auth::login($user);
+    }
+
+    public static function giveItems($userId)
+    {
+        $item = [];
+        foreach (range(20, 27) as $itemId) {
+            $items[] = ['owner_id' => $userId, 'item_id' => $itemId];
+        }
+
+        DB::table('items')->insert($items);
         // DB::table('items')->insert([
         //     [
         //         'owner_id' => $user->id,
@@ -53,7 +38,5 @@ class User extends AppModel
         //         'count' => 3,
         //     ]
         // ]);
-
-        \Auth::login($user);
     }
 }

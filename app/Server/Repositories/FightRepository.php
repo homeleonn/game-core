@@ -66,7 +66,7 @@ class FightRepository extends BaseRepository
         // } else {
         //     $this->app->send($user->getFd(), ['_fight' => $this->fights[$user->fight]?->getData($user->id) ?? null]);
         // }
-        if (!$user->fight) return;
+        if (!$user->fight || !isset($this->fights[$user->fight])) return;
         $this->app->send($user->getFd(), ['_fight' => $this->fights[$user->fight]?->getData($user->id) ?? null]);
     }
 

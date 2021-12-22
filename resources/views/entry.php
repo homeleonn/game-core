@@ -20,7 +20,7 @@
                 <hr>
                 <img src="#" class="captcha-image">
                 <br>
-                <input type="text" name="captcha_code" placeholder="Введите капчу сюда...">
+                <input type="text" name="captcha_code" placeholder="Введите проверочный код сюда...">
             </div>
             <a class="btn center entry-button" href="#">Войти</a>
             <div class="inactive">

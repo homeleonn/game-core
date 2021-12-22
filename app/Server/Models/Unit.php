@@ -68,7 +68,7 @@ class Unit extends AppModel
 
     public function restore()
     {
-        if ($this->isBot()) return;
+        if ($this->isBot() || $this->fight) return;
         if ($this->curhp >= $this->maxhp) {
             return $this->curhp = $this->maxhp;
         }
@@ -81,5 +81,10 @@ class Unit extends AppModel
         $this->last_restore = time();
 
         if ($this->curhp >= $this->maxhp) $this->curhp = $this->maxhp;
+    }
+
+    public function getId(): mixed
+    {
+        return $this->isBot() ? null : $this->id;
     }
 }

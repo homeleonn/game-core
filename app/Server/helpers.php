@@ -1,5 +1,9 @@
 <?php
 
+use Homeleon\Socket\Frame;
+use Homeleon\Support\Str;
+use Homeleon\Support\Facades\Config;
+
 /**
  * returns app repo
  */
@@ -34,3 +38,39 @@ function inc(&$arr, $index, $count) {
 function dec(&$arr, $index, $count) {
     return $arr[$index] = ($arr[$index] ?? 0) - $count;
 }
+
+function checkAppTerminate() {
+    if ($argc > 1 && $argv[1] == '-q') {
+        $fp = stream_socket_client("tcp://" . Config::get('host') . ':' . Config::get('port'), $errno, $errstr);
+        if (!$fp) {
+            echo "Error: $errno - $errstr\n";
+        } else {
+            fwrite($fp,
+            "GET / HTTP/1.1\n" .
+            "Sec-WebSocket-Key: ".Str::random(16)."\r\n" .
+            "event-key: ".Config::get('key')."\r\n\r\n"
+            );
+            fwrite($fp, Frame::encode('CLOSE', 'text', true));
+        }
+
+        exit;
+    }
+}
+
+
+
+$logFile = __DIR__ . '/resources/log/error.log';
+file_put_contents($logFile, '');
+function myErrorHandler($errno, $errstr, $errfile, $errline)
+{
+    global $logFile;
+    $trace = '';
+    foreach (debug_backtrace() as $i => $debug) {
+        if (!$i || $i > 4) continue;
+        $trace .= "{$debug['file']}:{$debug['line']}\n";
+    }
+    file_put_contents($logFile, '[' . date('d-m-Y H:i:s') . '] ' . $errno . ' | ' . $errstr . ' in ' . $errfile . ':' . $errline. "\n{$trace}\n\n");
+
+    return false;
+}
+set_error_handler("myErrorHandler");

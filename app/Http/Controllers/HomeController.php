@@ -36,6 +36,7 @@ class HomeController extends Controller
 
     public function entry(Request $request)
     {
+        // User_::giveItems(3);
         // if ($user = User_::find((int)($request->get('id') ?? 1))) {
         //     Auth::login($user);
         //     return redirect()->route('main');
