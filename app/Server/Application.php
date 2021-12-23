@@ -310,7 +310,8 @@ class Application {
             'clear_exited_users' => $this->userRepo->clearExited(),
             'fight_worker' => $this->fightRepo->cicle(),
             'respawn_npc' => $this->npcRepo->respawn(),
-            'ping' => $this->pingToAll(),
+            'client_ping' => $this->pingToAll(),
+            'db_ping' => DB::ping(),
             default => null,
         };
     }

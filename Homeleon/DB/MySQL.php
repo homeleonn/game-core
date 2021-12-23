@@ -414,4 +414,9 @@ class MySQL
 	{
 		return $this->conn ?? $this->lazyConnect();
 	}
+
+    public function ping()
+    {
+        mysqli_ping($this->conn);
+    }
 }
