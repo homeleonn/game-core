@@ -13,7 +13,7 @@ use Homeleon\Support\Facades\DB;
 
 $core = new App();
 
-checkAppTerminate();
+checkAppTerminate($argc, $argv);
 
 DB::setFetchMode(stdClass::class);
 $server = new Server(

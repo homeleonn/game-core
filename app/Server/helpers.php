@@ -39,7 +39,7 @@ function dec(&$arr, $index, $count) {
     return $arr[$index] = ($arr[$index] ?? 0) - $count;
 }
 
-function checkAppTerminate() {
+function checkAppTerminate($argc, $argv) {
     if ($argc > 1 && $argv[1] == '-q') {
         $fp = stream_socket_client("tcp://" . Config::get('host') . ':' . Config::get('port'), $errno, $errstr);
         if (!$fp) {
