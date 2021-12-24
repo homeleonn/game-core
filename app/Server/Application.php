@@ -102,6 +102,7 @@ class Application {
 
             $queryString = '';
             foreach ($payload['props'] as $prop => $value) {
+                if ($value == 'now()') $value = time();
                 $user->{$prop} = $value;
                 $queryString .= "{$prop}={$value},";
             }

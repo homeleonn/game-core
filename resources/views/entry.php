@@ -6,6 +6,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="login_/css/bootstrap-grid.min.css">
     <link rel="stylesheet" type="text/css" href="login_/css/style.css">
+    <link rel="stylesheet" type="text/css" href="login_/css/shower.css">
 </head>
 <body>
     <header></header>
@@ -57,11 +58,52 @@
             <div class="serverName"></div>
         </div>
     </main>
+
+
+        <div class="container screens">
+            <h2 class="center title-custom">
+                Скриншоты из игры
+            </h2>
+            <small class="center block white">(На случай, если вдруг сервер "лежит" =)</small>
+            <div class="row flex">
+                <div class="col-md-4">
+                    <a class="shower" href="login_/img/fightworld-screens/1.png">
+                        <img src="login_/img/fightworld-screens/resize/1.png">
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a class="shower" href="login_/img/fightworld-screens/2.png">
+                        <img src="login_/img/fightworld-screens/resize/2.png">
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a class="shower" href="login_/img/fightworld-screens/3.png">
+                        <img src="login_/img/fightworld-screens/resize/3.png">
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a class="shower" href="login_/img/fightworld-screens/4.png">
+                        <img src="login_/img/fightworld-screens/resize/4.png">
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a class="shower" href="login_/img/fightworld-screens/5.png">
+                        <img src="login_/img/fightworld-screens/resize/5.png">
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a class="shower" href="login_/img/fightworld-screens/6.png">
+                        <img src="login_/img/fightworld-screens/resize/6.png">
+                    </a>
+                </div>
+            </div>
+        </div>
     <footer></footer>
 
-    <script src="login_/js/common.js"></script>
-    <!-- <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'></script> -->
-    <script>let $ = _;</script>
+    <!-- <script src="login_/js/common.js"></script> -->
+    <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'></script>
+    <!-- <script>let $ = _;</script> -->
     <script src="login_/js/index.js"></script>
+    <script src="login_/js/shower.js"></script>
 </body>
 </html>

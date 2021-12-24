@@ -74,7 +74,7 @@ class UserRepository extends BaseRepository
     private function getUser($userId, $fd)
     {
         // $user = DB::getRow('SELECT id, login, level, power, critical, evasion, defence, stamina, last_restore, sex, clan, gold, exp, win, defeat, draw, request, fight, image, title, color, curhp, maxhp, team, loc, trans_time, trans_timeout, super_hits FROM users WHERE id = ?i', $userId);
-        $userData = DB::getRow('SELECT u.id, u.login, u.level, u.power, u.critical, u.evasion, u.defence, u.stamina, u.last_restore, u.sex, u.clan, u.gold, u.exp, u.win, u.defeat, u.draw, u.request, u.fight, u.image, u.title, u.color, u.curhp, u.maxhp, u.team, u.loc, u.trans_time, u.trans_timeout, u.super_hits,
+        $userData = DB::getRow('SELECT u.id, u.login, u.level, u.power, u.critical, u.evasion, u.defence, u.stamina, u.last_restore, u.sex, u.clan, u.gold, u.exp, u.win, u.defeat, u.draw, u.request, u.fight, u.image, u.title, u.color, u.curhp, u.maxhp, u.team, u.loc, u.trans_time, u.trans_timeout, u.super_hits, u.access_level,
             c.name as clan_name, c.img as clan_img,
             t.name as tendency_name, t.img as tendency_img
                 FROM users u

@@ -2,6 +2,7 @@
 
 namespace App\Server\Repositories;
 
+use Exception;
 use App\Server\Application;
 use App\Server\Models\{Fight, Fighter};
 use App\Server\Models\Fight\EndFightHandler;
@@ -19,6 +20,12 @@ class FightRepository extends BaseRepository
 
             if (!$fighterProto1->isBot()) {
                 $fighterProto1->send(['message' => "<b>Вы присоединились к бою \"{$fight->name}\"</b>"]);
+
+                // todo: send info about new fighter to others
+                try {
+                    $newFighter = $fight->getFighterById($fighterProto1->id);
+                    $this->sendTo($fight->fighters, ['new_fighter' => [$newFighter->fId => $newFighter->fightProps()]]);
+                } catch (Exception $e) {}
             }
 
             return false;
@@ -36,12 +43,20 @@ class FightRepository extends BaseRepository
         $fight->setPairs();
         $this->fightId++;
 
-        foreach ([$fighterProto1, $fighterProto2] as $f) {
-            if ($f->isBot()) continue;
-            $f->send(['message' => "<b>Ваш бой \"{$fight->name}\" начался.</b>"]);
-        }
+
+        $this->sendTo([$fighterProto1, $fighterProto2], ['message' => "<b>Ваш бой \"{$fight->name}\" начался.</b>"]);
 
         return true;
+    }
+
+
+
+    private function sendTo($users, $message)
+    {
+        foreach ($users as $user) {
+            if ($user->isBot()) continue;
+            $user->send($message);
+        }
     }
 
     private function createBots($proto, $team, $fightId, $count = 1)

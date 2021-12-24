@@ -205,6 +205,7 @@ class User extends Unit
         DB::beginTransaction();
         if ($this->{$action}($itemId)) {
             if (in_array($action, [self::ITEM_WEARING, self::ITEM_TAKEOFF])) {
+                $this->restore();
                 $this->processingChars($this->items[$itemId], $action);
                 $this->sendChars($app, $this->needUpdateChars);
             }

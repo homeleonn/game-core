@@ -10,7 +10,7 @@ class Fighter
     const HIT_TURN                = 2;
     const HITS_COUNT              = 3;
     const TURN_TIME               = 4;
-    const TURN_TIME_TIMEOUT       = 10;
+    const TURN_TIME_TIMEOUT       = 20;
 
     public User|Npc $user;
     public int $lastEnemyfId      = 0;
@@ -218,6 +218,10 @@ class Fighter
 
     public function checkSuperHit($type)
     {
+        if (!$this->super_hits) {
+            echo "missin super hit. user id {$this->id}";
+            return;
+        }
         foreach ($this->super_hits as $level => $h) {
             if (!isset($h->step)) $h->step = 0;
 
@@ -259,7 +263,7 @@ class Fighter
         return $this->isHitter() ? [$this, $this->getEnemy()] : [$this->getEnemy(), $this];
     }
 
-    public function fightProps($userId)
+    public function fightProps()
     {
         $props = ['id', 'fId', 'login', 'level', 'curhp', 'maxhp', 'image', 'team', 'enemyfId', 'turn'];
         if (!$this->isBot()) {

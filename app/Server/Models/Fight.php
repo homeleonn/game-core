@@ -2,6 +2,7 @@
 
 namespace App\Server\Models;
 
+use Exception;
 use Homeleon\Support\Common;
 use App\Server\Helpers\HFight;
 use Homeleon\Support\Facades\App;
@@ -34,6 +35,15 @@ class Fight
         $this->startTime = time();
 
         $this->endFightHandler = $endFightHandler;
+    }
+
+    public function getFighterById($id)
+    {
+        foreach ($this->fighters as $fighter) {
+            if ($fighter->id == $id && !$fighter->isBot()) return $fighter;
+        }
+
+        throw new Exception("Fighter with id '{$id}' not found in fight {$this->fightId}");
     }
 
     public function cicle()
