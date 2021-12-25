@@ -61,9 +61,10 @@ function isNumeric(n) {
 }
 
 function toNums(obj) {
+
 	for (var key in obj) {
 		if (isNumeric(obj[key])) {
-			obj[key] = +obj[key];
+			obj[key] = Math.ceil(+obj[key]);
 		}
 	}
 
