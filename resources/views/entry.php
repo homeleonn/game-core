@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>FightWorld - MMORPG browser game</title>
     <link rel="stylesheet" href="login_/css/bootstrap-grid.min.css">
     <link rel="stylesheet" type="text/css" href="login_/css/style.css">
     <link rel="stylesheet" type="text/css" href="login_/css/shower.css">
