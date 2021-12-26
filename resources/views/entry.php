@@ -65,6 +65,7 @@
                 Скриншоты из игры
             </h2>
             <small class="center block white">(На случай, если вдруг сервер "лежит" =)</small>
+            <br><small class="center block white">(Адаптивность минимальная, в альбомном виде)</small>
             <div class="row flex">
                 <div class="col-md-4">
                     <a class="shower" href="login_/img/fightworld-screens/1.png">

@@ -62,6 +62,8 @@ input[type="checkbox"] {
 body {
     background-image: url(../img/other/super-nova.jpg);
     background-size: cover;
+    background-repeat: no-repeat;
+    background-color: black;
 }
 
 a.btn {

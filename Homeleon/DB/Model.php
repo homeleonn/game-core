@@ -155,6 +155,12 @@ class Model
     public function __set($key, $value)
     {
         if (isset($this->attr[$key])) unset($this->attr[$key]);
+
+        $mutatorName = 'set'.ucfirst($key).'Attr';
+        if (method_exists([$this, $mutatorName])) {
+            return $this->{$mutatorName}($value);
+        }
+
         return $this->attr[$key] = $value;
     }
 

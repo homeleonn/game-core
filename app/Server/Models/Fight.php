@@ -177,7 +177,7 @@ class Fight
             $isWinner = $idx == $this->winTeam;
             foreach ($team as $fighter) {
                 $additionExp = $isWinner ? $fighter->damage * 2 : 0;
-                $fighter->exp += $additionExp;
+                if (!$fighter->isBot()) $fighter->addExp($additionExp);
                 $teamsStatisticts[$idx][$fighter->fId] = Common::propsOnly($fighter, $needProps);
                 $teamsStatisticts[$idx][$fighter->fId]['fightExp'] = $additionExp;
                 $teamsStatisticts[$idx][$fighter->fId]['id'] = (int)$fighter->getId();

@@ -323,6 +323,31 @@ class User extends Unit
         return $this->exit;
     }
 
+    public function addExp(int $value)
+    {
+        $levelExp = [
+            1 => 35,
+            2 => 70,
+            3 => 105,
+            4 => 140,
+            5 => 175,
+            6 => 210,
+            7 => 245,
+            8 => 280,
+        ];
+        $this->exp = $this->exp + $value;
+        foreach ($levelExp as $level => $exp) {
+            if ($this->exp < $exp) {
+                break;
+            }
+        }
+
+        if ($this->level < $level) {
+            $this->level = $level;
+            $this->send(['message' => "<b>Поздравляем! Ваш уровень повысился. Теперь {$level}й.</b>"]);
+        }
+    }
+
     public function __toString()
     {
         return $this->asString();
