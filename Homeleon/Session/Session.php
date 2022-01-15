@@ -96,7 +96,7 @@ class Session implements SessionContract
 
     private function generateCsrfToken()
     {
-        if (explode(',', $_SERVER['HTTP_ACCEPT'])[0] == 'text/html') {
+        if (explode(',', $_SERVER['HTTP_ACCEPT'])[0] == 'text/html' && $_SERVER['REQUEST_METHOD'] == 'GET') {
             return Str::random(32);
         } else {
             return Config::get('_token') ?? Str::random(32);
