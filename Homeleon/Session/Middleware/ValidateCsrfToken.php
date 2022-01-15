@@ -16,7 +16,7 @@ class ValidateCsrfToken implements MiddlewareInterface
             if ($request->get('_token') != Session::get('_token')) {
                 return redirect()->back();
             }
-        } else {
+        } elseif (strpos($request->server["HTTP_ACCEPT"], 'image') !== 0) {
             Session::set('_previous', [
                 'url' => $request->getUrl()
             ]);
