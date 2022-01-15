@@ -19,9 +19,9 @@
             <?php if (s('error')):?><div class="red"><?=s('error')?></div><?php endif;?>
             <div class="captcha none">
                 <hr>
-                <img src="#" class="captcha-image">
+                <img src="" class="captcha-image">
                 <br>
-                <input type="text" name="captcha_code" placeholder="Введите проверочный код сюда...">
+                <input type="text" autocomplete="off" name="captcha_code" placeholder="Введите проверочный код сюда...">
             </div>
             <a class="btn center entry-button" href="#">Войти</a>
             <div class="inactive">
