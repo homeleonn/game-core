@@ -36,11 +36,6 @@ class HomeController extends Controller
 
     public function entry(Request $request)
     {
-        // User_::giveItems(3);
-        // if ($user = User_::find((int)($request->get('id') ?? 1))) {
-        //     Auth::login($user);
-        //     return redirect()->route('main');
-        // }
         return view('entry');
     }
 
@@ -62,8 +57,6 @@ class HomeController extends Controller
 
     public function forcedLogin(Request $request, Captcha $captcha)
     {
-        // dd($_POST, $request->all(), s(), $captcha->isValid(), s('captcha_code'));
-        // if (!$captcha->isValid()) return redirect()->route('entry');
         if (!$captcha->isValid()) return redirect()->route('entry')->with('error', 'Неверный ввод проверочного слова');
 
         User_::create();
