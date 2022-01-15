@@ -18,7 +18,7 @@ class MySQL
 		'user'      => 'root',
 		'pass'      => '',
 		'db'        => 'test',
-		'port'      => null,
+		'port'      => 3306,
 		'socket'    => null,
 		'pconnect'  => false,
 		'lazy'  	=> true,
