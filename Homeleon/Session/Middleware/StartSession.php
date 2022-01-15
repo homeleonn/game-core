@@ -17,21 +17,21 @@ class StartSession implements MiddlewareInterface
 
         $sessionStart = true;
 
-        if (isset($request->server['HTTP_REFERER'])) {
-            $parsedReferer = parse_url($request->server['HTTP_REFERER']);
-            if ($parsedReferer['host'] != $request->server['HTTP_HOST'])  {
-                $sessionStart = false;
-            }
-        }
+        // if (isset($request->server['HTTP_REFERER'])) {
+        //     $parsedReferer = parse_url($request->server['HTTP_REFERER']);
+        //     if (isset($parsedReferer['port']) && $parsedReferer['port'] != '80') $parsedReferer['host'] .= ':' . $parsedReferer['port'];
+        //     if ($parsedReferer['host'] != $request->server['HTTP_HOST'])  {
+        //         $sessionStart = false;
+        //     }
+        // }
 
         if ($sessionStart) {
             Session::start();
             $errors = Session::get('_errors');
         }
-        // echo 22;
+
         $response = $next($request);
-        // dd($response instanceof (Response::class), $sessionStart && !($response instanceof (Response::class) && $response->isRedirect()));
-        // dd(s(), $response);
+
         if ($sessionStart && !($response instanceof (Response::class) && $response->isRedirect())) {
             Session::del('_flash');
             Session::del('_errors');
