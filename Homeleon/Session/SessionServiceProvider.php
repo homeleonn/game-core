@@ -33,7 +33,10 @@ class SessionServiceProvider extends ServiceProvider
                 $redis = $this->app->make(Redis::class);
             } catch (Exception $e) {
                 $redis = new Redis;
-                $redis->connect('127.0.0.1', 6379);
+                $redis->connect(
+                    $app->config->get('redis')['host'],
+                    $app->config->get('redis')['port']
+                );
             }
 
             $sessionHandler = new RedisSessionHandler($redis);
