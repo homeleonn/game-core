@@ -17,13 +17,10 @@ class StartSession implements MiddlewareInterface
 
         $sessionStart = true;
 
-        // if (isset($request->server['HTTP_REFERER'])) {
-        //     $parsedReferer = parse_url($request->server['HTTP_REFERER']);
-        //     if (isset($parsedReferer['port']) && $parsedReferer['port'] != '80') $parsedReferer['host'] .= ':' . $parsedReferer['port'];
-        //     if ($parsedReferer['host'] != $request->server['HTTP_HOST'])  {
-        //         $sessionStart = false;
-        //     }
-        // }
+        // Prevent creating session file for development mode
+        if (isDev() && isset($request->server['HTTP_REFERER']) && $request->server['HTTP_REFERER'] == 'http://localhost:8080/') {
+            $sessionStart = false;
+        }
 
         if ($sessionStart) {
             Session::start();
