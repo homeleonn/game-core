@@ -71,7 +71,7 @@ class App
     public function checkKey()
     {
         if (!$this->make('config')->get('app_key')) {
-            throw new Exception('Application key doesn\'t exists. First generate app key');
+            throw new Exception('Application key does not exists. First generate app key');
         }
     }
 
