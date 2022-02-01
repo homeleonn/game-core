@@ -96,6 +96,11 @@
                         <img src="login_/img/fightworld-screens/resize/6.png">
                     </a>
                 </div>
+                <div class="col-md-4">
+                    <a class="shower" href="login_/img/fightworld-screens/7.png">
+                        <img src="login_/img/fightworld-screens/resize/7.png">
+                    </a>
+                </div>
             </div>
         </div>
     <footer></footer>
