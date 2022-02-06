@@ -81,103 +81,49 @@ class Application {
         if ($this->isAppManagersMessage($frame)) return;
         if (!$user = $this->userRepo->findByFd($frame->fd)) return;
 
-        var_dump(date('H:i:s ') . $frame->data . $user);
-
-        $data = json_decode($frame->data, true);
-        $type = array_keys($data)[0];
+        $data = $this->fetchDataFromFrame($frame->data);
+        $type = $this->fetchDataTypeFromFrame($data);
 
         if (!$type) return;
 
         $payload = $data[$type];
 
-        switch ($type) {
-        case 'debug':
-            $this->send($frame->fd, ['debug' => ['server' => $this]]);
-        break;
+        match ($type) {
+            'debug'         => $this->send($frame->fd, ['debug' => ['server' => $this]]),
+            'admin_user'    => $this->adminTestActions($payload, $user),
+            'sendMessage'   => $this->messageToLoc($user, $payload),
+            'chloc'         => $user->chloc((int)$payload, $this),
+            'getBackPack'   => $user->getBackPack($this),
+            'removeItem'    => $user->itemAction($this, $type, $payload),
+            'wearItem'      => $user->itemAction($this, $type, $payload),
+            'takeoffItem'   => $user->itemAction($this, $type, $payload),
+            'getLocMonsters' => $this->locRepo->getMonsters($user),
+            'getEnemy'      => $this->locRepo->getEnemy($user, $payload),
+            'attackMonster' => $this->locRepo->attackMonster($user, $payload),
+            'getFight'      => $this->fightRepo->getById($user),
+            'hit'           => $this->fightRepo->hit($user, $payload),
+            'talkToNpc'     => $this->questRepo->talkToNpc($user, $payload),
+            'showQuest'     => $this->questRepo->showQuest($user, ...$payload),
+            'questAnswer'   => $this->questRepo->answer($user, ...$payload),
+            'takeReward'    => $this->questRepo->takeReward($user, ...$payload),
+            'getQuests'     => $user->getQuests(),
+            default => null,
+        };
 
-        case 'admin_user':
-            // if (!$user->isAdmin()) return;
-
-            if (!$user = $this->userRepo->findById($payload['userId'])) return;
-
-            $queryString = '';
-            foreach ($payload['props'] as $prop => $value) {
-                if ($value == 'now()') $value = time();
-                $user->{$prop} = $value;
-                $queryString .= "{$prop}={$value},";
-            }
-
-            $queryString = substr($queryString, 0, -1);
-            DB::query("UPDATE users SET {$queryString} where id = {$payload['userId']}");
-
-            $this->send($user->getFd(), ['me' => $user->getAll()]);
-        break;
-
-        case 'sendMessage':
-            $this->messageToLoc($user, $payload);
-        break;
-
-        case 'chloc':
-            $user->chloc((int)$payload, $this);
-        break;
-
-        case 'getBackPack':
-            $user->getBackPack($this);
-        break;
-
-        case 'removeItem':
-            $user->itemAction($this, $type, $payload);
-        break;
-
-        case 'wearItem':
-            $user->itemAction($this, $type, $payload);
-        break;
-
-        case 'takeoffItem':
-            $user->itemAction($this, $type, $payload);
-        break;
-
-        case 'getLocMonsters':
-            $this->locRepo->getMonsters($user);
-        break;
-
-        case 'getEnemy':
-            $this->locRepo->getEnemy($user, $payload);
-        break;
-
-        case 'attackMonster':
-            $this->locRepo->attackMonster($user, $payload);
-        break;
-
-        case 'getFight':
-            $this->fightRepo->getById($user);
-        break;
-
-        case 'hit':
-            $this->fightRepo->hit($user, $payload);
-        break;
-
-        case 'talkToNpc':
-            $this->questRepo->talkToNpc($user, $payload);
-        break;
-
-        case 'showQuest':
-            $this->questRepo->showQuest($user, ...$payload);
-        break;
-
-        case 'questAnswer':
-            $this->questRepo->answer($user, ...$payload);
-        break;
-
-        case 'takeReward':
-            $this->questRepo->takeReward($user, ...$payload);
-        break;
-
-        case 'getQuests':
-            $user->getQuests();
-        break;
-        }
     }
+
+    public function fetchDataFromFrame($frameData, $user = null)
+    {
+        var_dump(date('H:i:s ') . $frameData . $user);
+
+        return json_decode($frameData, true);
+    }
+
+    public function fetchDataTypeFromFrame($data)
+    {
+        return array_keys($data)[0];
+    }
+
 
     public function send($fd, $message, $type = 'text')
     {
@@ -301,6 +247,25 @@ class Application {
         foreach ($users as $user) {
             $this->send($user->getFd(), 'ping', 'ping');
         }
+    }
+
+    public function adminTestActions($payload, $user)
+    {
+        // if (!$user->isAdmin()) return;
+
+        if (!$user = $this->userRepo->findById($payload['userId'])) return;
+
+            $queryString = '';
+            foreach ($payload['props'] as $prop => $value) {
+                if ($value == 'now()') $value = time();
+                $user->{$prop} = $value;
+                $queryString .= "{$prop}={$value},";
+            }
+
+            $queryString = substr($queryString, 0, -1);
+            DB::query("UPDATE users SET {$queryString} where id = {$payload['userId']}");
+
+            $this->send($user->getFd(), ['me' => $user->getAll()]);
     }
 
     public function periodicEvent($eventName)
