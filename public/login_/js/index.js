@@ -35,7 +35,7 @@ $('.inactive input').each(function(i, item) {
     }
 });
 
-let entryClick = false;
+let entryClick = true;
 $('.entry-button').on('click', (e) => {
   e.preventDefault();
   if (!entryClick) {

@@ -17,12 +17,11 @@ services:
       - ./docker/nginx/${APP_NAME}.loc.conf:/etc/nginx/conf.d/${APP_NAME}.loc.conf
       - ./docker/nginx/${APP_NAME}-socket.conf:/etc/nginx/conf.d/${APP_NAME}-socket.conf
     networks:
-      default:
-        aliases:
-          - ${APP_NAME}.docker
-          - ${APP_NAME}-socket.docker
-    networks:
-      - net
+        - net
+      # default:
+      #   aliases:
+      #     - ${APP_NAME}.docker
+      #     - ${APP_NAME}-socket.docker
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

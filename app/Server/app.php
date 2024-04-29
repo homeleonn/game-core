@@ -11,6 +11,7 @@ use App\Server\Application;
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
 
+
 $core = new App();
 
 checkAppTerminate($argc, $argv);

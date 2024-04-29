@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+
+        <?php
+            // print_r(s());
+            // dd($_SERVER);
+        ?><!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -13,15 +17,20 @@
     <main class="content">
         <?php
             // print_r(s());
+            // dd($_SERVER);
         ?>
         <form action="<?=route('forced-login')?>" method="POST" id="login">
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+            <div class="g-recaptcha" data-sitekey="6LfbKEUpAAAAAGaAdYGmhmBxpWcq735wj-aKy7fq"></div>
+
+
             <h2>Вход</h2>
             <?php if (s('error')):?><div class="red"><?=s('error')?></div><?php endif;?>
             <div class="captcha none">
                 <hr>
                 <img src="" class="captcha-image">
                 <br>
-                <input type="text" autocomplete="off" name="captcha_code" placeholder="Введите проверочный код сюда...">
+                <!-- <input type="text" autocomplete="off" name="captcha_code" placeholder="Введите проверочный код сюда..."> -->
             </div>
             <a class="btn center entry-button" href="#">Войти</a>
             <div class="inactive">

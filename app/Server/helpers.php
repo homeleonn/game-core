@@ -40,15 +40,19 @@ function dec(&$arr, $index, $count) {
 }
 
 function checkAppTerminate($argc, $argv) {
+//    global $app;
+    // $app->log(implode(', ', $argv));
+    var_dump($argv);
+
     if ($argc > 1 && $argv[1] == '-q') {
         $fp = stream_socket_client("tcp://" . Config::get('host') . ':' . Config::get('port'), $errno, $errstr);
         if (!$fp) {
             echo "Error: $errno - $errstr\n";
         } else {
             fwrite($fp,
-            "GET / HTTP/1.1\n" .
+            "GET /123 HTTP/1.1\n" .
             "Sec-WebSocket-Key: ".Str::random(16)."\r\n" .
-            "event-key: ".Config::get('key')."\r\n\r\n"
+            "event-key: ".Config::get('app_key')."\r\n\r\n"
             );
             fwrite($fp, Frame::encode('CLOSE', 'text', true));
         }

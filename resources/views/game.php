@@ -1,1 +1,15 @@
-<!DOCTYPE html><html lang=""><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/favicon.ico"><script src="js/common.js"></script><title>FightWorld</title><link href="/css/chunk-d296e478.ef713ffb.css" rel="prefetch"><link href="/js/chunk-d296e478.79b8faf0.js" rel="prefetch"><link href="/css/index.5d9a1485.css" rel="preload" as="style"><link href="/js/chunk-vendors.da111e06.js" rel="preload" as="script"><link href="/js/index.acbacaa7.js" rel="preload" as="script"><link href="/css/index.5d9a1485.css" rel="stylesheet"></head><body><noscript><strong>We're sorry but FightWorld doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="game"></div><script src="/js/chunk-vendors.da111e06.js"></script><script src="/js/index.acbacaa7.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fightworld - The best game</title>
+    <script src="/js/common.js"></script>
+    <script type="module" crossorigin src="/assets/index-Ckp-mKAQ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-wHAnqoUJ.css">
+  </head>
+  <body>
+    <div id="game"></div>
+  </body>
+</html>

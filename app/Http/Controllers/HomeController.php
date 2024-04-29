@@ -9,6 +9,7 @@ use Homeleon\Support\Facades\DB;
 use Homeleon\Captcha\Captcha;
 use App\Server\Models\User;
 use App\Models\User as User_;
+use ReCaptcha\ReCaptcha;
 
 class HomeController extends Controller
 {
@@ -57,7 +58,14 @@ class HomeController extends Controller
 
     public function forcedLogin(Request $request, Captcha $captcha)
     {
-        if (!$captcha->isValid()) return redirect()->route('entry')->with('error', 'Неверный ввод проверочного слова');
+        $recaptcha = new ReCaptcha('6LfbKEUpAAAAAHlYlp7P89MFkn6WKylbBzr-7oIJ');
+        $resp = $recaptcha->setExpectedHostname($_SERVER["SERVER_NAME"])
+                  ->verify($request->get('g-recaptcha-response'), $_SERVER["REMOTE_ADDR"]);
+        if (!$resp->isSuccess()) {
+            $errors = $resp->getErrorCodes();
+            return redirect()->route('entry')->with('error', join("<br>", $errors));
+        }
+        // if (!$captcha->isValid()) return redirect()->route('entry')->with('error', 'Неверный ввод проверочного слова');
 
         User_::create();
 

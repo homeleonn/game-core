@@ -37,6 +37,7 @@ class Application {
     public FightRepository $fightRepo;
     public QuestRepository $questRepo;
     public DropRepository $dropRepo;
+    public NpcRepository $npcRepo;
 
     public function __construct(WebSocketServer $server, Redis $storage)
     {
@@ -64,7 +65,7 @@ class Application {
     {
         cli_set_process_title('FightWorld daemon - php');
         if (!OS::isWin()) system('echo "\033]0;"FightWorld"\007"');
-        echo "App start on {$server->getIp()}:{$server->getPort()}. PID: ", getmypid(), "\n";
+        $this->log("App start on {$server->getIp()}:{$server->getPort()}. PID: ", getmypid());
         // file_put_contents(__DIR__ . '/resources/app.pid', getmypid());
     }
 
@@ -114,8 +115,7 @@ class Application {
 
     public function fetchDataFromFrame($frameData, $user = null)
     {
-        var_dump(date('H:i:s ') . $frameData . $user);
-
+        $this->log($frameData, $user);
         return json_decode($frameData, true);
     }
 
@@ -174,11 +174,11 @@ class Application {
         // d($frame);
         if ($frame->fd == $this->eventManager) {
             if ($frame->data == 'CLOSE') {
-                echo 'i am terminate';
+                $this->log('i am terminate');
                 exit;
             }
         } elseif ($frame->data == 'PING') {
-            var_dump(date('H:i:s'), $frame->getPong(), $frame->data);
+            $this->log($frame->getPong(), $frame->data);
             $this->send($frame->fd, $frame->getPong());return true;
         } elseif ($frame->type == 'pong') {
             return true;
@@ -187,8 +187,8 @@ class Application {
 
     public function setEventManager($request)
     {
-        if (isset($request->client['event-key']) && $request->client['event-key'] == Config::get('key')) {
-            echo "eventManager: $request->fd";
+        if (isset($request->client['event-key']) && $request->client['event-key'] == Config::get('app_key')) {
+            $this->log("eventManager: $request->fd");
             $this->eventManager = $request->fd;
             return true;
         }
@@ -225,7 +225,7 @@ class Application {
         $token  = trim($request->client['request_uri'], '/');
 
         if (!$userId = $this->storage->get('socket:' . $token)) {
-            echo "Invalid token\n";
+            $this->log("Invalid token");
             $this->storage->del('socket:' . $token);
             $server->close(null, $request->fd);
             return false;
@@ -268,9 +268,9 @@ class Application {
             $this->send($user->getFd(), ['me' => $user->getAll()]);
     }
 
-    public function periodicEvent($eventName)
+    public function periodicEvent($eventName):void
     {
-        // echo "\n", $eventName, " ", time(), " | ";
+//        $this->log($eventName);
 
         match ($eventName) {
             'clear_exited_users' => $this->userRepo->clearExited(),
@@ -280,5 +280,10 @@ class Application {
             'db_ping' => DB::ping(),
             default => null,
         };
+    }
+
+    public function log(...$message): void
+    {
+        echo date('Y-m-d H:i:s '), join(' ', $message), "\n";
     }
 }
