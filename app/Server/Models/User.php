@@ -273,6 +273,17 @@ class User extends Unit
         return $this->trans_timeout <= time();
     }
 
+    public function prepareForFight(): bool
+    {
+        $this->restore();
+        if ($this->percentOfHp() < 33) {
+            $this->send(['error' => 'Hit points are too few']);
+            return false;
+        }
+
+        return true;
+    }
+
     public function locProps()
     {
         $props = (int)$this->clan
@@ -298,7 +309,7 @@ class User extends Unit
         $this->fd = $fd;
     }
 
-    public function send($message)
+    public function send(mixed $message = null): void
     {
         send($this->fd, $message);
     }

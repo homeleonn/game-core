@@ -125,16 +125,15 @@ class LocRepository extends BaseRepository
 
     }
 
-    public function getEnemy($user, $enemyId)
+    public function getEnemy(User $user, $enemyId)
     {
         $this->app->send($user->getFd(), ['_enemy' => repo('npc')->get($enemyId)]);
     }
 
-    public function attackMonster($user, $monsterId)
+    public function attackMonster(User $user, $monsterId): bool
     {
-        $user->restore();
-        if ($user->percentOfHp() < 33) {
-            return $user->send(['error' => 'Hit points are too few']);
+        if ($user->prepareForFight()) {
+            return false;
         }
 
         if (!$monster = repo('npc')->getByLoc($user->loc, $monsterId)) {
@@ -148,10 +147,33 @@ class LocRepository extends BaseRepository
         if ($isNewFight) {
             $this->app->sendToLoc($user->loc, ['monsterAttacked' => $monsterId]);
         }
-        // $this->informingUsersForAttackedMonster($user->loc, $monsterId);
+
+        $this->informingUsersForAttackedMonster($user->loc, $monsterId);
+
+        return true;
     }
 
-    private function informingUsersForAttackedMonster($loc, $monsterId)
+//    TODO check attacked user in current location
+    public function attackPlayer(User $user, int $attackedUserId): bool
+    {
+        if ($user->getId() === $attackedUserId || !$user->prepareForFight()) {
+            return false;
+        }
+
+//        if (!$attackedPlayer = repo('loc')->getByLoc($user->loc, $attackedUserId)) {
+//            $user->send(['error' => "Player with id '{$attackedUserId}' doesn't exists in location id '{$user->loc}'"]);
+//            return false;
+//        }
+
+        $attackedPlayer = repo('user')->findById($attackedUserId);
+
+        repo('fight')->init($user, $attackedPlayer);
+        $this->app->send($user->getFd(), ['attackPlayer' => 1]);
+
+        return true;
+    }
+
+    private function informingUsersForAttackedMonster(int $loc, int $monsterId): void
     {
         $this->app->sendToLoc($loc, ['monsterAttacked' => $monsterId]);
     }
