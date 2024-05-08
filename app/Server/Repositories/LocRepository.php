@@ -31,6 +31,11 @@ class LocRepository extends BaseRepository
         $this->locsFds[$to][$fd] = null;
     }
 
+    private function existsByLocAndFd(int $loc, int $fd): bool
+    {
+        return isset($this->locsFds[$loc]) && array_key_exists($fd, $this->locsFds[$loc]);
+    }
+
     /**
      * Remove user from location
      *
@@ -153,22 +158,21 @@ class LocRepository extends BaseRepository
         return true;
     }
 
-//    TODO check attacked user in current location
-    public function attackPlayer(User $user, int $attackedUserId): bool
+    public function attackUser(User $user, int $attackedUserId): bool
     {
         if ($user->getId() === $attackedUserId || !$user->prepareForFight()) {
             return false;
         }
 
-//        if (!$attackedPlayer = repo('loc')->getByLoc($user->loc, $attackedUserId)) {
-//            $user->send(['error' => "Player with id '{$attackedUserId}' doesn't exists in location id '{$user->loc}'"]);
-//            return false;
-//        }
+        $attackedUser = repo('user')->findById($attackedUserId);
 
-        $attackedPlayer = repo('user')->findById($attackedUserId);
+        if (!$this->existsByLocAndFd($attackedUser->loc, $attackedUser->getFd())) {
+            $user->send(['error' => "User with id '{$attackedUserId}' doesn't exists in location id '{$user->loc}'"]);
+            return false;
+        }
 
-        repo('fight')->init($user, $attackedPlayer);
-        $this->app->send($user->getFd(), ['attackPlayer' => 1]);
+        repo('fight')->init($user, $attackedUser);
+        $this->app->send($user->getFd(), ['attackUser' => 1]);
 
         return true;
     }

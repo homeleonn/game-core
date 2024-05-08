@@ -21,7 +21,6 @@ class FightRepository extends BaseRepository
             if (!$fighterProto1->isBot()) {
                 $fighterProto1->send(['message' => "<b>Вы присоединились к бою \"{$fight->name}\"</b>"]);
 
-                // todo: send info about new fighter to others
                 try {
                     $newFighter = $fight->getFighterById($fighterProto1->id);
                     $this->sendTo($fight->fighters, ['new_fighter' => [$newFighter->fId => $newFighter->fightProps()]]);
