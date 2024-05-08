@@ -137,7 +137,7 @@ class LocRepository extends BaseRepository
 
     public function attackMonster(User $user, $monsterId): bool
     {
-        if ($user->prepareForFight()) {
+        if (!$user->prepareForFight()) {
             return false;
         }
 
@@ -150,10 +150,8 @@ class LocRepository extends BaseRepository
         $this->app->send($user->getFd(), ['attackMonster' => 1]);
 
         if ($isNewFight) {
-            $this->app->sendToLoc($user->loc, ['monsterAttacked' => $monsterId]);
+            $this->informingUsersForAttackedMonster($user->loc, $monsterId);
         }
-
-        $this->informingUsersForAttackedMonster($user->loc, $monsterId);
 
         return true;
     }
