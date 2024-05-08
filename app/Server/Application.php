@@ -101,6 +101,7 @@ class Application {
             'getLocMonsters' => $this->locRepo->getMonsters($user),
             'getEnemy'      => $this->locRepo->getEnemy($user, $payload),
             'attackMonster' => $this->locRepo->attackMonster($user, $payload),
+            'attackUser' => $this->locRepo->attackUser($user, $payload),
             'getFight'      => $this->fightRepo->getById($user),
             'hit'           => $this->fightRepo->hit($user, $payload),
             'talkToNpc'     => $this->questRepo->talkToNpc($user, $payload),

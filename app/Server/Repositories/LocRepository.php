@@ -31,6 +31,11 @@ class LocRepository extends BaseRepository
         $this->locsFds[$to][$fd] = null;
     }
 
+    private function existsByLocAndFd(int $loc, int $fd): bool
+    {
+        return isset($this->locsFds[$loc]) && array_key_exists($fd, $this->locsFds[$loc]);
+    }
+
     /**
      * Remove user from location
      *
@@ -125,16 +130,15 @@ class LocRepository extends BaseRepository
 
     }
 
-    public function getEnemy($user, $enemyId)
+    public function getEnemy(User $user, $enemyId)
     {
         $this->app->send($user->getFd(), ['_enemy' => repo('npc')->get($enemyId)]);
     }
 
-    public function attackMonster($user, $monsterId)
+    public function attackMonster(User $user, $monsterId): bool
     {
-        $user->restore();
-        if ($user->percentOfHp() < 33) {
-            return $user->send(['error' => 'Hit points are too few']);
+        if ($user->prepareForFight()) {
+            return false;
         }
 
         if (!$monster = repo('npc')->getByLoc($user->loc, $monsterId)) {
@@ -148,10 +152,32 @@ class LocRepository extends BaseRepository
         if ($isNewFight) {
             $this->app->sendToLoc($user->loc, ['monsterAttacked' => $monsterId]);
         }
-        // $this->informingUsersForAttackedMonster($user->loc, $monsterId);
+
+        $this->informingUsersForAttackedMonster($user->loc, $monsterId);
+
+        return true;
     }
 
-    private function informingUsersForAttackedMonster($loc, $monsterId)
+    public function attackUser(User $user, int $attackedUserId): bool
+    {
+        if ($user->getId() === $attackedUserId || !$user->prepareForFight()) {
+            return false;
+        }
+
+        $attackedUser = repo('user')->findById($attackedUserId);
+
+        if (!$this->existsByLocAndFd($attackedUser->loc, $attackedUser->getFd())) {
+            $user->send(['error' => "User with id '{$attackedUserId}' doesn't exists in location id '{$user->loc}'"]);
+            return false;
+        }
+
+        repo('fight')->init($user, $attackedUser);
+        $this->app->send($user->getFd(), ['attackUser' => 1]);
+
+        return true;
+    }
+
+    private function informingUsersForAttackedMonster(int $loc, int $monsterId): void
     {
         $this->app->sendToLoc($loc, ['monsterAttacked' => $monsterId]);
     }
