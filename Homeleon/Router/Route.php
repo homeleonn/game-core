@@ -3,6 +3,7 @@
 namespace Homeleon\Router;
 
 use Closure;
+use Homeleon\Support\Str;
 use ReflectionMethod;
 use ReflectionFunction;
 use ReflectionNamedType;
@@ -11,7 +12,7 @@ use Homeleon\Support\Facades\Response;
 
 class Route
 {
-    private static array $globalPatterns = [];
+    public static array $globalPatterns = [];
 
     private string $name;
     private array $middleware = [];
@@ -85,7 +86,7 @@ class Route
                 $className = $classType->getName();
             }
 
-            if (!isset($className) || !class_exists($className)) continue;
+            if (!isset($className)) continue;
 
             try {
                 array_splice($this->actualArguments, $idx, 0, [App::make($className)]);
@@ -123,8 +124,14 @@ class Route
      */
     public function middleware(string|array $middleware): void
     {
+        /** @var Router $router */
+        $router = App::make('router');
         if (is_string($middleware)) {
-            $this->middleware[] = $middleware;
+            if (!empty($middlewareGroup = $router->getMiddlewareGroup($middleware))) {
+                $this->middleware = array_merge($this->middleware, $middlewareGroup);
+            } elseif (class_exists($middleware)) {
+                $this->middleware[] = $middleware;
+            }
         } else {
             $this->middleware = array_merge($this->middleware, $middleware);
         }
@@ -154,6 +161,11 @@ class Route
         return false;
     }
 
+    public function prefix(string $prefix): void
+    {
+        $this->uri = Str::addStartSlash($this->uri);
+    }
+
     /**
      * Replace named uri params by regex alternative
      *
@@ -168,10 +180,5 @@ class Route
         );
 
         return rtrim($patternedUri, '/');
-    }
-
-    public static function pattern(string $param, string $pattern): void
-    {
-        self::$globalPatterns[$param] = $pattern;
     }
 }

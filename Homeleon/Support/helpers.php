@@ -125,6 +125,11 @@ function request() {
     return \App::make('request');
 }
 
+function config($configName)
+{
+    return \App::make('config')->get($configName);
+}
+
 function generateToken($userId) {
   $token = Str::random();
   App::make('redis')->set('socket:' . $token, $userId, 10);

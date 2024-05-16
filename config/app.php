@@ -35,6 +35,18 @@ $app['providers'] = array_merge($app['providers'], [
     Homeleon\Captcha\CaptchaServiceProvider::class,
     App\Http\Providers\RouteServiceProvider::class,
     App\Http\Providers\AppServiceProvider::class,
+    App\Services\JWT\JWTServiceProvider::class,
 ]);
+
+$app['middlewareGroups'] = [
+    'web' => [
+        \Homeleon\Session\Middleware\StartSession::class,
+        \Homeleon\Session\Middleware\ValidateCsrfToken::class
+    ],
+    'api' => [
+        \App\Middleware\ApiMiddleware::class
+    ]
+];
+
 
 return $app;

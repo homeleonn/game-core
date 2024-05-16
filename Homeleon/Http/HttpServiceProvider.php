@@ -13,7 +13,7 @@ class HttpServiceProvider extends ServiceProvider
         $this->app->set(Request::class, function () {
             return new Request(
                 $_SERVER,
-                $_REQUEST,
+                array_merge($_REQUEST, json_decode(file_get_contents('php://input'), true) ?? []),
                 $this->app->make(Session::class),
                 $this->app->make(Validator::class),
             );

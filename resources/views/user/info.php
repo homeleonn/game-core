@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?=$user->login?> - информация о персонаже</title>
-    <link rel="stylesheet" href="/login_/css/bootstrap-grid.my.min.css">
+    <link rel="stylesheet" href="/style/bootstrap-grid.my.min.css">
     <style>
         body {
             background: #eee;

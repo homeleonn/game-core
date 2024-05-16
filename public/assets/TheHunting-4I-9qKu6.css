@@ -1,1 +1,0 @@
-.monsters{justify-content:center}.monsters .monster{width:100px;margin:10px 20px;position:relative}.monsters .monster .mark{position:absolute;top:8px;border-radius:50%;padding:5px 8px;cursor:pointer;border:3px gold solid}.monsters .monster .fight-mark{right:-10px;background:#fb8662}.monsters .monster .level-mark{padding:2px 9px;font-weight:700;left:-10px;background:#eee}

@@ -17,9 +17,21 @@ class Router
     private $lastRoute;
     private $groupOptions = [];
     private $routeMiddleware = [
-        'auth' => \App\Middleware\AuthMiddleware::class,
-        'guest' => \App\Middleware\GuestMiddleware::class,
+        'auth' => [\App\Middleware\AuthMiddleware::class],
+        'guest' => [\App\Middleware\GuestMiddleware::class],
     ];
+
+    public function setMiddlewareGroups(array $middlewareGroups): void
+    {
+        foreach ($middlewareGroups as $group => $middlewares) {
+            $this->routeMiddleware[$group] = $middlewares;
+        }
+    }
+
+    public function getMiddlewareGroup(string $group): array
+    {
+        return $this->routeMiddleware[$group] ?? [];
+    }
 
     public function __construct(Request $request, Response $response)
     {
@@ -29,44 +41,69 @@ class Router
 
     public function get(string $uri,  $callback): self
     {
-        $this->addRoute('get', $uri, $callback);
-
-        return $this;
+        return $this->addRoute('get', $uri, $callback);
     }
 
     public function post(string $uri, $callback): self
     {
-        $this->addRoute('post', $uri, $callback);
+        return $this->addRoute('post', $uri, $callback);
+    }
+
+    public function options(string $uri, $callback): self
+    {
+        return $this->addRoute('options', $uri, $callback);
+    }
+
+    private function addRoute(string $method, string $uri, $callback): self
+    {
+        $uri = Str::addStartSlash($uri);
+        $patchingRoutes = [];
+
+        if (isset($this->groupOptions['middleware']) && $this->groupOptions['middleware'] == 'api') {
+            $optionRoute = new Route('options', $uri, function(){});
+            $this->routes[] = $optionRoute;
+            $patchingRoutes[] = $optionRoute;
+        }
+
+        $route = new Route($method, $uri, $callback);
+        $this->routes[] = $route;
+        $patchingRoutes[] = $route;
+
+        foreach ($this->groupOptions as $option => $value) {
+            array_map(function ($route) use ($option, $value) {
+                $route->{$option}($value);
+            }, $patchingRoutes);
+        }
+
+        $this->lastRoute = $route;
 
         return $this;
     }
 
-    private function addRoute(string $method, string $uri, $callback)
+    public function prefix(string $prefix): self
     {
-        $uri = Str::addStartSlash($uri);
-        $route = new Route($method, $uri, $callback);
-        $this->routes[] = $route;
+        $this->groupOptions['prefix'] = $prefix;
 
-        $this->setRequiredMiddleware($route);
+        return $this;
+    }
 
-        if (empty($this->groupOptions)) return;
+    public function group(string|array|Closure $options, Closure $register = null): void
+    {
+        if ($options instanceof Closure) {
+            $register = $options;
+            $options = [];
+        } elseif (is_string($options)) {
+            if (!file_exists($options)) {
+                throw new Exception('Route file not found: ' . $options);
+            }
 
-        foreach ($this->groupOptions as $option => $value) {
-            $route->{$option}($value);
+            $register = function () use ($options) {
+                require $options;
+            };
+            $options = [];
         }
 
-        $this->lastRoute = $route;
-    }
-
-    public function setRequiredMiddleware($route): void
-    {
-        $route->middleware(\Homeleon\Session\Middleware\StartSession::class);
-        $route->middleware(\Homeleon\Session\Middleware\ValidateCsrfToken::class);
-    }
-
-    public function group(array $options, Closure $register): void
-    {
-        $this->groupOptions = $options;
+        $this->groupOptions = array_merge($this->groupOptions, $options);
         $register();
         $this->groupOptions = [];
     }
@@ -90,7 +127,7 @@ class Router
 
     public function middleware(string $middleware): self
     {
-        $this->lastRoute->middleware($middleware);
+        $this->groupOptions['middleware'] = $middleware;
 
         return $this;
     }
@@ -170,9 +207,9 @@ class Router
                     return $pipe($passable, $stack);
                 }
 
-                if (!class_exists($pipe) && !$pipe = $this->checkMiddleware($pipe)) {
-                    throw new Exception("Middleware {$pipe} not found");
-                }
+//                if (!class_exists($pipe) && !$pipe = $this->checkMiddleware($pipe)) {
+//                    throw new Exception("Middleware {$pipe} not found");
+//                }
 
                 $res = (new $pipe)->handle($passable, $stack);
 
@@ -190,4 +227,10 @@ class Router
 
         throw new Exception("Middleware {$middleware} not found");
     }
+
+    public static function pattern(string $param, string $pattern): void
+    {
+        Route::$globalPatterns[$param] = $pattern;
+    }
 }
+

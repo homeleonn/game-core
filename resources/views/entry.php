@@ -1,8 +1,4 @@
-
-        <?php
-            // print_r(s());
-            // dd($_SERVER);
-        ?><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -13,19 +9,13 @@
     <link rel="stylesheet" type="text/css" href="login_/css/shower.css">
 </head>
 <body>
-    <header></header>
     <main class="content">
-        <?php
-            // print_r(s());
-            // dd($_SERVER);
-        ?>
-        <form action="<?=route('forced-login')?>" method="POST" id="login">
+        <form action="" method="POST" id="login">
             <script src="https://www.google.com/recaptcha/api.js" async defer></script>
             <div class="g-recaptcha" data-sitekey="6LfbKEUpAAAAAGaAdYGmhmBxpWcq735wj-aKy7fq"></div>
 
 
             <h2>Вход</h2>
-            <?php if (s('error')):?><div class="red"><?=s('error')?></div><?php endif;?>
             <div class="captcha none">
                 <hr>
                 <img src="" class="captcha-image">
@@ -114,9 +104,7 @@
         </div>
     <footer></footer>
 
-    <!-- <script src="login_/js/common.js"></script> -->
     <script type='text/javascript' src='//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js'></script>
-    <!-- <script>let $ = _;</script> -->
     <script src="login_/js/index.js"></script>
     <script src="login_/js/shower.js"></script>
 </body>

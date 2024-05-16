@@ -12,7 +12,7 @@ use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
 
 
-$core = new App();
+$core = new App(false);
 
 checkAppTerminate($argc, $argv);
 
