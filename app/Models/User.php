@@ -8,11 +8,12 @@ use App\Server\Helpers\HFight;
 
 class User extends AppModel
 {
-    public static function create()
+    public static function create(): int
     {
         // dd(self::orderBy('id', 'DESC')->first()->id);
+        $userId = (int)self::orderBy('id', 'DESC')->first()->id + 1;
         $user = new self;
-        $user->login = 'Tester_' . ((int)self::orderBy('id', 'DESC')->first()->id + 1);
+        $user->login = 'Tester_' . $userId;
         $user->email = uniqid();
         $user->password = '123';
         $user->maxhp = 30;
@@ -21,6 +22,8 @@ class User extends AppModel
         $user->save();
         self::giveItems($user->id);
         \Auth::login($user);
+
+        return $userId;
     }
 
     public static function giveItems($userId)

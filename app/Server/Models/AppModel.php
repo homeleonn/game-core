@@ -26,7 +26,7 @@ class AppModel extends Model implements JsonSerializable
         return $this->attr[$key] = Str::toNum($value);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->attr;
     }

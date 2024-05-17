@@ -125,6 +125,15 @@ function request() {
     return \App::make('request');
 }
 
+function config($configName, $value = null)
+{
+    $config = \App::make(\Homeleon\Config\Config::class);
+
+    return is_null($value)
+        ? $config->get($configName)
+        : $config->set($configName, $value);
+}
+
 function generateToken($userId) {
   $token = Str::random();
   App::make('redis')->set('socket:' . $token, $userId, 10);

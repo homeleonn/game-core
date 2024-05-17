@@ -19,19 +19,19 @@ class FileSessionHandler implements SessionHandlerInterface
         return $this->savePath . '/' . $this->prefix . str_replace(['/', '\\'], '', $filename);
     }
 
-    public function open($savePath, $sessionName)
+    public function open($savePath, $sessionName): bool
     {
         $this->savePath = $savePath;
 
         return true;
     }
 
-    public function close()
+    public function close(): bool
     {
         return true;
     }
 
-    public function read($filename)
+    public function read($filename): string|false
     {
         $path = $this->path($filename);
         if (!file_exists($path)) return '';
@@ -39,12 +39,12 @@ class FileSessionHandler implements SessionHandlerInterface
         return (string)file_get_contents($path);
     }
 
-    public function write($filename, $data)
+    public function write($filename, $data): bool
     {
         return file_put_contents($this->path($filename), $data) === false ? false : true;
     }
 
-    public function destroy($filename)
+    public function destroy($filename): bool
     {
         $file = $this->path($filename);
 
@@ -56,10 +56,10 @@ class FileSessionHandler implements SessionHandlerInterface
         return false;
     }
 
-    public function gc($maxLifetime)
+    public function gc($maxLifetime): int|false
     {
         // prevent many attempts scanning session folder to 2% chance
-        if (mt_rand(1, 100) > 2) return;
+        if (mt_rand(1, 100) > 2) return false;
 
         $countOfDeletedFiles = 0;
         foreach (glob($this->path('*')) as $file) {

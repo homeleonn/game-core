@@ -13,6 +13,10 @@ abstract class ServiceProvider
         $this->app = $app;
     }
 
+    protected function routes(callable $callback): void
+    {
+        $callback();
+    }
 
     public function boot(){}
     abstract public function register();

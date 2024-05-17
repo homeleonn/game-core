@@ -118,7 +118,7 @@ class Common
 
         foreach ($ctx as $c) {
             foreach ($fields as $field) {
-                $c->{$field} = json_decode($c->{$field});
+                $c->{$field} = json_decode($c->{$field} ?? '');
             }
         }
     }

@@ -2,7 +2,6 @@
 
 define('HTTP_SIDE', '');
 define('ROOT', dirname(__DIR__));
-header("Access-Control-Allow-Origin: *");
 
 require '../vendor/autoload.php';
 
@@ -15,7 +14,6 @@ try {
     exit;
 }
 
-require routes('web.php');
 
 $app->run();
 

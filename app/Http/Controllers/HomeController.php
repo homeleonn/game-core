@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\JWT\JWT;
 use Homeleon\Http\Request;
 use Homeleon\Support\Facades\Auth;
 use Homeleon\Support\Facades\Config;
 use Homeleon\Support\Facades\DB;
 use Homeleon\Captcha\Captcha;
-use App\Server\Models\User;
 use App\Models\User as User_;
 use ReCaptcha\ReCaptcha;
 
@@ -21,18 +21,6 @@ class HomeController extends Controller
     public function main()
     {
         return view('game');
-    }
-
-    public function wsToken(Request $request)
-    {
-        // dd(s());
-        if (isProd()) {
-            if (!s('id')) return;
-            usleep(500000);
-            echo generateToken((int)s('id'));
-        } else {
-            echo generateToken((int)($request->get('id') ?? 1));
-        }
     }
 
     public function entry(Request $request)
@@ -54,22 +42,6 @@ class HomeController extends Controller
         }
 
         return redirect()->route('entry');
-    }
-
-    public function forcedLogin(Request $request, Captcha $captcha)
-    {
-        $recaptcha = new ReCaptcha('6LfbKEUpAAAAAHlYlp7P89MFkn6WKylbBzr-7oIJ');
-        $resp = $recaptcha->setExpectedHostname($_SERVER["SERVER_NAME"])
-                  ->verify($request->get('g-recaptcha-response'), $_SERVER["REMOTE_ADDR"]);
-        if (!$resp->isSuccess()) {
-            $errors = $resp->getErrorCodes();
-            return redirect()->route('entry')->with('error', join("<br>", $errors));
-        }
-        // if (!$captcha->isValid()) return redirect()->route('entry')->with('error', 'Неверный ввод проверочного слова');
-
-        User_::create();
-
-        return redirect()->route('main');
     }
 
     public function getCaptcha()
@@ -98,18 +70,8 @@ class HomeController extends Controller
         // dd($request->all());
     }
 
-    public function testForm(Request $request)
+    public function test1(Request $request, int $userId = 1)
     {
-    }
-
-    public function test1(int $userId = 1)
-    {
-        dd(route('test', [22]));
-        dd($userId);
-    }
-
-    public function test2(int $userId = 1, $a = 2)
-    {
-        dd(route('test', [443]));
+        return ['request' => $request->all()];
     }
 }
