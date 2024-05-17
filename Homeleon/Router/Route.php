@@ -163,7 +163,7 @@ class Route
 
     public function prefix(string $prefix): void
     {
-        $this->uri = Str::addStartSlash($this->uri);
+        $this->uri = Str::addStartSlash($prefix . $this->uri);
     }
 
     /**
