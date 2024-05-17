@@ -125,9 +125,13 @@ function request() {
     return \App::make('request');
 }
 
-function config($configName)
+function config($configName, $value = null)
 {
-    return \App::make('config')->get($configName);
+    $config = \App::make(\Homeleon\Config\Config::class);
+
+    return is_null($value)
+        ? $config->get($configName)
+        : $config->set($configName, $value);
 }
 
 function generateToken($userId) {

@@ -11,14 +11,16 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::pattern('id', '\d+');
 
-        $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api/v1')
-                ->group(root() . '/routes/api.php');
+        if (config('load_routes')) {
+            $this->routes(function () {
+                Route::middleware('api')
+                    ->prefix('api/v1')
+                    ->group(root() . '/routes/api.php');
 
-            Route::middleware('web')
-                ->group(root() . '/routes/web.php');
-        });
+                Route::middleware('web')
+                    ->group(root() . '/routes/web.php');
+            });
+        }
     }
 
     public function register() {}
