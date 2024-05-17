@@ -20,7 +20,9 @@ class App
         $config = require  ROOT . '/config/app.php';
         Facade::setFacadeApplication($this, $config['aliases']);
         $servicesInstances = $this->loadServices($config['providers']);
-        $this->make(Router::class)->setMiddlewareGroups($config['middlewareGroups']);
+        if ($loadRoutes) {
+            $this->make(Router::class)->setMiddlewareGroups($config['middlewareGroups']);
+        }
         config('load_routes', $loadRoutes);
         $this->bootServices($servicesInstances);
         $this->checkKey();
