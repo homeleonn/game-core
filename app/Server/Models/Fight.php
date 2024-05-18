@@ -7,6 +7,7 @@ use Homeleon\Support\Common;
 use App\Server\Helpers\HFight;
 use Homeleon\Support\Facades\App;
 use App\Server\Models\Fight\EndFightHandler;
+use App\Server\Models\Fighter;
 
 class Fight
 {
