@@ -101,7 +101,7 @@ class Application {
             'getLocMonsters' => $this->locRepo->getMonsters($user),
             'getEnemy'      => $this->locRepo->getEnemy($user, $payload),
             'attackMonster' => $this->locRepo->attackMonster($user, $payload),
-            'attackUser' => $this->locRepo->attackUser($user, $payload),
+            'attackUser'    => $this->locRepo->attackUser($user, $payload),
             'getFight'      => $this->fightRepo->getById($user),
             'hit'           => $this->fightRepo->hit($user, $payload),
             'talkToNpc'     => $this->questRepo->talkToNpc($user, $payload),
@@ -186,7 +186,7 @@ class Application {
         }
     }
 
-    public function setEventManager($request)
+    public function setEventManager($request): bool
     {
         if (isset($request->client['event-key']) && $request->client['event-key'] == Config::get('app_key')) {
             $this->log("eventManager: $request->fd");
@@ -275,7 +275,7 @@ class Application {
 
         match ($eventName) {
             'clear_exited_users' => $this->userRepo->clearExited(),
-            'fight_worker' => $this->fightRepo->cicle(),
+            'fight_worker' => $this->fightRepo->cycle(),
             'respawn_npc' => $this->npcRepo->respawn(),
             'client_ping' => $this->pingToAll(),
             'db_ping' => DB::ping(),

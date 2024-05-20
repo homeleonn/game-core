@@ -117,7 +117,7 @@ class LocRepository extends BaseRepository
         }
     }
 
-    public function getMonsters($user)
+    public function getMonsters($user): void
     {
         $this->app->send(
             $user->getFd(),
@@ -130,12 +130,12 @@ class LocRepository extends BaseRepository
 
     }
 
-    public function getEnemy(User $user, $enemyId)
+    public function getEnemy(User $user, int $enemyId): void
     {
         $this->app->send($user->getFd(), ['_enemy' => repo('npc')->get($enemyId)]);
     }
 
-    public function attackMonster(User $user, $monsterId): bool
+    public function attackMonster(User $user, int $monsterId): bool
     {
         if (!$user->prepareForFight()) {
             return false;

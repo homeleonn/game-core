@@ -7,7 +7,6 @@ use SessionHandlerInterface;
 use Homeleon\Support\Crypter;
 use Homeleon\Support\Str;
 use Homeleon\Support\Facades\Config;
-use Homeleon\Support\Facades\Request;
 use RuntimeException;
 
 class Session implements SessionContract
@@ -22,7 +21,7 @@ class Session implements SessionContract
     private string $separator = '___';
     private int $lifetime;
     private array $data;
-    private $started = false;
+    private bool $started = false;
 
     public function __construct(SessionHandlerInterface $handler)
     {
@@ -32,7 +31,7 @@ class Session implements SessionContract
         $this->lifetime = $this->config['lifetime'] ?? self::DEFAULT_LIFETIME;
     }
 
-    public function start()
+    public function start(): void
     {
         $this->started = true;
         $this->sendSessionCookieIdToUser();
@@ -42,7 +41,7 @@ class Session implements SessionContract
 
     }
 
-    private function sendSessionCookieIdToUser()
+    private function sendSessionCookieIdToUser(): void
     {
         setCookie($this->sessionName, $this->sessionId, [
             'expires' => time() + $this->lifetime * 60,
@@ -52,7 +51,7 @@ class Session implements SessionContract
         ]);
     }
 
-    private function read()
+    private function read(): void
     {
         $data = $this->handler->read($this->sessionFilename);
         if ($data) {
@@ -62,7 +61,7 @@ class Session implements SessionContract
         }
     }
 
-    private function write()
+    private function write(): void
     {
         if (isset($this->data)) {
             $this->handler->write($this->sessionFilename, serialize($this->data));
@@ -79,7 +78,7 @@ class Session implements SessionContract
         $this->data[$key] = $value;
     }
 
-    public function flash($key, $value)
+    public function flash($key, $value): void
     {
         $this->data['_flash'][$key] = $value;
     }
@@ -89,7 +88,7 @@ class Session implements SessionContract
         unset($this->data[$key]);
     }
 
-    public function all(): mixed
+    public function all(): array
     {
          return $this->data;
     }
@@ -108,6 +107,7 @@ class Session implements SessionContract
         $key = Config::get('app_key');
         $crypter = new Crypter($key);
         $isNeedToGenerateToken = true;
+        $sessionFilename = null;
 
         if (isset($_COOKIE[$this->sessionName])) {
             try {

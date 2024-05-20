@@ -17,10 +17,10 @@ class Request
     public Closure $routeResolveAction;
 
     public function __construct(
-        public array $server,
-        array $request,
-        private Session $session,
-        private Validator $validator
+        public array             $server,
+        array                    $request,
+        private readonly Session $session,
+        private readonly Validator $validator
     )
     {
         $this->method   = $this->server['REQUEST_METHOD'] ?? 'GET';
@@ -44,7 +44,8 @@ class Request
     {
         if (!empty($errors = $this->validator->validate($this->request, $rules))) {
             $this->session->set('_errors', $errors);
-            exit(App::make(Response::class)->redirect()->back()->getContent());
+            $response = App::make(Response::class);/** @var Response $response */
+            exit($response->redirect()->back()->getContent());
         }
 
         return true;

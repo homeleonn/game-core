@@ -7,12 +7,12 @@ use Homeleon\Contracts\Session\Session;
 
 class Auth
 {
-    private $auth = 'email';
-    private $passwordKey = 'password';
+    private string $auth = 'email';
+    private string $passwordKey = 'password';
 
     public function __construct(
-        private Database $db,
-        private Session $session,
+        private readonly Database $db,
+        private readonly Session  $session,
     ) {}
 
     public function check()
@@ -20,7 +20,7 @@ class Auth
         return $this->session->get('id');
     }
 
-    public function login($user)
+    public function login($user): void
     {
         $this->session->set('id', $user->id);
     }
@@ -47,7 +47,7 @@ class Auth
         return password_verify($password, $actualPassword);
     }
 
-    public function logout()
+    public function logout(): void
     {
         $this->session->del('id');
     }

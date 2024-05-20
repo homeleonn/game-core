@@ -3,20 +3,23 @@
 namespace Homeleon\Http;
 
 use Closure;
-use Homeleon\Support\Facades\Config;
-use Homeleon\Support\Facades\Session;
+use Homeleon\Session\Session;
 
 class Response
 {
-    private $content;
-    private $redirectPath = false;
 
-    public function setStatusCode(int $code)
+    private string $content;
+    private ?string $redirectPath = null;
+
+    public function __construct(
+        private readonly Session $session
+    ){}
+    public function setStatusCode(int $code): void
     {
         http_response_code($code);
     }
 
-    public function isRedirect()
+    public function isRedirect(): ?string
     {
         return $this->redirectPath;
     }
@@ -26,7 +29,7 @@ class Response
         return $this->content;
     }
 
-    public function setContent(string $content)
+    public function setContent(string $content): void
     {
         $this->content = $content;
     }
@@ -47,14 +50,13 @@ class Response
     public function route(string $name): self
     {
         $this->redirectPath = \route($name);
-        // $this->setRedirect(\route($name));
 
         return $this;
     }
 
     public function back(): self
     {
-        $back = Session::get('_previous')['url'] ?? request()->getUri();
+        $back = $this->session->get('_previous')['url'] ?? request()->getUri();
         $this->redirectPath = $back;
 
         // $this->setRedirect($back);
@@ -62,9 +64,9 @@ class Response
         return $this;
     }
 
-    public function with($key, $value)
+    public function with($key, $value): self
     {
-        Session::flash($key, $value);
+        $this->session->flash($key, $value);
 
         return $this;
     }

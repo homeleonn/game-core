@@ -3,16 +3,18 @@
 namespace App\Server\Repositories;
 
 use Exception;
-use App\Server\Application;
-use App\Server\Models\{Fight, Fighter};
+use App\Server\Models\{Fight, Npc, User};
 use App\Server\Models\Fight\EndFightHandler;
 
 class FightRepository extends BaseRepository
 {
     private int $fightId = 1;
+    /**
+     * @var Fight[]
+     */
     private array $fights = [];
 
-    public function init($fighterProto1, $fighterProto2)
+    public function init(User|Npc $fighterProto1, User|Npc $fighterProto2): bool
     {
         if ($fighterProto2->fight) {
             $fight = $this->fights[$fighterProto2->fight];
@@ -49,31 +51,36 @@ class FightRepository extends BaseRepository
     }
 
 
-
-    private function sendTo($users, $message)
+    /**
+     * @param User[] $users
+     * @param string|array $message
+     * @return void
+     */
+    private function sendTo(array $users, string|array $message): void
     {
         foreach ($users as $user) {
-            if ($user->isBot()) continue;
+            if ($user->isBot()) {
+                continue;
+            }
+
             $user->send($message);
         }
     }
 
-    private function createBots($proto, $team, $fightId, $count = 1)
+    private function createBots(Npc $proto, int $team, int $fightId, int $count = 1): void
     {
-        if ($count <= 0) return;
+        if ($count <= 0) {
+            return;
+        }
+
         $fight = $this->fights[$fightId];
+
         while ($count--) {
             $fight->addFighter($proto, $team);
         }
     }
 
-    public function addFighter($fighter, $fightId)
-    {
-        if (!isset($this->fights[$fightId])) return;
-        $this->fights[$fightId]->addFighter($fighter);
-    }
-
-    public function getById($user)
+    public function getById(User $user): void
     {
         // if (!isset($this->fights[1])) {
         //     // $this->app->locRepo->attackMonster($user, 1);
@@ -84,7 +91,7 @@ class FightRepository extends BaseRepository
         $this->app->send($user->getFd(), ['_fight' => $this->fights[$user->fight]?->getData($user->id) ?? null]);
     }
 
-    public function remove($fightId)
+    public function remove($fightId): void
     {
         foreach ($this->fights[$fightId]->fighters as $fighter) {
             if (isset($fighter->user->aggr)) continue;
@@ -94,7 +101,7 @@ class FightRepository extends BaseRepository
         unset($this->fights[$fightId]);
     }
 
-    public function hit($user, $type)
+    public function hit($user, $type): void
     {
         $fighter = $this->fights[$user->fight]->fightersById[$user->id];
         if (!$fighter->isHitter()) {
@@ -104,10 +111,10 @@ class FightRepository extends BaseRepository
         $fighter->hit($type);
     }
 
-    public function cicle()
+    public function cycle(): void
     {
         foreach ($this->fights as $fight) {
-            $fight->cicle();
+            $fight->cycle();
         }
     }
 }
