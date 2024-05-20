@@ -1,5 +1,6 @@
 <?php
 
+use Homeleon\Router\Router;
 use Homeleon\Support\Str;
 
 function d(...$args) {
@@ -115,10 +116,13 @@ function redirect($uri = null) {
     return $uri ? $response->redirect($uri) : $response->redirect();
 }
 
+/**
+ * @throws Exception
+ */
 function route($name, array $params = []) {
-    $route = Router::getByName($name);
-    $uri = $route ? $route->buildUri($params) : null;
-    return $uri;
+    $router = \App::make('router');/** @var Router $router */
+    $route = $router->getByName($name);
+    return $route?->buildUri($params);
 }
 
 function request() {

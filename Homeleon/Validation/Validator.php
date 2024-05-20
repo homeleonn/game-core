@@ -2,11 +2,9 @@
 
 namespace Homeleon\Validation;
 
-use InvalidRuleException;
-
 class Validator
 {
-    private array $ruleResponses = [];
+    private array $ruleResponses;
 
     public function __construct()
     {
@@ -14,16 +12,19 @@ class Validator
         $this->ruleResponses = file_exists($fileRules) ? require $fileRules : [];
     }
 
-    public function __invoke($data, $rules)
+    /**
+     * @throws InvalidRuleException
+     */
+    public function __invoke($data, $rules): array
     {
         return $this->validate($data, $rules);
     }
 
-    public function validate($data, $rules)
+    /**
+     * @throws InvalidRuleException
+     */
+    public function validate($data, $rules): array
     {
-        // d($data, $rules);
-        $isValid = true;
-        global $errors;
         $errors = [];
 
         foreach ($rules as $dataKey => $ruleString) {
@@ -35,7 +36,7 @@ class Validator
                 [$rule, $values] = $this->getRuleAndValues($rule);
                 $ruleMethodName  = $this->checkRule($rule);
 
-                if ($error = $this->{$ruleMethodName}($data, $dataKey, ...$values)) {
+                if ($this->{$ruleMethodName}($data, $dataKey, ...$values)) {
                     $errors[] = $this->getRuleErrorMessage($rule, [$dataKey, ...$values]);
                 }
             }
@@ -50,7 +51,7 @@ class Validator
 
     private function getRuleAndValues(string $rule): array
     {
-        if (strpos($rule, ':') !== false) {
+        if (str_contains($rule, ':')) {
             $ruleValues = explode(':', $rule);
             $rule       = array_shift($ruleValues);
             $values     = $ruleValues;
@@ -72,29 +73,29 @@ class Validator
         return $data[$key] === '';
     }
 
-    protected function maxRule(&$data, $key, $max): bool
+    protected function maxRule(&$data, $key, int $max): bool
     {
-        return !is_numeric($max) || $data[$key] > (int)$max;
+        return !is_numeric($max) || $data[$key] > $max;
     }
 
-    protected function minRule(&$data, $key, $min): bool
+    protected function minRule(&$data, $key, int $min): bool
     {
-        return !is_numeric($min) || $data[$key] < (int)$min;
+        return !is_numeric($min) || $data[$key] < $min;
     }
 
-    protected function betweenRule(&$data, $key, $min, $max): bool
+    protected function betweenRule(&$data, $key, int $min, int $max): bool
     {
-        return !is_numeric($min) || $data[$key] < (int)$min || $data[$key] > (int)$max;
+        return !is_numeric($min) || $data[$key] < $min || $data[$key] > $max;
     }
 
-    protected function maxlenRule(&$data, $key, $maxstrlen): bool
+    protected function maxlenRule(&$data, $key, int $maxstrlen): bool
     {
-        return mb_strlen($data[$key]) > (int)$maxstrlen;
+        return mb_strlen($data[$key]) > $maxstrlen;
     }
 
-    protected function minlenRule(&$data, $key, $minstrlen): bool
+    protected function minlenRule(&$data, $key, int $minstrlen): bool
     {
-        return mb_strlen($data[$key]) < (int)$minstrlen;
+        return mb_strlen($data[$key]) < $minstrlen;
     }
 
     protected function nullableRule(&$data, $key): bool
@@ -117,12 +118,15 @@ class Validator
         return isset($this->ruleResponses[$type]) ? sprintf($this->ruleResponses[$type], ...$values) : $this->getMessageForNotExistingRule($type);
     }
 
-    protected function getMessageForNotExistingRule($type)
+    protected function getMessageForNotExistingRule($type): string
     {
         return "For rule {$type} has no error message";
     }
 
-    protected function checkRule($rule)
+    /**
+     * @throws InvalidRuleException
+     */
+    protected function checkRule($rule): string
     {
         $ruleMethodName = $rule . 'Rule';
 
@@ -133,7 +137,7 @@ class Validator
         return $ruleMethodName;
     }
 
-    protected function checkIfExistsValueForRule($data, $dataKey, &$errors)
+    protected function checkIfExistsValueForRule(array $data, string $dataKey, array &$errors): bool
     {
         if (!isset($data[$dataKey])) {
             $errors[$dataKey] = "There is no value for field {{$dataKey}}";

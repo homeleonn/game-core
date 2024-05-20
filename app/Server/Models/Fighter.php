@@ -10,7 +10,7 @@ class Fighter
     const HIT_TURN                = 2;
     const HITS_COUNT              = 3;
     const TURN_TIME               = 4;
-    const TURN_TIME_TIMEOUT       = 20;
+    const TURN_TIME_TIMEOUT       = 10;
 
     public User|Npc $user;
     public int $lastEnemyfId      = 0;
@@ -22,12 +22,11 @@ class Fighter
     public int $timeoutTicks      = 0;
     public array|null $swap       = [];
     private bool $delay           = false;
-    private $super_hits;
-    public $fId;
-    public $enemyfId;
+    private string $super_hits;
+    public int $fId;
+    public ?int $enemyfId;
     public int $team;
     public Fight $fight;
-
     public function __construct(User|Npc $user, int $team, Fight $fight)
     {
         // $this->user = $user instanceof User ? $user : (object)$user;

@@ -2,17 +2,30 @@
 
 namespace Homeleon;
 
+use Homeleon\Auth\Auth;
+use Homeleon\Config\Config;
+use Homeleon\Contracts\Database\Database;
+use Homeleon\DB\DB;
+use Homeleon\Http\Request;
+use Homeleon\Http\Response;
+use Homeleon\Router\Route;
 use Homeleon\Router\Router;
+use Homeleon\Session\Session;
 use Homeleon\Support\Facades\Facade;
 use Closure;
 use Exception;
+use Homeleon\Validation\Validator;
+use Redis;
 use ReflectionClass;
+use ReflectionException;
 
 class App
 {
     protected array $container = [];
-    private string $projectDir;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(bool $loadRoutes = true)
     {
         $this->setProjectDir();
@@ -21,7 +34,8 @@ class App
         Facade::setFacadeApplication($this, $config['aliases']);
         $servicesInstances = $this->loadServices($config['providers']);
         if ($loadRoutes) {
-            $this->make(Router::class)->setMiddlewareGroups($config['middlewareGroups']);
+            $router = $this->make(Router::class);/** @var Router $router */
+            $router->setMiddlewareGroups($config['middlewareGroups']);
         }
         config('load_routes', $loadRoutes);
         $this->bootServices($servicesInstances);
@@ -41,14 +55,17 @@ class App
         return $servicesInstances;
     }
 
-    protected function bootServices($services)
+    protected function bootServices($services): void
     {
         foreach ($services as $service) {
             $service->boot();
         }
     }
 
-    private function setProjectDir()
+    /**
+     * @throws Exception
+     */
+    private function setProjectDir(): void
     {
         if (defined('ROOT')) return;
 
@@ -72,19 +89,27 @@ class App
         }
     }
 
-    public function checkKey()
+    /**
+     * @throws Exception
+     */
+    public function checkKey(): void
     {
         if (!$this->make('config')->get('app_key')) {
             throw new Exception('Application key does not exists. First generate app key');
         }
     }
 
-    public function set($name, $value = null)
+    public function set($name, $value = null): void
     {
         $this->container[$name] = $value;
     }
 
-    public function make($name)
+    /**
+     * @param string $name
+     * @return array|App|mixed $name
+     * @throws Exception
+     */
+    public function make(string $name): mixed
     {
         if ($name == 'app') return $this;
 
@@ -112,13 +137,17 @@ class App
         }
 
         if (is_string($this->container[$name])) {
-            throw new Exception("Service '{$name}' has not booted");
+            throw new Exception("Service '$name' has not booted");
         }
 
         return $this->container[$name];
     }
 
-    public function prepareObject(string $className)
+    /**
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    public function prepareObject(string $className): null|object|string
     {
         $dependencies = [];
         $reflectionClass = new ReflectionClass($className);
@@ -130,31 +159,33 @@ class App
         return $reflectionClass->newInstanceArgs($dependencies);
     }
 
-    private function coreAliasesRegister()
+    private function coreAliasesRegister(): void
     {
         foreach ([
-            'auth' => [\Homeleon\Auth\Auth::class],
-            'config' => [\Homeleon\Config\Config::class],
-            'db' => [\Homeleon\DB\DB::class, \Homeleon\Contracts\Database\Database::class],
-            'request' => [\Homeleon\Http\Request::class],
-            'response' => [\Homeleon\Http\Response::class],
-            'redis' => [\Redis::class],
-            'router' => [\Homeleon\Router\Router::class],
-            'route' => [\Homeleon\Router\Route::class],
-            'session' => [\Homeleon\Session\Session::class, \Homeleon\Contracts\Session\Session::class],
-            'validator' => [\Homeleon\Validation\Validator::class],
+            'auth' => [Auth::class],
+            'config' => [Config::class],
+            'db' => [DB::class, Database::class],
+            'request' => [Request::class],
+            'response' => [Response::class],
+            'redis' => [Redis::class],
+            'router' => [Router::class],
+            'route' => [Route::class],
+            'session' => [Session::class, Contracts\Session\Session::class],
+            'validator' => [Validator::class],
         ] as $alias => $services) {
             $this->set($alias, $services);
         }
     }
 
-    public function run()
+    /**
+     * @throws Exception
+     */
+    public function run(): void
     {
-        $response = $this->make('router')->resolve();
+        $router = $this->make(Router::class); /** @var Router $router */
+        $response = $router->resolve();
 
-        $className = \Homeleon\Http\Response::class;
-
-        if ($response instanceof $className) {
+        if ($response instanceof Response) {
             if ($response->isRedirect()) {
                 $response->setRedirect();
             } else {
@@ -169,6 +200,9 @@ class App
         echo $response;
     }
 
+    /**
+     * @throws Exception
+     */
     public function __get($key)
     {
         return $this->make($key);

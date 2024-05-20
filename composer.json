@@ -14,7 +14,7 @@
         "files": ["Homeleon/Support/helpers.php"]
     },
     "require": {
-        "php" : "^8.0",
+        "php" : "^8.1",
         "ext-openssl": "*",
         "ext-mysqli": "*",
         "ext-redis": "*",

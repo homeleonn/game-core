@@ -2,7 +2,6 @@
 
 namespace Homeleon\Config;
 
-use Exception;
 
 class Config
 {
@@ -18,7 +17,7 @@ class Config
         return $this->config[$key] ?? null;
     }
 
-    public function set($key, $value)
+    public function set($key, $value): void
     {
         $this->config[$key] = $value;
     }

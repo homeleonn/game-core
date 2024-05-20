@@ -2,4 +2,6 @@
 
 namespace Homeleon\Validation;
 
-class InvalidRuleException extends \Exception {}
+use Exception;
+
+class InvalidRuleException extends Exception {}

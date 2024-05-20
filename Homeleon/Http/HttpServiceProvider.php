@@ -8,7 +8,7 @@ use Homeleon\Session\Session;
 
 class HttpServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
         $this->app->set(Request::class, function () {
             return new Request(
@@ -20,7 +20,7 @@ class HttpServiceProvider extends ServiceProvider
         });
 
         $this->app->set(Response::class, function () {
-            return new Response();
+            return new Response($this->app->make(Session::class));
         });
     }
 }

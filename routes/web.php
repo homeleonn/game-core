@@ -18,6 +18,7 @@ Route::group(['middleware' => 'guest'], function () {
 //    Route::get('registration', [HomeController::class, 'registrationform'])->name('registration');
 //    Route::post('registration', [HomeController::class, 'registration']);
 //    Route::get('captcha', [HomeController::class, 'getCaptcha']);
+    Route::get('user/{id}/info', [UserController::class, 'info']);
 });
 
-Route::get('user/{id}/info', [UserController::class, 'info']);
+//Route::get('user/{id}/info', [UserController::class, 'info']);

@@ -7,13 +7,16 @@ use Homeleon\Support\ServiceProvider;
 
 class ConfigServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
-        $this->app->set(Config::class, function ($app) {
+        $this->app->set(Config::class, function () {
             return new Config($this->loadConfig());
         });
     }
 
+    /**
+     * @throws Exception
+     */
     public function loadConfig()
     {
         $configFile = ROOT . '/.env.php';

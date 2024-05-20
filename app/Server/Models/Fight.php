@@ -2,15 +2,16 @@
 
 namespace App\Server\Models;
 
+use App\Server\Application;
 use Exception;
 use Homeleon\Support\Common;
 use App\Server\Helpers\HFight;
-use Homeleon\Support\Facades\App;
 use App\Server\Models\Fight\EndFightHandler;
-use App\Server\Models\Fighter;
 
 class Fight
 {
+    const BOT_HIT_TIMEOUT_MIN = 2;
+    const BOT_HIT_TIMEOUT_MAX = 4;
     public string $name;
     public int $fightId;
     public array $fighters = [];
@@ -23,41 +24,41 @@ class Fight
     private int $winTeam;
     private int $fighterIdCounter = 1;
     private int $startTime;
-    private $app;
+    private Application $game;
     private EndFightHandler $endFightHandler;
 
     private int $activeTeam = 0;
     private int $passiveTeam = 1;
 
-    public function __construct($fightId, $app, EndFightHandler $endFightHandler)
+    public function __construct($fightId, Application $game, EndFightHandler $endFightHandler)
     {
-        $this->app = $app;
+        $this->game = $game;
         $this->fightId = $fightId;
         $this->startTime = time();
 
         $this->endFightHandler = $endFightHandler;
     }
 
-    public function getFighterById($id)
+    public function getFighterById(int $id): ?Fighter
     {
         foreach ($this->fighters as $fighter) {
             if ($fighter->id == $id && !$fighter->isBot()) return $fighter;
         }
 
-        throw new Exception("Fighter with id '{$id}' not found in fight {$this->fightId}");
+        throw new Exception("Fighter with id '$id' not found in fight $this->fightId");
     }
 
-    public function cicle()
+    public function cycle(): void
     {
         $this->checkToggleTurn();
         $this->processBotsTick();
     }
 
-    private function processBotsTick()
+    private function processBotsTick(): void
     {
         $time = time();
         foreach ($this->botsHits as $botfId => $hit) {
-            if ($time < $hit) return;
+            if ($time < $hit) continue;
             unset($this->botsHits[$botfId]);
             $bot = $this->fighters[$botfId];
             [$hitter] = $bot->setRoles();
@@ -73,7 +74,7 @@ class Fight
         $fighter = new Fighter($fighterProto, $team, $this);
         if (!$fighter->isBot()) {
             $this->fightersById[$fighter->id] = $fighter;
-            $this->app->send($fighter->user->getFd(), ['fight' => 'start']);
+            $this->game->send($fighter->user->getFd(), ['fight' => 'start']);
         }
         $fighter->fId = $this->fighterIdCounter++;
         $this->fighters[$fighter->fId] = $fighter;
@@ -83,17 +84,17 @@ class Fight
         return $this;
     }
 
-    public function addToFreeFighters($fighter)
+    public function addToFreeFighters($fighter): void
     {
         $this->freeFightersIds[$fighter->team][$fighter->fId] = null;
     }
 
-    public function setPairs()
+    public function setPairs(): void
     {
         $allFreeTeamFightersIds = $this->freeFightersIds[$this->activeTeam];
 
         for ($i = 0; $i < $allFreeTeamFightersIds; $i++) {
-            if ($this->noFreeFighters()) return;
+            if ($this->noFreeFighters()) break;
 
             $fighter = $this->getRandomFighter($this->activeTeam);
             $fighter->setEnemy($this->getRandomFighter($this->passiveTeam));
@@ -101,77 +102,78 @@ class Fight
         }
     }
 
-    public function noFreeFighters()
+    public function noFreeFighters(): bool
     {
         return empty($this->freeFightersIds[$this->activeTeam]) || empty($this->freeFightersIds[$this->passiveTeam]);
     }
 
-    private function getRandomFighter($team)
+    private function getRandomFighter($team): Fighter
     {
-        $fighterIdKey = mt_rand(0, count($this->freeFightersIds[$team]) - 1);
-        $fighterId         = array_keys($this->freeFightersIds[$team])[$fighterIdKey];
-        $fighter             = $this->fighters[$fighterId];
+        $fighterIdKey   = mt_rand(0, count($this->freeFightersIds[$team]) - 1);
+        $fighterId      = array_keys($this->freeFightersIds[$team])[$fighterIdKey];
+        $fighter        = $this->fighters[$fighterId];
 
         $this->removeFreeFighter($fighter);
 
         return $fighter;
     }
 
-    private function removeFreeFighter($fighter)
+    private function removeFreeFighter($fighter): void
     {
-
         if (array_key_exists($fighter->fId, $this->freeFightersIds[$fighter->team])) {
             unset($this->freeFightersIds[$fighter->team][$fighter->fId]);
         }
     }
 
-    private function checkToggleTurn()
+    private function checkToggleTurn(): void
     {
-        // f - fighter
-        foreach ($this->teams[$this->activeTeam] as $f) {
-            if (!$f->swap || $f->getTimeTurnLeft() > 1) continue;
+        /**
+         * @var Fighter $f
+         */
+        foreach ($this->teams[$this->activeTeam] as $fighter) {
+            if (!$fighter->swap || $fighter->getTimeTurnLeft() > 1) continue;
 
-            $passFighter = $f->isHitter() ? $f : $f->getEnemy();
+            $passFighter = $fighter->isHitter() ? $fighter : $fighter->getEnemy();
             $death = $passFighter->checkTimeoutDeath();
 
             if ($death) {
                 $passFighter->kill();
-                if ($this->isFightEnd) return;
+                if ($this->isFightEnd) break;
             }
 
-            $this->handleBot($f);
-            $f->toggleTurn($death);
+            $this->handleBot($fighter);
+            $fighter->toggleTurn($death);
         }
     }
 
-    public function handleBot($fighter)
+    public function handleBot($fighter): void
     {
         if ($fighter->isBot() && $fighter->isAlive()) {
             $this->botsHits[$fighter->fId] = $this->monsterDamageTime();
         }
     }
 
-    private function monsterDamageTime()
+    private function monsterDamageTime(): int
     {
-        return time() + mt_rand(2, 4);
+        return time() + mt_rand(self::BOT_HIT_TIMEOUT_MIN, self::BOT_HIT_TIMEOUT_MAX);
         // return time() + 3;
     }
 
-    public function isEnd($defender)
+    public function isEnd($defender): bool
     {
         if ($this->checkAliveTeam($this->teams[$defender->team])) return false;
 
         $this->isFightEnd = true;
         $this->winTeam = $defender->getEnemy()->team;
         $this->setStatistics($this->winTeam);
-        App::make('game')->fightRepo->remove($this->fightId);
+        $this->game->fightRepo->remove($this->fightId);
 
         return true;
     }
 
-    private function setStatistics($winTeam)
+    private function setStatistics($winTeam): void
     {
-        $teamsStatisticts = [[], []];
+        $teamsStatistics = [[], []];
         $needProps = ['fId', 'login', 'level', 'damage', 'kills'];
 
         foreach ($this->teams as $idx => $team) {
@@ -179,19 +181,19 @@ class Fight
             foreach ($team as $fighter) {
                 $additionExp = $isWinner ? $fighter->damage * 2 : 0;
                 if (!$fighter->isBot()) $fighter->addExp($additionExp);
-                $teamsStatisticts[$idx][$fighter->fId] = Common::propsOnly($fighter, $needProps);
-                $teamsStatisticts[$idx][$fighter->fId]['fightExp'] = $additionExp;
-                $teamsStatisticts[$idx][$fighter->fId]['id'] = (int)$fighter->getId();
+                $teamsStatistics[$idx][$fighter->fId] = Common::propsOnly($fighter, $needProps);
+                $teamsStatistics[$idx][$fighter->fId]['fightExp'] = $additionExp;
+                $teamsStatistics[$idx][$fighter->fId]['id'] = (int)$fighter->getId();
 
                 $this->endFightHandler->processFighter($fighter, $isWinner);
             }
         }
 
         // Send statistics to all fight members
-        HFight::send('statistics', $this->fighters, $this->startTime, $this->winTeam, $teamsStatisticts);
+        HFight::send('statistics', $this->fighters, $this->startTime, $this->winTeam, $teamsStatistics);
     }
 
-    private function checkAliveTeam($team)
+    private function checkAliveTeam($team): bool
     {
         foreach ($team as $fighter) {
             if ($fighter->curhp > 0) return true;
@@ -200,11 +202,11 @@ class Fight
         return false;
     }
 
-    public function getData($userId)
+    public function getData($userId): array
     {
         return [
-            'fighters' => array_map(function ($f) use ($userId) {
-                return $f->fightProps($userId);
+            'fighters' => array_map(function (Fighter $fighter) use ($userId) {
+                return $fighter->fightProps($userId);
             }, $this->fighters),
         ];
     }
