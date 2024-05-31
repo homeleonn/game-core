@@ -49,6 +49,7 @@ function checkAppTerminate($argc, $argv) {
         if (!$fp) {
             echo "Error: $errno - $errstr\n";
         } else {
+            // echo "$fp\n";
             fwrite($fp,
             "GET /123 HTTP/1.1\n" .
             "Sec-WebSocket-Key: ".Str::random(16)."\r\n" .

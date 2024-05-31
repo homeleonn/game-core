@@ -332,7 +332,7 @@ class User extends Unit
         $this->exit = time() + self::CLEAR_EXITERS_TIMEOUT;
     }
 
-    public function isExit(): int
+    public function isExit(): ?int
     {
         return $this->exit;
     }

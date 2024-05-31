@@ -191,6 +191,7 @@ class Application {
         if (isset($request->client['event-key']) && $request->client['event-key'] == Config::get('app_key')) {
             $this->log("eventManager: $request->fd");
             $this->eventManager = $request->fd;
+            exit;
             return true;
         }
 

@@ -28,7 +28,7 @@ class UserRepository extends BaseRepository
         return $this->users[$fd];
     }
 
-    public function findByFd(int $fd)
+    public function findByFd(int $fd): User
     {
         if ($this->has($fd)) {
             return $this->users[$fd];

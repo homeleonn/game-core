@@ -44,7 +44,7 @@ class LoginController extends Controller
         return ['jwt' => $jwtToken];
     }
 
-    public function recaptchaVerify(Request $request): array|bool
+    private function recaptchaVerify(Request $request): array|bool
     {
         $host = parse_url($_SERVER["HTTP_ORIGIN"] ?? $_SERVER["HTTP_REFERER"] ?? $_SERVER["SERVER_NAME"], PHP_URL_HOST);
         $recaptcha = new ReCaptcha(config('recaptcha_secret_key'));

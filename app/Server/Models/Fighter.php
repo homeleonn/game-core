@@ -22,7 +22,7 @@ class Fighter
     public int $timeoutTicks      = 0;
     public array|null $swap       = [];
     private bool $delay           = false;
-    private string $super_hits;
+    private array|\stdClass $super_hits;
     public int $fId;
     public ?int $enemyfId;
     public int $team;
