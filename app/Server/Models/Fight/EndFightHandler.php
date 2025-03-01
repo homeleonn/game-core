@@ -12,6 +12,7 @@ class EndFightHandler
 {
     private $fighter;
     private bool $isWinner;
+    public array $questItems;
 
     public function __construct()
     {
@@ -21,6 +22,7 @@ class EndFightHandler
     public function processFighter($fighter, $isWinner)
     {
         $this->fighter = $fighter;
+        /* TODO: when set fight to fighter make auto redirect this value to linked user */
         $this->fighter->user->fight = 0;
         $this->isWinner = $isWinner;
 
