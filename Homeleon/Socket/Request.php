@@ -2,6 +2,8 @@
 
 namespace Homeleon\Socket;
 
+use Exception;
+
 class Request
 {
     public $client = [];

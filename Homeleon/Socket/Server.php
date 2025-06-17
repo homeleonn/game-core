@@ -3,6 +3,7 @@
 namespace Homeleon\Socket;
 
 use Closure;
+use Exception;
 use Homeleon\Contracts\DosProtection\DosProtectionInterface;
 use Homeleon\Contracts\PeriodicEvent\PeriodicEvent;
 
