@@ -102,8 +102,9 @@ class Server
             $request = new Request($fd, $this);
         } catch (Exception $e) {
             _log($e->getMessage() . ' ' . $e->getFile() . ':' . $e->getLine());
+            return;
         }
-        
+
         if (!$this->dosProtection?->isValid($request->client['ip'])) {
             return;
         }
