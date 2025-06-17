@@ -102,6 +102,8 @@ class Server
             $request = new Request($fd, $this);
         } catch (Exception $e) {
             _log($e->getMessage() . ' ' . $e->getFile() . ':' . $e->getLine());
+            fwrite($fd, "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMissing Sec-WebSocket-Key");
+            $this->close($fd);
             return;
         }
 

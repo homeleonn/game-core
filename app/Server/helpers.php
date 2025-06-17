@@ -74,7 +74,7 @@ function myErrorHandler($errno, $errstr, $errfile, $errline)
         if (!$i || $i > 4) continue;
         $trace .= "{$debug['file']}:{$debug['line']}\n";
     }
-    file_put_contents($logFile, '[' . date('d-m-Y H:i:s') . '] ' . $errno . ' | ' . $errstr . ' in ' . $errfile . ':' . $errline. "\n{$trace}\n\n");
+    file_put_contents($logFile, '[' . date('d-m-Y H:i:s') . '] ' . $errno . ' | ' . $errstr . ' in ' . $errfile . ':' . $errline. "\n{$trace}\n\n", FILE_APPEND);
 
     return false;
 }
@@ -83,5 +83,5 @@ set_error_handler("myErrorHandler");
 function _log(string $string)
 {
     global $logFile;
-    file_put_contents($logFile, '[' . date('d-m-Y H:i:s') . '] ' . $string);
+    file_put_contents($logFile, '[' . date('d-m-Y H:i:s') . '] ' . $string, FILE_APPEND);
 }
