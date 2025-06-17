@@ -65,7 +65,7 @@ function checkAppTerminate($argc, $argv) {
 
 
 $logFile = __DIR__ . '/resources/log/error.log';
-file_put_contents($logFile, '');
+// file_put_contents($logFile, '');
 function myErrorHandler($errno, $errstr, $errfile, $errline)
 {
     global $logFile;
@@ -79,3 +79,9 @@ function myErrorHandler($errno, $errstr, $errfile, $errline)
     return false;
 }
 set_error_handler("myErrorHandler");
+
+function _log(string $string)
+{
+    global $logFile;
+    file_put_contents($logFile, '[' . date('d-m-Y H:i:s') . '] ' . $string);
+}

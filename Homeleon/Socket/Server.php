@@ -97,8 +97,12 @@ class Server
 
     private function open($fd)
     {
-        $request = new Request($fd, $this);
-
+        try {
+            $request = new Request($fd, $this);
+        } catch (Exception $e) {
+            _log($e->getMessage() . ' ' . $e->getFile() . ':' . $e->getLine());
+        }
+        
         if (!$this->dosProtection?->isValid($request->client['ip'])) {
             return;
         }
