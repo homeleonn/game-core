@@ -98,12 +98,12 @@ class Server
 
     private function open($fd)
     {
+        // var_dump($fd);
         try {
             $request = new Request($fd, $this);
         } catch (Exception $e) {
             _log($e->getMessage() . ' ' . $e->getFile() . ':' . $e->getLine());
-            fwrite($fd, "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMissing Sec-WebSocket-Key");
-            $this->close($fd);
+            $this->closeWithStatus(400, $fd);
             return;
         }
 
@@ -114,6 +114,18 @@ class Server
         $this->fdCounter++;
         $this->fds[(int)$fd] = $fd;
         $this->applyEventHandler('open', [$request]);
+    }
+
+    public function closeWithStatus(int $status, $fd) {
+        if (is_int($fd)) {
+            $fd = $this->fds[$fd];
+        }
+        switch ($status) {
+            case 400: 
+                fwrite($fd, "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nMissing Sec-WebSocket-Key");
+                $this->close($fd);
+            break;
+        }
     }
 
     public function close($fd, $fdId = null)

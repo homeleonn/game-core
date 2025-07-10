@@ -72,7 +72,15 @@ class Application {
     public function open(WebSocketServer $server, Request $request)
     {
         if ($this->setEventManager($request)) return;
-        if (!$userId = $this->parseToken($server, $request)) return;
+        if (!$token = $this->parseToken($server, $request)) return;
+
+        // var_dump(get_class_methods($this->storage), $this->storage->getDel('socket:' . $token));
+
+        if (!$userId = $this->storage->getDel('socket:' . $token)) {
+            $this->log("Invalid token");
+            $server->close(null, $request->fd);
+            return false;
+        }
 
         $this->addToApp($request->fd, $userId);
     }
@@ -224,18 +232,7 @@ class Application {
 
     public function parseToken(WebSocketServer $server, Request $request)
     {
-        $token  = trim($request->client['request_uri'], '/');
-
-        if (!$userId = $this->storage->get('socket:' . $token)) {
-            $this->log("Invalid token");
-            $this->storage->del('socket:' . $token);
-            $server->close(null, $request->fd);
-            return false;
-        }
-
-        $this->storage->del('socket:' . $token);
-
-        return $userId;
+        return trim($request->client['request_uri'], '/');
     }
 
     public function pingToAll()
@@ -265,6 +262,7 @@ class Application {
             }
 
             $queryString = substr($queryString, 0, -1);
+            // $this->messageToLoc($user, "UPDATE users SET {$queryString} where id = {$payload['userId']}");
             DB::query("UPDATE users SET {$queryString} where id = {$payload['userId']}");
 
             $this->send($user->getFd(), ['me' => $user->getAll()]);
