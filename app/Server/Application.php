@@ -253,7 +253,7 @@ class Application {
 
     public function adminTestActions($payload, $user)
     {
-        // if (!$user->isAdmin()) return;
+        if (!$user->isAdmin()) return;
 
         if (!$user = $this->userRepo->findById($payload['userId'])) return;
 
